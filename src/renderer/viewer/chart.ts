@@ -44,6 +44,8 @@ export interface ChartTheme {
   background: string;
   textColor: string;
   dark: boolean;
+  /** CSS for the panel TradingView paints behind each legend row, hiding drawings under it; null when switched off. */
+  legendBackground: string | null;
   options: DeepPartial<TimeChartOptions>;
 }
 
@@ -64,10 +66,12 @@ export function chartTheme(chartProperties: Props): ChartTheme {
     width: lineWidth(cross.width, 1),
     labelBackgroundColor: '#131722',
   };
+  const legend = obj(pane.legendProperties);
   return {
     background,
     textColor,
     dark: isDark(background),
+    legendBackground: legend.showBackground === false ? null : `background:${withTransparency(background, num(legend.backgroundTransparency, 50))};border-radius:4px;padding:0 4px;margin-left:-4px;width:fit-content;`,
     options: {
       layout: {
         background: gradient
@@ -185,7 +189,10 @@ function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
   title.style.fontSize = '16px';
   title.style.marginRight = '12px';
   const values = document.createElement('span');
-  el.append(title, values);
+  const row = document.createElement('div');
+  row.style.cssText = theme.legendBackground ?? '';
+  row.append(title, values);
+  el.append(row);
   const fmt = plan.priceFormat;
   const pair = (label: string, value: string, color: string) => {
     const name = span(label);
@@ -219,6 +226,7 @@ function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): L
   el.style.left = '9px';
   const rows = studies.map((s) => {
     const row = document.createElement('div');
+    row.style.cssText = theme.legendBackground ?? '';
     const values = document.createElement('span');
     values.style.marginLeft = '3px';
     const title = span(s.study.shortName);
