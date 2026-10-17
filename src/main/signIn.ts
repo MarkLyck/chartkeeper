@@ -9,6 +9,9 @@ import { fromCdp, importCookies, type SessionCookie } from './tvSession';
 
 const isTv = (c: { domain?: string }) => isTradingViewHost(c.domain ?? '');
 
+/** The throwaway session of the in-app sign-in window. */
+export const SIGNIN_PARTITION = 'signin-temporary';
+
 /** Signs in to TradingView in the user's own browser, or in an app window when there is none, and copies the sign-in into ChartKeeper. */
 export async function signIn(account: TvAccount, parent: BrowserWindow | null): Promise<void> {
   const browser = findBrowser();
@@ -40,10 +43,9 @@ export async function signIn(account: TvAccount, parent: BrowserWindow | null): 
  * refuses sign-in inside app windows, so this window suits email sign-in.
  */
 async function signInWithAppWindow(parent: BrowserWindow | null): Promise<SessionCookie[]> {
-  const partition = 'signin-temporary';
-  const s = session.fromPartition(partition);
+  const s = session.fromPartition(SIGNIN_PARTITION);
   s.setPermissionRequestHandler((_wc, _permission, cb) => cb(false));
-  const w = new BrowserWindow({ width: 520, height: 760, title: 'TradingView', parent: parent ?? undefined, webPreferences: { partition, contextIsolation: true, sandbox: true } });
+  const w = new BrowserWindow({ width: 520, height: 760, title: 'TradingView', parent: parent ?? undefined, webPreferences: { partition: SIGNIN_PARTITION, contextIsolation: true, sandbox: true } });
   // Sign-in pages stay in this one window; nothing opens new windows from it.
   w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   await w.loadURL(urls.signIn);

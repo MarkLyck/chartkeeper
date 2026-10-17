@@ -1,14 +1,18 @@
 import { TvClient } from '../core/tv/client';
 import { TvError } from '../core/tv/errors';
-import { PoliteHttp } from '../core/tv/http';
+import { DEFAULT_RATE, PoliteHttp, type RateLimitOptions } from '../core/tv/http';
 import { ElectronPageTransport, hasSessionCookie, signOut } from './tvSession';
 
 /** The signed-in TradingView account. The only place that changes the username the window shows. */
 export class TvAccount {
   readonly transport = new ElectronPageTransport();
   /** One rate limiter for every request, so a backup and the restore screen can't add up to more than one request at a time. */
-  private readonly http = new PoliteHttp(this.transport);
+  private readonly http: PoliteHttp;
   private name: string | null = null;
+
+  constructor(rate: RateLimitOptions = DEFAULT_RATE) {
+    this.http = new PoliteHttp(this.transport, rate);
+  }
 
   /** The account's name, once a client was made for it this session. */
   get username(): string | null {

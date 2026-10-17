@@ -3,7 +3,7 @@ import path from 'node:path';
 import { runBackup } from '../core/backup';
 import { restoreLayout, RestoreJournal, restoreTemplates, type RestoreMode } from '../core/restore';
 import { cleanupInterrupted, SnapshotReader } from '../core/snapshot';
-import { nodeSocketFactory } from '../core/tv/datafeed';
+import { nodeSocketFactory, type SocketFactory } from '../core/tv/datafeed';
 import type { BackupOutcome, RestoreOutcome, RestoreRequest, Result, TemplatesOutcome } from '../shared/api';
 import type { AppStatus } from './appState';
 import { log } from './log';
@@ -16,6 +16,7 @@ export class Tasks {
   constructor(
     private readonly status: AppStatus,
     private readonly shell: Shell,
+    private readonly socketFactory: SocketFactory = nodeSocketFactory,
   ) {}
 
   private get store() {
@@ -40,7 +41,7 @@ export class Tasks {
       includePrices: settings.includePrices,
       bars: 5000,
       authToken: client.authToken,
-      socketFactory: nodeSocketFactory,
+      socketFactory: this.socketFactory,
       onProgress: (p) => this.shell.progress({ kind: 'backup', progress: p }),
     });
   }
@@ -58,7 +59,7 @@ export class Tasks {
     else if (r.ok) this.shell.notifyBackup({ ok: true, layouts: r.value.layouts });
   }
 
-  /** Runs the daily backup when it is due. Called every 15 minutes. */
+  /** Runs the daily backup when it is due. Called every 15 minutes (DAILY_CHECK). */
   async scheduledCheck(): Promise<void> {
     const s = this.store.settings;
     if (!s.dailyBackup || this.status.busy) return;
