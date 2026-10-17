@@ -1,0 +1,111 @@
+{
+  "name": "chartkeeper",
+  "productName": "ChartKeeper",
+  "version": "1.0.0",
+  "description": "Back up, view offline, and restore your TradingView chart layouts.",
+  "author": {
+    "name": "MarkLyck",
+    "email": "mark.lyck@gmail.com"
+  },
+  "license": "MIT",
+  "private": true,
+  "main": "dist/main.js",
+  "type": "commonjs",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "npm run build && electron .",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "vitest run",
+    "test:live": "vitest run --config vitest.live.config.mts",
+    "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts",
+    "viewer:compare": "tsx scripts/viewer-compare.ts",
+    "screenshots": "npm run build && tsx scripts/readme-screenshots.ts",
+    "dist": "npm run build && electron-builder --publish never"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5",
+    "lightweight-charts": "^5.2.1",
+    "zod": "^4.6.7"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "electron-winstaller@5.4.0": true,
+    "fsevents@2.3.3": true
+  },
+  "homepage": "https://github.com/MarkLyck/chartkeeper",
+  "build": {
+    "appId": "dk.chartkeeper.app",
+    "productName": "ChartKeeper",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "package.json"
+    ],
+    "asar": true,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ],
+      "category": "public.app-category.finance",
+      "icon": "build/icon.png",
+      "identity": null
+    },
+    "dmg": {
+      "title": "ChartKeeper"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ChartKeeper"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Finance",
+      "icon": "build/icon.png",
+      "maintainer": "MarkLyck <mark.lyck@gmail.com>",
+      "synopsis": "Back up and view your TradingView charts"
+    }
+  }
+}

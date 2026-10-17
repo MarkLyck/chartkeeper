@@ -1,0 +1,172 @@
+import { promises as fs } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { runBackup } from '../../src/core/backup';
+import { countLayout, parseLayout } from '../../src/core/layout';
+import { compareCounts, contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, symbolFields } from '../../src/core/restore';
+import { listSnapshots, SnapshotReader } from '../../src/core/snapshot';
+import { TvClient } from '../../src/core/tv/client';
+import { PoliteHttp } from '../../src/core/tv/http';
+import { fakeDataSocket } from '../fakes/fakeDataSocket';
+import { FakeTradingView } from '../fakes/fakeTradingView';
+import { referenceInAccount, referenceRecord } from '../fakes/fixtures';
+
+const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
+let root: string;
+let tv: FakeTradingView;
+const client = () => new TvClient(new PoliteHttp(tv, fast), tv.account!);
+const backup = (extra: Partial<Parameters<typeof runBackup>[1]> = {}) =>
+  runBackup(client(), { root, appVersion: 'test', includePrices: true, bars: 50, authToken: 'tok', socketFactory: fakeDataSocket().factory, pauseMs: 0, ...extra });
+
+beforeEach(async () => {
+  root = await fs.mkdtemp(path.join(os.tmpdir(), 'chartkeeper-'));
+  tv = new FakeTradingView().add(referenceInAccount('AbCd1234', 'Min AAPL'));
+});
+
+describe('backup', () => {
+  it('writes a complete snapshot with every drawing, indicator, template and script', async () => {
+    const r = await backup();
+    expect(r).toMatchObject({ ok: true, layouts: 1, drawings: 11, error: null });
+    const [snap] = await listSnapshots(root);
+    expect(snap!.manifest).toMatchObject({ status: 'complete', account: { username: 'thomas' }, extras: { studyTemplates: 1, drawingTemplates: 1, themes: 1, scripts: 1, userDrawings: 1 } });
+    expect(snap!.manifest!.layouts[0]).toMatchObject({ uid: 'AbCd1234', name: 'Min AAPL', drawings: 11, studies: 2, priceData: true, symbols: ['NASDAQ:AAPL'] });
+    const reader = await SnapshotReader.open(snap!.dir);
+    expect(await reader.verify()).toEqual([]);
+    const data = await reader.chartData('AbCd1234', '1');
+    expect(data!.bars).toHaveLength(50);
+    expect(Object.values(data!.studies).every((s) => s.status === 'ok')).toBe(true);
+    expect(await fs.readFile(path.join(snap!.dir, 'scripts/Thomas Trend.pine'), 'utf8')).toContain('indicator("Thomas Trend")');
+  });
+
+  it('only reads: it sends no POST or PUT to TradingView', async () => {
+    await backup();
+    expect(tv.requests.filter((r) => r.method !== 'GET')).toEqual([]);
+  });
+
+  it('marks the snapshot INCOMPLETE when drawings are reported but not sent', async () => {
+    tv.storageIgnoresCookies = true;
+    const r = await backup();
+    expect(r.ok).toBe(false);
+    expect(r.error).toMatchObject({ kind: 'format-changed', message: expect.stringMatching(/has 8 drawings but sent none/) });
+    const [snap] = await listSnapshots(root);
+    expect(snap!.name).toMatch(/-INCOMPLETE$/);
+    expect(snap!.manifest!.status).toBe('incomplete');
+  });
+
+  it('marks the snapshot INCOMPLETE when TradingView changes its answer format', async () => {
+    tv.failOn = (req) => (req.url.endsWith('/my-charts/') ? { status: 200, contentType: 'application/json', body: '{"unexpected":true}' } : null);
+    const r = await backup();
+    expect(r.ok).toBe(false);
+    expect(r.error?.message).toMatch(/does not recognise/);
+  });
+
+  it('keeps the layout backup when one symbol has no prices, and says so', async () => {
+    const r = await backup({ socketFactory: fakeDataSocket({ unknownSymbols: ['NASDAQ:AAPL'] }).factory });
+    expect(r.ok).toBe(true);
+    expect(r.warnings.join('\n')).toMatch(/prices for NASDAQ:AAPL .* could not be saved/);
+    const [snap] = await listSnapshots(root);
+    expect(snap!.manifest!.layouts[0]!.priceData).toBe(false);
+  });
+
+  it('records indicators TradingView refuses instead of dropping them', async () => {
+    const r = await backup({ socketFactory: fakeDataSocket({ failStudies: (id) => (id.startsWith('RSI') ? 'study_limit_exceeded' : null) }).factory });
+    expect(r.warnings.join('\n')).toMatch(/could not be calculated/);
+    const reader = await SnapshotReader.open((await listSnapshots(root))[0]!.dir);
+    const studies = Object.values((await reader.chartData('AbCd1234', '1'))!.studies);
+    expect(studies.map((s) => s.status).sort()).toEqual(['error', 'ok']);
+  });
+});
+
+describe('restore', () => {
+  const journal = () => new RestoreJournal(path.join(root, 'restore-journal.json'));
+  async function snapshot() {
+    await backup();
+    return SnapshotReader.open((await listSnapshots(root))[0]!.dir);
+  }
+
+  it('puts storage drawings back into the right chart and pane of the content', () => {
+    const fake = referenceInAccount();
+    const rec = { ...referenceRecord(), content: fake.content };
+    const buckets = Object.fromEntries(Object.entries(fake.storage).map(([k, v]) => [k, { sources: v, drawing_groups: {} }]));
+    const content = contentWithDrawings(rec, { buckets, reportedTotal: null });
+    const counts = countLayout(parseLayout({ ...rec, content }, null));
+    expect(counts.drawings).toBe(11);
+    expect(rec.content).toEqual(fake.content);
+  });
+
+  it('takes symbol fields from the list entry, or else from the price series', () => {
+    expect(symbolFields({ ...referenceRecord(), listEntry: { symbol: 'NASDAQ:MSFT', resolution: '60' } })).toMatchObject({ symbol: 'NASDAQ:MSFT', resolution: '60', exchange: 'NASDAQ' });
+    expect(symbolFields({ ...referenceRecord(), listEntry: {} })).toMatchObject({ symbol: 'NASDAQ:AAPL', short_name: 'AAPL', exchange: 'NASDAQ', resolution: 'D' });
+  });
+
+  it('round trip: back up, restore as a NEW layout, and the copy matches the backup', async () => {
+    const snap = await snapshot();
+    const before = new Map([...tv.layouts].map(([k, v]) => [k, JSON.stringify(v)]));
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, now: new Date('2026-10-17T12:00:00Z') });
+    expect(r.uid).not.toBe('AbCd1234');
+    expect(r.name).toBe('Min AAPL (restored 2026-10-17)');
+    expect(r.check).toMatchObject({ ok: true, missingDrawings: [], extraDrawings: [] });
+    expect(r.check.actual.studies).toBe(2);
+    // The original layout is untouched.
+    expect(JSON.stringify(tv.layouts.get('AbCd1234'))).toBe(before.get('AbCd1234'));
+  });
+
+  it('stops before saving when the plan has no free layout slot, and explains why', async () => {
+    const snap = await snapshot();
+    tv.layoutLimit = 1;
+    tv.account = { ...tv.account!, plan: 'free' };
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null })).rejects.toThrow(/allows 1 saved layout, and all are in use/);
+    expect(tv.requests.filter((r) => r.method === 'POST')).toEqual([]);
+  });
+
+  it('running the same restore twice does not create a second copy', async () => {
+    const snap = await snapshot();
+    const opts = { root, journal: journal(), buildTime: null };
+    const a = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    const b = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    expect(b).toMatchObject({ uid: a.uid, resumed: true });
+    expect(tv.layouts.size).toBe(2);
+  });
+
+  it('adopts the layout when the answer to the save was lost', async () => {
+    const snap = await snapshot();
+    const opts = { root, journal: journal(), buildTime: null };
+    tv.failOn = (req) => {
+      if (req.method !== 'POST') return null;
+      tv.failOn = null;
+      void tv.send(req);
+      return { status: 502, contentType: 'text/html', body: 'gateway timeout' };
+    };
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toThrow();
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    expect(r).toMatchObject({ resumed: true });
+    expect(r.check.ok).toBe(true);
+    expect(tv.layouts.size).toBe(2);
+  });
+
+  it('replace: saves a safety copy first, overwrites only the chosen layout, and clears old stored drawings', async () => {
+    const snap = await snapshot();
+    tv.add({ ...referenceInAccount('Target01', 'Old layout'), storage: { '1': { stale: { id: 'stale', ownerSource: '_seriesId', state: { type: 'LineToolHorzLine', id: 'stale', state: {}, points: [{ time_t: 1, offset: 0, price: 1 }] } } } } });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedByUser: true }, { root, journal: journal(), buildTime: 'bt' });
+    expect(r.uid).toBe('Target01');
+    expect(r.check.ok).toBe(true);
+    expect(tv.layouts.get('Target01')!.storage['1']).toEqual({});
+    const safety = await listSnapshots(path.join(root, 'safety-copies'));
+    expect(safety[0]!.manifest!.layouts[0]).toMatchObject({ uid: 'Target01', name: 'Old layout' });
+    expect(tv.requests.find((q) => q.method === 'PUT')!.headers).toEqual({ 'X-BUILD-TIME': 'bt' });
+  });
+
+  it('verification reports drawings that did not come back', () => {
+    const expected = { charts: 1, drawings: 2, studies: 1, drawingIds: ['a', 'b'], studyIds: ['s'], symbols: [] };
+    expect(compareCounts(expected, { ...expected, drawings: 1, drawingIds: ['a'] })).toMatchObject({ ok: false, missingDrawings: ['b'] });
+  });
+
+  it('adds missing templates and leaves existing ones alone', async () => {
+    const snap = await snapshot();
+    tv.drawingTemplates = { LineToolTrendLine: {} };
+    const r = await restoreTemplates(client(), snap);
+    expect(r.added).toEqual(['Drawing template "Thick orange"']);
+    expect(r.skipped.sort()).toEqual(['Indicator template "My RSI setup"', 'Theme "Thomas dark"']);
+  });
+});

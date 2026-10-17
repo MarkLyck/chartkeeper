@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ChartKeeper",
+    "version": "reference"
+  },
+  "createdAt": "2026-10-17T14:13:02.680Z",
+  "account": {
+    "username": "reference",
+    "plan": null
+  },
+  "layouts": [
+    {
+      "uid": "RefAAPL1",
+      "name": "Reference AAPL",
+      "dir": "layouts/RefAAPL1",
+      "symbols": [
+        "NASDAQ:AAPL"
+      ],
+      "charts": 1,
+      "drawings": 11,
+      "studies": 2,
+      "lastModified": 1792246381,
+      "priceData": true
+    }
+  ],
+  "extras": {
+    "studyTemplates": 0,
+    "drawingTemplates": 0,
+    "themes": 0,
+    "scripts": 0,
+    "userDrawings": 0
+  },
+  "warnings": [],
+  "formatVersion": 1,
+  "status": "complete",
+  "files": {
+    "layouts/RefAAPL1/layout.json": {
+      "sha256": "99bc00b3d3650e53d1eea5f6d46e42a657903d77b7b3a59168510922c55178c9",
+      "bytes": 70792
+    },
+    "layouts/RefAAPL1/drawings.json": {
+      "sha256": "6f480a3067c479c2eb4ff7eb317139d1c896a9ba3a25d73c2c68f81a2062341b",
+      "bytes": 45
+    },
+    "layouts/RefAAPL1/data/chart-1.json": {
+      "sha256": "e413a9c6ab1a024b9e730743aea32b54483f78469b8a9b433e3c0e41f783c5c6",
+      "bytes": 258425
+    }
+  }
+}

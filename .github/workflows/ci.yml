@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test-and-package:
+    name: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium for tests
+        run: npx playwright-core install --with-deps chromium
+        shell: bash
+      - run: npm run typecheck
+      - name: Unit tests (parsing, restore logic, viewer, UI strings, sign-in watcher)
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: App smoke test (real Electron window)
+        if: runner.os != 'Linux'
+        run: npm run test:e2e
+      - name: App smoke test (real Electron window, virtual display)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:e2e
+      - name: Viewer vs TradingView comparison
+        run: npm run viewer:compare
+      - name: Build installer
+        run: npx electron-builder --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ runner.os }}
+          path: |
+            release/*.exe
+            release/*.dmg
+            release/*.AppImage
+            release/*.deb
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-output-${{ runner.os }}
+          path: .test-output/
+          if-no-files-found: ignore

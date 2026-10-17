@@ -1,0 +1,20 @@
+{
+  "uid": "RefAAPL1",
+  "visibleRange": {
+    "from": 1769990400,
+    "to": 1793318400
+  },
+  "size": {
+    "x": 56,
+    "y": 42,
+    "width": 1194,
+    "height": 919
+  },
+  "tradingViewCounts": {
+    "drawings": 11,
+    "studies": [
+      "Moving Average",
+      "Relative strength index"
+    ]
+  }
+}

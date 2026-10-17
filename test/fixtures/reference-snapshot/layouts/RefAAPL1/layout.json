@@ -1,0 +1,2073 @@
+{
+  "uid": "RefAAPL1",
+  "id": 1,
+  "name": "Reference AAPL",
+  "description": "Known layout used to compare the viewer with TradingView",
+  "lastModified": 1792246381,
+  "content": {
+    "name": "Reference AAPL",
+    "layout": "s",
+    "charts": [
+      {
+        "panes": [
+          {
+            "sources": [
+              {
+                "type": "MainSeries",
+                "id": "_seriesId",
+                "zorder": 0,
+                "haStyle": {
+                  "studyId": "BarSetHeikenAshi@tv-basicstudies-60"
+                },
+                "renkoStyle": {
+                  "studyId": "BarSetRenko@tv-prostudies-73"
+                },
+                "pbStyle": {
+                  "studyId": "BarSetPriceBreak@tv-prostudies-34"
+                },
+                "kagiStyle": {
+                  "studyId": "BarSetKagi@tv-prostudies-73"
+                },
+                "pnfStyle": {
+                  "studyId": "BarSetPnF@tv-prostudies-73"
+                },
+                "rangeStyle": {
+                  "studyId": "BarSetRange@tv-basicstudies-72"
+                },
+                "svpStyle": {
+                  "studyId": "VbPSessions@tv-volumebyprice-126"
+                },
+                "volFootprintStyle": {
+                  "studyId": "Footprint@tv-volumebyprice-104"
+                },
+                "tpoStyle": {
+                  "studyId": "TPOSessions@tv-volumebyprice-104"
+                },
+                "formattingDeps": {
+                  "pricescale": 100,
+                  "minmov": 1,
+                  "fractional": false,
+                  "minmove2": 0,
+                  "variable_tick_size": "0.0001 1 0.01"
+                },
+                "studyBindings": {
+                  "17": null,
+                  "18": {},
+                  "20": null
+                },
+                "state": {
+                  "style": 1,
+                  "esdShowDividends": true,
+                  "esdShowSplits": true,
+                  "esdShowEarnings": true,
+                  "esdShowBreaks": false,
+                  "showContinuousContractSwitches": true,
+                  "showContinuousContractSwitchesBreaks": false,
+                  "showFuturesContractExpiration": true,
+                  "showLastNews": true,
+                  "showCountdown": true,
+                  "visible": true,
+                  "showPriceLine": true,
+                  "priceLineWidth": 1,
+                  "showPrevClosePriceLine": false,
+                  "prevClosePriceLineWidth": 1,
+                  "minTick": "default",
+                  "dividendsAdjustment": false,
+                  "backAdjustment": false,
+                  "settlementAsClose": true,
+                  "sessionId": "regular",
+                  "bidAsk": {
+                    "visible": false,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "bidLineColor": "#2962FF",
+                    "askLineColor": "#F7525F"
+                  },
+                  "prePostMarket": {
+                    "visible": true,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "preMarketColor": "#FB8C00",
+                    "postMarketColor": "#2962FF",
+                    "overnightMarketColor": "#8e24aa"
+                  },
+                  "highLowAvgPrice": {
+                    "highLowPriceLinesVisible": false,
+                    "highLowPriceLabelsVisible": false,
+                    "averageClosePriceLineVisible": false,
+                    "averageClosePriceLabelVisible": false,
+                    "highLowPriceLinesWidth": 1,
+                    "averagePriceLineWidth": 1,
+                    "highLowPriceLinesColor": "",
+                    "averagePriceLineColor": ""
+                  },
+                  "statusViewStyle": {
+                    "fontSize": 16,
+                    "showExchange": true,
+                    "showInterval": true,
+                    "symbolTextSource": "description"
+                  },
+                  "lineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "lineWithMarkersStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "steplineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "baselineStyle": {
+                    "topLineWidth": 2,
+                    "bottomLineWidth": 2,
+                    "topLineStyle": 0,
+                    "bottomLineStyle": 0,
+                    "priceSource": "close",
+                    "transparency": 50,
+                    "baseLevelPercentage": 50,
+                    "baselineColor": "#8C8C8C",
+                    "topFillColor1": "rgba(8, 153, 129, 0.28)",
+                    "topFillColor2": "rgba(8, 153, 129, 0.05)",
+                    "bottomFillColor1": "rgba(242, 54, 69, 0.05)",
+                    "bottomFillColor2": "rgba(242, 54, 69, 0.28)",
+                    "topLineColor": "#089981",
+                    "bottomLineColor": "#F23645"
+                  },
+                  "areaStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "transparency": 100,
+                    "color1": "rgba(41, 98, 255, 0.28)",
+                    "color2": "#2962FF",
+                    "linecolor": "#2962FF"
+                  },
+                  "hlcAreaStyle": {
+                    "highLineVisible": true,
+                    "highLineStyle": 0,
+                    "highLineWidth": 2,
+                    "lowLineVisible": true,
+                    "lowLineStyle": 0,
+                    "lowLineWidth": 2,
+                    "closeLineStyle": 0,
+                    "closeLineWidth": 2,
+                    "highLineColor": "#00bcd4",
+                    "lowLineColor": "#e91e63",
+                    "closeLineColor": "#2962FF",
+                    "highCloseFillColor": "rgba(0, 188, 212, 0.25)",
+                    "closeLowFillColor": "rgba(233, 30, 99, 0.25)"
+                  },
+                  "barStyle": {
+                    "barColorsOnPrevClose": false,
+                    "dontDrawOpen": false,
+                    "thinBars": true,
+                    "downColor": "#F23645",
+                    "upColor": "#089981"
+                  },
+                  "hlcBarsStyle": {
+                    "thinBars": true,
+                    "color": "#2962FF"
+                  },
+                  "candleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "volCandlesStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hollowCandleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "haStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "showRealLastPrice": false,
+                    "barColorsOnPrevClose": false,
+                    "inputs": {},
+                    "inputInfo": {},
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hiloStyle": {
+                    "showBorders": true,
+                    "showLabels": true,
+                    "drawBody": true,
+                    "color": "#2962FF",
+                    "borderColor": "#2962FF",
+                    "labelColor": "#2962FF"
+                  },
+                  "columnStyle": {
+                    "barColorsOnPrevClose": true,
+                    "priceSource": "close",
+                    "baselinePosition": "bottom",
+                    "upColor": "rgba(8, 153, 129, 0.5)",
+                    "downColor": "rgba(242, 54, 69, 0.5)"
+                  },
+                  "renkoStyle": {
+                    "inputs": {
+                      "source": "close",
+                      "sources": "Close",
+                      "boxSize": 3,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "wicks": true
+                    },
+                    "inputInfo": {
+                      "source": {
+                        "name": "Source"
+                      },
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "wicks": {
+                        "name": "Wicks"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "borderUpColorProjection": "#a9dcc3",
+                    "borderDownColorProjection": "#f5a6ae",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "pbStyle": {
+                    "inputs": {
+                      "lb": 3
+                    },
+                    "inputInfo": {
+                      "lb": {
+                        "name": "Number of line"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "borderUpColorProjection": "#a9dcc3",
+                    "borderDownColorProjection": "#f5a6ae"
+                  },
+                  "kagiStyle": {
+                    "inputs": {
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "reversalAmount": 1
+                    },
+                    "inputInfo": {
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae"
+                  },
+                  "pnfStyle": {
+                    "inputs": {
+                      "sources": "Close",
+                      "reversalAmount": 3,
+                      "boxSize": 1,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "oneStepBackBuilding": false
+                    },
+                    "inputInfo": {
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "oneStepBackBuilding": {
+                        "name": "One step back building"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae"
+                  },
+                  "rangeStyle": {
+                    "barStyle": 0,
+                    "thinBars": true,
+                    "inputs": {
+                      "range": 10,
+                      "phantomBars": false
+                    },
+                    "inputInfo": {
+                      "range": {
+                        "name": "Range"
+                      },
+                      "phantomBars": {
+                        "name": "Phantom bars"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "candlesUpColor": "#089981",
+                    "candlesDownColor": "#F23645",
+                    "candlesBorderUpColor": "#089981",
+                    "candlesBorderDownColor": "#F23645",
+                    "candlesWickUpColor": "#089981",
+                    "candlesWickDownColor": "#F23645"
+                  },
+                  "tpoStyle": {
+                    "color": "#2962FF",
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "styles": {
+                      "splitByBlocks": false,
+                      "splitByBlocksMode": 0
+                    },
+                    "inputs": {
+                      "period": "Day",
+                      "periodsNum": 1,
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSession2": "",
+                      "customSession3": "",
+                      "customSession4": "",
+                      "customSession5": "",
+                      "rowSize": "Auto",
+                      "ticksPerRow": 100,
+                      "vaPercent": 70,
+                      "blockSize": "30m",
+                      "mergePoints": "[]",
+                      "extendPoorHigh": false,
+                      "extendPoorLow": false,
+                      "extendPOC": false,
+                      "extendTpoVah": false,
+                      "extendTpoVal": false,
+                      "extendVolumePoc": false,
+                      "extendVolumeVah": false,
+                      "extendVolumeVal": false,
+                      "extendSingleprints": false
+                    },
+                    "tpo": {
+                      "colors": {
+                        "gradientColors": [
+                          "#e91e63",
+                          "#00c853",
+                          "#00bcd4",
+                          "#651FFF"
+                        ]
+                      },
+                      "showBlocks": true,
+                      "showLetters": true,
+                      "nonVaOpacity": 30
+                    },
+                    "levels": {
+                      "showPOC": true,
+                      "pocColor": "#0F0F0F",
+                      "showPoorHigh": false,
+                      "poorHighColor": "#6200EA",
+                      "showPoorLow": false,
+                      "poorLowColor": "#6200EA",
+                      "showSingleprints": false,
+                      "singleprintsColor": "rgba(224, 64, 251, 0.15)",
+                      "showVAH": true,
+                      "vahColor": "#0F0F0F",
+                      "showVAL": true,
+                      "valColor": "#0F0F0F",
+                      "showMidpoint": false,
+                      "showOpenPrice": false,
+                      "showClosePrice": false,
+                      "initialBalanceRange": {
+                        "levels": 2,
+                        "visible": true
+                      }
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#0F0F0F",
+                      "showValues": true,
+                      "vah": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "val": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "poc": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 0,
+                        "linewidth": 2
+                      },
+                      "volumeColor": "rgba(38, 198, 218, 0.5)",
+                      "valueAreaColor": "rgba(38, 198, 218, 0.75)",
+                      "placement": "left_to_right"
+                    },
+                    "summary": {
+                      "visible": false,
+                      "belowSeries": true,
+                      "infoBlocks": {
+                        "hlRange": {
+                          "visible": false
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "rotationFactor": {
+                          "visible": false
+                        },
+                        "totalVolume": {
+                          "visible": false
+                        },
+                        "tpoCountAbovePoc": {
+                          "visible": false
+                        },
+                        "tpoCountBelowPoc": {
+                          "visible": false
+                        },
+                        "tpoCountTotal": {
+                          "visible": false
+                        },
+                        "vaRange": {
+                          "visible": false
+                        },
+                        "vahPrice": {
+                          "visible": true
+                        },
+                        "valPrice": {
+                          "visible": true
+                        },
+                        "initialBalanceHigh": {
+                          "visible": true
+                        },
+                        "initialBalanceLow": {
+                          "visible": true
+                        },
+                        "initialBalanceRange": {
+                          "visible": true
+                        }
+                      }
+                    },
+                    "priceSource": "close"
+                  },
+                  "svpStyle": {
+                    "inputs": {
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSessionTZ": "Exchange",
+                      "volume": "Up/Down",
+                      "vaVolume": 70,
+                      "extendPocRight": false,
+                      "extendVAHRight": false,
+                      "extendVALRight": false,
+                      "rowsLayout": "Number Of Rows",
+                      "rows": 24
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#0F0F0F",
+                      "showValues": false,
+                      "volumeColorUp": "rgba(38, 198, 218, 0.5)",
+                      "volumeColorDown": "rgba(236, 64, 122, 0.5)",
+                      "valueAreaColorUp": "rgba(38, 198, 218, 0.75)",
+                      "valueAreaColorDown": "rgba(236, 64, 122, 0.75)",
+                      "histogramBoxColor": "rgba(38, 198, 218, 0.05)",
+                      "placement": "left_to_right",
+                      "percentWidth": 100
+                    },
+                    "vah": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "val": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "poc": {
+                      "visible": true,
+                      "color": "#0F0F0F",
+                      "linestyle": 0,
+                      "linewidth": 2
+                    },
+                    "developingPoc": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    },
+                    "developingVA": {
+                      "visible": false,
+                      "color": "#00bcd4",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    }
+                  },
+                  "volFootprintStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "deltaAdjust": true,
+                    "showSummary": true,
+                    "summaryMode": 0,
+                    "extendedSummary": {
+                      "belowSeries": true,
+                      "blockInfo": {
+                        "volume": {
+                          "visible": true
+                        },
+                        "volumePercentage": {
+                          "visible": false
+                        },
+                        "buyVolume": {
+                          "visible": false
+                        },
+                        "buyVolumePercentage": {
+                          "visible": false
+                        },
+                        "sellVolume": {
+                          "visible": false
+                        },
+                        "sellVolumePercentage": {
+                          "visible": false
+                        },
+                        "delta": {
+                          "visible": true
+                        },
+                        "deltaPercentage": {
+                          "visible": false
+                        },
+                        "minDelta": {
+                          "visible": false
+                        },
+                        "maxDelta": {
+                          "visible": false
+                        },
+                        "sessionCVD": {
+                          "visible": true
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "hlRange": {
+                          "visible": false
+                        }
+                      },
+                      "openInterestBlockInfo": {
+                        "openInterest": {
+                          "visible": false
+                        }
+                      },
+                      "extendedOpenInterestBlockInfo": {
+                        "openInterestHigh": {
+                          "visible": false
+                        },
+                        "openInterestLow": {
+                          "visible": false
+                        }
+                      }
+                    },
+                    "type": "Buy and sell",
+                    "displayMode": 0,
+                    "pointOfControl": true,
+                    "bgColors": {
+                      "adjBuyBgColors": [
+                        "#70CCBD",
+                        "#22AB94",
+                        "#06806B",
+                        "#004D40"
+                      ],
+                      "adjSellBgColors": [
+                        "#FAA1A4",
+                        "#F7525F",
+                        "#CC2F3C",
+                        "#802028"
+                      ],
+                      "adjTotalBgColors": [
+                        "#90BFF9",
+                        "#3179F5",
+                        "#1E53E5",
+                        "#143EB2"
+                      ],
+                      "buyBgColor": "#22AB94",
+                      "sellBgColor": "#F7525F",
+                      "totalBgColor": "#3179F5",
+                      "pocColor": "#000000"
+                    },
+                    "imbalanceHighlight": {
+                      "buyColor": "#089981",
+                      "sellColor": "#F23645",
+                      "visible": true
+                    },
+                    "unfinishedAuction": {
+                      "highColor": "#D500F9",
+                      "lowColor": "#00e5ff"
+                    },
+                    "inputs": {
+                      "rowSize": "Auto",
+                      "atrLength": 14,
+                      "imbalancePercent": 300,
+                      "ticksPerRow": 100,
+                      "showVA": true,
+                      "vaPercent": 70,
+                      "calcStackedImbalance": false,
+                      "showUnfinishedAuction": false,
+                      "stackedImbalanceCount": 3,
+                      "ignore_zero_volume_for_imbalance_calc": false,
+                      "minimal_imbalance_volume": 0
+                    }
+                  },
+                  "baseLineColor": "#B8B8B8",
+                  "prevClosePriceLineColor": "#555555",
+                  "priceLineColor": "",
+                  "timeframe": "",
+                  "shortName": "AAPL",
+                  "currencyId": "USD",
+                  "unitId": null,
+                  "metricId": null,
+                  "symbol": "NASDAQ:AAPL",
+                  "interval": "D",
+                  "priceAxisProperties": {
+                    "autoScale": true,
+                    "autoScaleDisabled": false,
+                    "lockScale": false,
+                    "percentage": false,
+                    "percentageDisabled": false,
+                    "log": false,
+                    "logDisabled": false,
+                    "alignLabels": true,
+                    "isInverted": false,
+                    "indexedTo100": false
+                  }
+                }
+              },
+              {
+                "type": "LineToolTrendLine",
+                "id": "tl0001",
+                "state": {
+                  "linecolor": "#ff9800",
+                  "textcolor": "#2962FF",
+                  "linewidth": 3,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1775606400,
+                    "offset": 0,
+                    "price": 255,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1785196800,
+                    "offset": 0,
+                    "price": 315,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lktl0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolHorzLine",
+                "id": "hl0001",
+                "state": {
+                  "linecolor": "#2962ff",
+                  "textcolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 2,
+                  "showPrice": true,
+                  "fontsize": 12,
+                  "bold": false,
+                  "italic": false,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1780272000,
+                    "offset": 0,
+                    "price": 300,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkhl0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolRectangle",
+                "id": "re0001",
+                "state": {
+                  "color": "#9c27b0",
+                  "fillBackground": true,
+                  "backgroundColor": "rgba(156,39,176,0.2)",
+                  "linewidth": 2,
+                  "transparency": 50,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textColor": "#9c27b0",
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "middleLine": {
+                    "showLine": false,
+                    "lineWidth": 1,
+                    "lineColor": "#9c27b0",
+                    "lineStyle": 2
+                  },
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "text": ""
+                },
+                "points": [
+                  {
+                    "time_t": 1777593600,
+                    "offset": 0,
+                    "price": 320,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1781481600,
+                    "offset": 0,
+                    "price": 285,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkre0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolFibRetracement",
+                "id": "fb0001",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "visible": true,
+                    "linewidth": 2,
+                    "linestyle": 2
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true,
+                    ""
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true,
+                    ""
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true,
+                    ""
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true,
+                    ""
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true,
+                    ""
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true,
+                    ""
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true,
+                    ""
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false,
+                    ""
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false,
+                    ""
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false,
+                    ""
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false,
+                    ""
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false,
+                    ""
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false,
+                    ""
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "showCoeffs": true,
+                  "showPrices": true,
+                  "fillBackground": true,
+                  "transparency": 80,
+                  "extendLines": true,
+                  "extendLinesLeft": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "showText": true,
+                  "horzTextAlign": "center",
+                  "vertTextAlign": "middle",
+                  "reverse": false,
+                  "coeffsAsPercents": false,
+                  "fibLevelsBasedOnLogScale": false,
+                  "labelFontSize": 12,
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1775001600,
+                    "offset": 0,
+                    "price": 250,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1788220800,
+                    "offset": 0,
+                    "price": 340,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkfb0001",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolText",
+                "id": "tx0001",
+                "state": {
+                  "color": "#e91e63",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 18,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "Køb her",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1785542400,
+                    "offset": 0,
+                    "price": 270,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lktx0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolVertLine",
+                "id": "vl0001",
+                "state": {
+                  "linecolor": "#4caf50",
+                  "textcolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "extendLine": false,
+                  "showTime": true,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textOrientation": "horizontal",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1789430400,
+                    "offset": 0,
+                    "price": 300,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkvl0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolRay",
+                "id": "ry0001",
+                "state": {
+                  "linecolor": "#795548",
+                  "textcolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": true,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1773100800,
+                    "offset": 0,
+                    "price": 240,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1776643200,
+                    "offset": 0,
+                    "price": 265,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkry0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolHorzRay",
+                "id": "hr0001",
+                "state": {
+                  "linecolor": "#f44336",
+                  "textcolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "showPrice": true,
+                  "fontsize": 12,
+                  "bold": false,
+                  "italic": false,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "top",
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1778371200,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkhr0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolArrowMarkUp",
+                "id": "au0001",
+                "state": {
+                  "color": "#089981",
+                  "arrowColor": "#089981",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "showLabel": true,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1781913600,
+                    "offset": 0,
+                    "price": 255,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkau0001",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolParallelChannel",
+                "id": "pc0001",
+                "state": {
+                  "level1": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": -0.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level2": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 0,
+                    "lineStyle": 0,
+                    "lineWidth": 2
+                  },
+                  "level3": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 0.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level4": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 0.5,
+                    "lineStyle": 2,
+                    "lineWidth": 1
+                  },
+                  "level5": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 0.75,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level6": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 1,
+                    "lineStyle": 0,
+                    "lineWidth": 2
+                  },
+                  "level7": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 1.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "labelTextColor": "#2962FF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.2)",
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "fillBackground": true,
+                  "transparency": 80,
+                  "labelVisible": false,
+                  "labelHorzAlign": "left",
+                  "labelVertAlign": "bottom",
+                  "labelFontSize": 14,
+                  "labelBold": false,
+                  "labelItalic": false,
+                  "version": 2,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "labelText": ""
+                },
+                "points": [
+                  {
+                    "time_t": 1785542400,
+                    "offset": 0,
+                    "price": 300,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1789862400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1785542400,
+                    "offset": 0,
+                    "price": 315,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkpc0001",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolEllipse",
+                "id": "el0001",
+                "state": {
+                  "color": "#F23645",
+                  "backgroundColor": "rgba(242, 54, 69, 0.2)",
+                  "transparency": 50,
+                  "textColor": "#F23645",
+                  "fillBackground": true,
+                  "linewidth": 2,
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "1D",
+                  "symbol": "NASDAQ:AAPL",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1782864000,
+                    "offset": 0,
+                    "price": 275,
+                    "interval": "1D"
+                  },
+                  {
+                    "time_t": 1784937600,
+                    "offset": 0,
+                    "price": 275,
+                    "interval": "1D"
+                  },
+                  {
+                    "price": 285,
+                    "offset": 0,
+                    "time_t": 1782864000,
+                    "interval": "1D"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkel0001",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "Study",
+                "id": "FIqn6C",
+                "state": {
+                  "inputs": {
+                    "length": 50,
+                    "source": "close"
+                  },
+                  "styles": {
+                    "MovAvgSimple": {
+                      "color": "#3a85ad",
+                      "display": 4294967295,
+                      "linestyle": 0,
+                      "linewidth": 1,
+                      "plottype": 0,
+                      "trackPrice": false,
+                      "transparency": 0,
+                      "visible": true,
+                      "title": "MovAvgSimple"
+                    }
+                  },
+                  "bands": {},
+                  "graphics": {},
+                  "ohlcPlots": {},
+                  "palettes": {},
+                  "filledAreasStyle": {},
+                  "filledAreas": {},
+                  "visible": true,
+                  "showLegendValues": true,
+                  "showLegendInputs": true,
+                  "showLabelsOnPriceScale": true,
+                  "precision": "default",
+                  "offset": {
+                    "val": 0
+                  },
+                  "parentSources": []
+                },
+                "zorder": -10000,
+                "ownFirstValue": null,
+                "metaInfo": "MASimple@tv-basicstudies-280"
+              }
+            ],
+            "mainSourceId": "_seriesId",
+            "stretchFactor": 2000,
+            "leftAxisesState": [],
+            "rightAxisesState": [
+              {
+                "state": {
+                  "id": "ngpBsxFo7VWk",
+                  "m_priceRange": null,
+                  "m_isAutoScale": true,
+                  "m_isPercentage": false,
+                  "m_isIndexedTo100": false,
+                  "m_isLog": false,
+                  "m_isLockScale": false,
+                  "m_isInverted": false,
+                  "m_topMargin": 0.1,
+                  "m_bottomMargin": 0.08,
+                  "alignLabels": true,
+                  "logFormula": {
+                    "logicalOffset": 4,
+                    "coordOffset": 0.0001
+                  },
+                  "hasCalculatedPriceRange": true
+                },
+                "sources": [
+                  "tl0001",
+                  "hl0001",
+                  "re0001",
+                  "fb0001",
+                  "tx0001",
+                  "vl0001",
+                  "ry0001",
+                  "hr0001",
+                  "au0001",
+                  "pc0001",
+                  "el0001",
+                  "_seriesId",
+                  "FIqn6C"
+                ]
+              }
+            ],
+            "overlayPriceScales": {},
+            "priceScaleRatio": null,
+            "isCollapsed": false,
+            "isMaximized": false,
+            "mode": 0
+          },
+          {
+            "sources": [
+              {
+                "type": "Study",
+                "id": "20Xh7n",
+                "state": {
+                  "inputs": {
+                    "length": 14,
+                    "source": "close"
+                  },
+                  "styles": {
+                    "RelativeStrengthIndex": {
+                      "color": "#8e1599",
+                      "display": 4294967295,
+                      "linestyle": 0,
+                      "linewidth": 1,
+                      "plottype": 0,
+                      "trackPrice": false,
+                      "transparency": 0,
+                      "visible": true,
+                      "title": "RelativeStrengthIndex"
+                    }
+                  },
+                  "bands": [
+                    {
+                      "color": "#c0c0c0",
+                      "linestyle": 2,
+                      "linewidth": 1,
+                      "value": 70,
+                      "visible": true
+                    },
+                    {
+                      "color": "#c0c0c0",
+                      "linestyle": 2,
+                      "linewidth": 1,
+                      "value": 30,
+                      "visible": true
+                    }
+                  ],
+                  "graphics": {},
+                  "ohlcPlots": {},
+                  "palettes": {},
+                  "filledAreasStyle": {},
+                  "filledAreas": {},
+                  "visible": true,
+                  "showLegendValues": true,
+                  "showLegendInputs": true,
+                  "showLabelsOnPriceScale": true,
+                  "precision": "default",
+                  "bandsBackground": {
+                    "backgroundColor": "#9915ff",
+                    "fillBackground": true,
+                    "transparency": 90
+                  },
+                  "parentSources": []
+                },
+                "zorder": -10000,
+                "ownFirstValue": null,
+                "metaInfo": "RSI@tv-basicstudies-280"
+              }
+            ],
+            "mainSourceId": "20Xh7n",
+            "stretchFactor": 1000,
+            "leftAxisesState": [],
+            "rightAxisesState": [
+              {
+                "state": {
+                  "id": "I7LfHgOJ3wmd",
+                  "m_priceRange": null,
+                  "m_isAutoScale": true,
+                  "m_isPercentage": false,
+                  "m_isIndexedTo100": false,
+                  "m_isLog": false,
+                  "m_isLockScale": false,
+                  "m_isInverted": false,
+                  "m_topMargin": 0.1,
+                  "m_bottomMargin": 0.08,
+                  "alignLabels": true,
+                  "logFormula": {
+                    "logicalOffset": 4,
+                    "coordOffset": 0.0001
+                  },
+                  "hasCalculatedPriceRange": true
+                },
+                "sources": [
+                  "20Xh7n"
+                ]
+              }
+            ],
+            "overlayPriceScales": {},
+            "priceScaleRatio": null,
+            "isCollapsed": false,
+            "isMaximized": false,
+            "mode": 0
+          }
+        ],
+        "timeScale": {
+          "m_barSpacing": 6,
+          "m_rightOffset": 10,
+          "rightOffsetPercentage": 5,
+          "usePercentageRightOffset": false
+        },
+        "chartProperties": {
+          "paneProperties": {
+            "backgroundType": "solid",
+            "vertGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(46, 46, 46, 0.2)"
+            },
+            "horzGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(46, 46, 46, 0.2)"
+            },
+            "crossHairProperties": {
+              "style": 2,
+              "transparency": 0,
+              "width": 1,
+              "color": "#9C9C9C"
+            },
+            "topMargin": 10,
+            "bottomMargin": 8,
+            "axisProperties": {
+              "autoScale": true,
+              "autoScaleDisabled": false,
+              "lockScale": false,
+              "percentage": false,
+              "percentageDisabled": false,
+              "indexedTo100": false,
+              "log": false,
+              "logDisabled": false,
+              "alignLabels": true,
+              "isInverted": false
+            },
+            "legendProperties": {
+              "showStudyArguments": true,
+              "showStudyTitles": true,
+              "showStudyValues": true,
+              "showSeriesTitle": true,
+              "showSeriesOHLC": true,
+              "showLegend": true,
+              "showLastDayChange": false,
+              "showBarChange": true,
+              "showVolume": false,
+              "showBackground": true,
+              "showPriceSource": true,
+              "backgroundTransparency": 50,
+              "showLogo": true,
+              "showTradingButtons": true,
+              "showTradingButtonsMobile": true,
+              "showSeriesLegendCloseOnMobile": true,
+              "barChangeUpColor": "#089981",
+              "barChangeDownColor": "#F23645",
+              "useBarChangeCustomColors": false
+            },
+            "separatorColor": "#EBEBEB",
+            "background": "#ffffff",
+            "backgroundGradientStartColor": "#ffffff",
+            "backgroundGradientEndColor": "#ffffff"
+          },
+          "scalesProperties": {
+            "fontSize": 12,
+            "scaleSeriesOnly": false,
+            "showSeriesLastValue": true,
+            "seriesLastValueMode": 1,
+            "showSeriesPrevCloseValue": false,
+            "showStudyLastValue": true,
+            "showSymbolLabels": false,
+            "showStudyPlotLabels": false,
+            "showBidAskLabels": false,
+            "showPrePostMarketPriceLabel": true,
+            "showFundamentalNameLabel": false,
+            "showFundamentalLastValue": true,
+            "barSpacing": 6,
+            "axisHighlightColor": "rgba(41, 98, 255, 0.25)",
+            "axisHoverHighlightColor": "",
+            "axisLineToolLabelBackgroundColorCommon": "#2962FF",
+            "axisLineToolLabelBackgroundColorActive": "#143EB2",
+            "showPriceScaleCrosshairLabel": true,
+            "showTimeScaleCrosshairLabel": true,
+            "saveLeftEdge": false,
+            "textColor": "#0F0F0F",
+            "lineColor": "rgba(46, 46, 46, 0)",
+            "backgroundColor": "#ffffff"
+          },
+          "publishedChartsTimelineProperties": {
+            "type": "BarsMarksContainer",
+            "id": "PublishedChartsTimeline",
+            "zorder": 10000003,
+            "pinnedTooltips": {}
+          },
+          "chartEventsSourceProperties": {
+            "visible": true,
+            "futureOnly": true,
+            "breaks": {
+              "color": "#555555",
+              "visible": false,
+              "style": 2,
+              "width": 1
+            }
+          },
+          "tradingProperties": {
+            "showPositions": true,
+            "positionAndBracketsPL": true,
+            "positionPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "bracketsPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "showOrders": true,
+            "showProjectMarketOrder": true,
+            "showExecutions": true,
+            "showExecutionsLabels": false,
+            "showReverse": true,
+            "extendLeft": true,
+            "lineLength": 5,
+            "horizontalAlignment": 2,
+            "lineWidth": 1,
+            "lineStyle": 0
+          },
+          "priceScaleSelectionStrategyName": "auto",
+          "inactivityGaps": false
+        },
+        "sessions": {
+          "properties": {
+            "sessionHighlight": {
+              "backgrounds": {
+                "preMarket": {
+                  "color": "#FF9800",
+                  "transparency": 92
+                },
+                "postMarket": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "nightMarket": {
+                  "color": "#D500F9",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": true
+                },
+                "electronic": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "outOfSession": {
+                  "color": "#2962FF",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": false
+                }
+              },
+              "vertlines": {
+                "sessBreaks": {
+                  "color": "#4985e7",
+                  "style": 2,
+                  "visible": false,
+                  "width": 1,
+                  "available": true
+                }
+              }
+            }
+          }
+        },
+        "version": 3,
+        "timezone": "Etc/UTC",
+        "shouldBeSavedEvenIfHidden": true,
+        "linkingGroup": null,
+        "lineToolsGroups": {
+          "groups": []
+        },
+        "chartId": "1"
+      }
+    ],
+    "symbolLock": 0,
+    "intervalLock": 0,
+    "trackTimeLock": 0,
+    "dateRangeLock": 0,
+    "crosshairLock": 1,
+    "layoutsSizes": {
+      "s": [
+        {
+          "percent": 1
+        }
+      ]
+    },
+    "symbolAliasServiceState": []
+  },
+  "studyMetaInfoMap": {
+    "MASimple@tv-basicstudies-280": {
+      "palettes": {},
+      "inputs": [
+        {
+          "defval": 9,
+          "id": "length",
+          "max": 10000,
+          "min": 1,
+          "name": "Length",
+          "type": "integer",
+          "display": 15
+        },
+        {
+          "defval": "close",
+          "id": "source",
+          "name": "Source",
+          "options": [
+            "open",
+            "high",
+            "low",
+            "close",
+            "hl2",
+            "hlc3",
+            "ohlc4"
+          ],
+          "type": "source",
+          "display": 15
+        }
+      ],
+      "plots": [
+        {
+          "id": "MovAvgSimple",
+          "type": "line"
+        }
+      ],
+      "graphics": {},
+      "defaults": {
+        "inputs": {
+          "length": 9,
+          "source": "close"
+        },
+        "offset": {
+          "val": 0
+        },
+        "styles": {
+          "MovAvgSimple": {
+            "color": "#3a85ad",
+            "display": 4294967295,
+            "linestyle": 0,
+            "linewidth": 1,
+            "plottype": 0,
+            "trackPrice": false,
+            "transparency": 0,
+            "visible": true
+          }
+        }
+      },
+      "_metainfoVersion": 55,
+      "description": "Moving Average",
+      "format": {
+        "type": "inherit"
+      },
+      "id": "MASimple@tv-basicstudies-280",
+      "is_hidden_study": true,
+      "is_price_study": true,
+      "offset": {
+        "max": 500,
+        "min": -500,
+        "title": "Offset"
+      },
+      "shortDescription": "MA",
+      "styles": {
+        "MovAvgSimple": {
+          "histogramBase": 0,
+          "title": "MA"
+        }
+      },
+      "description_localized": "Moving Average",
+      "shortId": "MASimple",
+      "packageId": "tv-basicstudies",
+      "version": 280,
+      "fullId": "MASimple@tv-basicstudies-280",
+      "productId": "tv-basicstudies",
+      "_serverMetaInfoVersion": 55
+    },
+    "RSI@tv-basicstudies-280": {
+      "palettes": {},
+      "inputs": [
+        {
+          "defval": 14,
+          "id": "length",
+          "max": 2000,
+          "min": 1,
+          "name": "Length",
+          "type": "integer",
+          "display": 15
+        },
+        {
+          "defval": "close",
+          "id": "source",
+          "name": "Source",
+          "options": [
+            "open",
+            "high",
+            "low",
+            "close",
+            "hl2",
+            "hlc3",
+            "ohlc4"
+          ],
+          "type": "source",
+          "display": 15
+        }
+      ],
+      "plots": [
+        {
+          "id": "RelativeStrengthIndex",
+          "type": "line"
+        }
+      ],
+      "graphics": {},
+      "defaults": {
+        "bands": [
+          {
+            "color": "#c0c0c0",
+            "linestyle": 2,
+            "linewidth": 1,
+            "value": 70,
+            "visible": true
+          },
+          {
+            "color": "#c0c0c0",
+            "linestyle": 2,
+            "linewidth": 1,
+            "value": 30,
+            "visible": true
+          }
+        ],
+        "bandsBackground": {
+          "backgroundColor": "#9915ff",
+          "fillBackground": true,
+          "transparency": 90
+        },
+        "inputs": {
+          "length": 14,
+          "source": "close"
+        },
+        "styles": {
+          "RelativeStrengthIndex": {
+            "color": "#8e1599",
+            "display": 4294967295,
+            "linestyle": 0,
+            "linewidth": 1,
+            "plottype": 0,
+            "trackPrice": false,
+            "transparency": 0,
+            "visible": true
+          }
+        }
+      },
+      "_metainfoVersion": 55,
+      "bands": [
+        {
+          "name": "Upper Band"
+        },
+        {
+          "name": "Lower Band"
+        }
+      ],
+      "description": "Relative strength index",
+      "format": {
+        "type": "price",
+        "precision": 2
+      },
+      "id": "RSI@tv-basicstudies-280",
+      "is_hidden_study": true,
+      "is_price_study": false,
+      "shortDescription": "RSI",
+      "styles": {
+        "RelativeStrengthIndex": {
+          "histogramBase": 0,
+          "title": "RSI"
+        }
+      },
+      "description_localized": "Relative strength index",
+      "shortId": "RSI",
+      "packageId": "tv-basicstudies",
+      "version": 280,
+      "fullId": "RSI@tv-basicstudies-280",
+      "productId": "tv-basicstudies",
+      "_serverMetaInfoVersion": 55
+    }
+  },
+  "listEntry": {
+    "image_url": "RefAAPL1",
+    "url": "RefAAPL1",
+    "id": 1,
+    "name": "Reference AAPL"
+  }
+}

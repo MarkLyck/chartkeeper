@@ -1,0 +1,77 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { describe, expect, it } from 'vitest';
+import { countLayout, drawingSourceFromStored, LayoutParseError, parseLayout } from '../../src/core/layout';
+import { parseLayoutJson, parseListEntry } from '../../src/core/tv/client';
+import { FIXTURES, referenceInAccount, referenceRecord } from '../fakes/fixtures';
+
+const tvSaved = JSON.parse(readFileSync(path.join(FIXTURES, 'tv-saved-layout.json'), 'utf8'));
+
+describe('parsing a layout exactly as TradingView saved it', () => {
+  const entry = parseListEntry({ image_url: 'Ab12', url: 'Ab12', id: 9, name: 'Test' });
+  const record = parseLayoutJson({ content: tvSaved.content, content_study_meta: tvSaved.study_meta_info_map, name: 'Test', uid: 'Ab12', id: 9 }, entry);
+  const layout = parseLayout(record, null);
+
+  it('finds the chart, its symbol and interval', () => {
+    expect(layout.charts).toHaveLength(1);
+    expect(layout.charts[0]).toMatchObject({ chartId: '1', symbol: 'NASDAQ:AAPL', interval: 'D', style: 1 });
+  });
+
+  it('finds all 11 drawings with their points and styles', () => {
+    const drawings = layout.charts[0]!.panes.flatMap((p) => p.drawings);
+    expect(drawings.map((d) => d.type).sort()).toEqual(
+      ['LineToolArrowMarkUp', 'LineToolEllipse', 'LineToolFibRetracement', 'LineToolHorzLine', 'LineToolHorzRay', 'LineToolParallelChannel', 'LineToolRay', 'LineToolRectangle', 'LineToolText', 'LineToolTrendLine', 'LineToolVertLine'].sort(),
+    );
+    const trend = drawings.find((d) => d.type === 'LineToolTrendLine')!;
+    expect(trend.points).toEqual([{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 315 }]);
+    expect(trend.props).toMatchObject({ linecolor: '#ff9800', linewidth: 3 });
+    expect(drawings.find((d) => d.type === 'LineToolText')!.props.text).toBe('Køb her');
+  });
+
+  it('resolves indicators against the separate study_meta_info_map', () => {
+    const studies = layout.charts[0]!.panes.flatMap((p) => p.studies);
+    expect(studies.map((s) => s.metaInfoId).sort()).toEqual(['Script$STD;Bollinger_Bands@tv-scripting-101[v.35.0]', 'Script$STD;RSI@tv-scripting-101[v.47.0]', 'Volume@tv-basicstudies-280']);
+    const bb = studies.find((s) => s.shortName === 'BB')!;
+    expect(bb).toMatchObject({ isPine: true, isPriceStudy: true });
+    expect(bb.plots.map((p) => p.id)).toEqual(['plot_0', 'plot_1', 'plot_2']);
+    expect(bb.inputs).toMatchObject({ in_0: 20, in_2: 'close', in_3: 2 });
+  });
+
+  it('rejects a layout without charts instead of returning an empty one', () => {
+    expect(() => parseLayout({ ...record, content: { charts: [] } }, null)).toThrow(LayoutParseError);
+  });
+});
+
+describe('drawings from the drawing storage', () => {
+  it('accepts the DTO whose state is the full drawing source', () => {
+    const src = drawingSourceFromStored('x1', { id: 'x1', ownerSource: '_seriesId', state: { type: 'LineToolHorzLine', id: 'x1', state: { linecolor: 'red' }, points: [{ time_t: 1, offset: 0, price: 2 }] } });
+    expect(src).toMatchObject({ type: 'LineToolHorzLine', id: 'x1', ownerSource: '_seriesId' });
+  });
+
+  it('accepts the DTO whose state holds only the properties', () => {
+    const src = drawingSourceFromStored('x2', { id: 'x2', type: 'LineToolRay', ownerSource: '_seriesId', state: { linecolor: 'red' }, points: [{ time_t: 1, offset: 0, price: 2 }] });
+    expect(src).toMatchObject({ type: 'LineToolRay', id: 'x2', state: { linecolor: 'red' } });
+  });
+
+  it('reports an unknown drawing format as a problem', () => {
+    expect(() => drawingSourceFromStored('x3', { id: 'x3', state: { foo: 1 } })).toThrow(/does not recognise/);
+  });
+
+  it('merges storage drawings with content drawings, counting each id once', () => {
+    const fake = referenceInAccount();
+    const rec = { ...referenceRecord(), content: fake.content };
+    const buckets = Object.fromEntries(Object.entries(fake.storage).map(([k, v]) => [k, { sources: v, drawing_groups: {} }]));
+    // The same drawing in both places must not be counted twice.
+    const dup = Object.values(fake.storage['1']!)[0]!;
+    buckets._shared!.sources[String(dup.id)] = dup;
+    const counts = countLayout(parseLayout(rec, { buckets, reportedTotal: null }));
+    expect(counts.drawings).toBe(11);
+    expect(new Set(counts.drawingIds).size).toBe(11);
+  });
+});
+
+describe('layout list entries', () => {
+  it('fails loudly when an entry has no layout id', () => {
+    expect(() => parseListEntry({ name: 'x' })).toThrow(/does not recognise/);
+  });
+});

@@ -1,0 +1,393 @@
+import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, Notification, shell, Tray } from 'electron';
+import { appendFileSync, mkdirSync, statSync, renameSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import { runBackup } from '../core/backup';
+import { diffNamed, diffSnapshots } from '../core/diff';
+import { parseLayout, type ParsedLayout } from '../core/layout';
+import type { ChartData } from '../core/model';
+import { restoreLayout, RestoreJournal, restoreTemplates } from '../core/restore';
+import { cleanupInterrupted, listSnapshots, SnapshotReader } from '../core/snapshot';
+import { TvClient } from '../core/tv/client';
+import { nodeSocketFactory } from '../core/tv/datafeed';
+import { urls } from '../core/tv/endpoints';
+import { TvError } from '../core/tv/errors';
+import { PoliteHttp } from '../core/tv/http';
+import { IPC, type AppError, type AppState, type ProgressEvent, type RestoreRequest, type Result, type Settings } from '../shared/api';
+import { findBrowser } from './browsers';
+import { SignInCancelled, signInWithBrowser } from './browserSignIn';
+import { isBackupDue, setLinuxAutostart } from './schedule';
+import { defaultSettings, lockDown, Store } from './store';
+import { countOnChartPage, ElectronPageTransport, hasSessionCookie, importCookies, signOut, tvSession } from './tvSession';
+
+if (process.env.CHARTKEEPER_USER_DATA) app.setPath('userData', process.env.CHARTKEEPER_USER_DATA);
+const startHidden = process.argv.includes('--hidden') || app.getLoginItemSettings().wasOpenedAtLogin === true;
+
+let store: Store;
+let win: BrowserWindow | null = null;
+let tray: Tray | null = null;
+let busy: AppState['busy'] = null;
+let username: string | null = null;
+let quitting = false;
+const transport = new ElectronPageTransport();
+
+const logFile = () => path.join(app.getPath('userData'), 'logs', 'chartkeeper.log');
+function log(line: string) {
+  try {
+    const f = logFile();
+    mkdirSync(path.dirname(f), { recursive: true, mode: 0o700 });
+    if ((statSync(f, { throwIfNoEntry: false })?.size ?? 0) > 2_000_000) renameSync(f, `${f}.old`);
+    appendFileSync(f, `${new Date().toISOString()} ${line}\n`, { mode: 0o600 });
+  } catch {
+    /* logging must never break the app */
+  }
+}
+
+function toAppError(e: unknown): AppError {
+  if (e instanceof TvError) {
+    log(`error ${e.kind}: ${e.message} ${e.detail}`);
+    return { kind: e.kind, message: e.message, params: e.params };
+  }
+  if (e instanceof SignInCancelled) return { kind: 'cancelled', message: e.message, params: {} };
+  const err = e as Error;
+  log(`unexpected: ${err?.stack ?? String(e)}`);
+  return { kind: 'unexpected', message: err?.message ?? String(e), params: {} };
+}
+
+async function guarded<T>(fn: () => Promise<T>): Promise<Result<T>> {
+  try {
+    return { ok: true, value: await fn() };
+  } catch (e) {
+    return { ok: false, error: toAppError(e) };
+  }
+}
+
+async function exclusive<T>(kind: NonNullable<AppState['busy']>, fn: () => Promise<T>): Promise<Result<T>> {
+  if (busy) return { ok: false, error: { kind: 'busy', message: `ChartKeeper is busy (${busy}).`, params: { task: busy } } };
+  busy = kind;
+  void pushState();
+  try {
+    return await guarded(fn);
+  } finally {
+    busy = null;
+    void pushState();
+  }
+}
+
+async function state(): Promise<AppState> {
+  const signedIn = await hasSessionCookie();
+  if (!signedIn) username = null;
+  return {
+    version: app.getVersion(),
+    platform: process.platform as AppState['platform'],
+    settings: store.settings,
+    signedIn,
+    username,
+    browserName: findBrowser()?.name ?? null,
+    lastBackup: store.lastBackup,
+    busy,
+  };
+}
+
+async function pushState() {
+  if (win && !win.isDestroyed()) win.webContents.send(IPC.state, await state());
+  updateTray();
+}
+
+function progress(e: ProgressEvent) {
+  if (win && !win.isDestroyed()) win.webContents.send(IPC.progress, e);
+}
+
+/** A client for the signed-in account, or a plain "please sign in" error. */
+async function client(): Promise<TvClient> {
+  if (!(await hasSessionCookie())) throw new TvError('not-signed-in', 'You are not signed in to TradingView.');
+  const user = await transport.user();
+  if (!user) {
+    transport.reset();
+    throw new TvError('not-signed-in', 'TradingView does not recognise the saved sign-in any more. Please sign in again.');
+  }
+  username = user.username;
+  return new TvClient(new PoliteHttp(transport), user);
+}
+
+async function doSignIn(): Promise<AppState> {
+  const browser = findBrowser();
+  const isTv = (c: { domain: string }) => c.domain === 'tradingview.com' || c.domain.endsWith('.tradingview.com');
+  const isSignedIn = (cs: { name: string; domain: string }[]) => cs.some((c) => c.name === 'sessionid' && isTv(c));
+  let cookies;
+  if (browser) {
+    log(`sign-in with ${browser.name}`);
+    cookies = await signInWithBrowser({ browserPath: browser.path, profileDir: path.join(app.getPath('userData'), 'signin-profile'), startUrl: urls.signIn, isSignedIn, keep: isTv });
+  } else {
+    cookies = await signInWithAppWindow();
+  }
+  await importCookies(cookies);
+  transport.reset();
+  await client();
+  win?.show();
+  win?.focus();
+  return state();
+}
+
+/**
+ * Used only when no Chrome, Edge, Brave or Chromium is installed. Google
+ * refuses sign-in inside app windows, so this window suits email sign-in.
+ */
+async function signInWithAppWindow() {
+  const { session } = await import('electron');
+  const partition = 'signin-temporary';
+  const s = session.fromPartition(partition);
+  const w = new BrowserWindow({ width: 520, height: 760, title: 'TradingView', parent: win ?? undefined, webPreferences: { partition, contextIsolation: true, sandbox: true } });
+  await w.loadURL(urls.signIn);
+  try {
+    return await new Promise<import('./browserSignIn').CdpCookie[]>((resolve, reject) => {
+      w.on('closed', () => reject(new SignInCancelled()));
+      const poll = async () => {
+        if (w.isDestroyed()) return;
+        const all = await s.cookies.get({});
+        const tv = all.filter((c) => c.domain?.endsWith('tradingview.com'));
+        if (tv.some((c) => c.name === 'sessionid')) {
+          resolve(tv.map((c) => ({ name: c.name, value: c.value, domain: c.domain!, path: c.path ?? '/', expires: c.expirationDate ?? -1, httpOnly: !!c.httpOnly, secure: !!c.secure, sameSite: c.sameSite === 'strict' ? 'Strict' : c.sameSite === 'no_restriction' ? 'None' : 'Lax' })));
+          w.destroy();
+        } else setTimeout(poll, 1500);
+      };
+      void poll();
+    });
+  } finally {
+    await s.clearStorageData();
+  }
+}
+
+async function doBackup(silent: boolean) {
+  const c = await client();
+  await lockDown(store.settings.backupFolder);
+  await cleanupInterrupted(store.settings.backupFolder);
+  const user = await transport.user();
+  log(`backup start (silent=${silent})`);
+  const r = await runBackup(c, {
+    root: store.settings.backupFolder,
+    appVersion: app.getVersion(),
+    includePrices: store.settings.includePrices,
+    bars: 5000,
+    authToken: user?.authToken ?? null,
+    socketFactory: nodeSocketFactory,
+    onProgress: (p) => progress({ kind: 'backup', progress: p }),
+  });
+  await store.update({ lastBackup: { at: new Date().toISOString(), ok: r.ok, dir: r.dir } });
+  log(`backup ${r.ok ? 'ok' : 'FAILED'}: ${r.dir} ${r.error?.message ?? ''} warnings=${r.warnings.length}`);
+  if (silent || !win?.isVisible()) notify(r.ok, r.ok ? `${r.layouts}` : (r.error?.message ?? ''));
+  return r;
+}
+
+function notify(ok: boolean, detail: string) {
+  if (!Notification.isSupported()) return;
+  const da = store.settings.lang === 'da';
+  const title = ok ? (da ? 'Backup gennemført' : 'Backup complete') : da ? 'Backup mislykkedes' : 'Backup failed';
+  const body = ok ? (da ? `${detail} layouts er gemt.` : `${detail} layouts saved.`) : (da ? 'Åbn ChartKeeper for at se hvorfor. ' : 'Open ChartKeeper to see why. ') + detail.slice(0, 120);
+  const n = new Notification({ title, body });
+  n.on('click', showWindow);
+  n.show();
+}
+
+async function loadLayout(snapshotDir: string, uid: string) {
+  const reader = await SnapshotReader.open(snapshotDir);
+  const record = await reader.layout(uid);
+  const drawings = await reader.drawings(uid);
+  const layout = parseLayout(record, drawings);
+  const data: Record<string, ChartData | null> = {};
+  for (const c of layout.charts) data[c.chartId] = await reader.chartData(uid, c.chartId);
+  return { layout, data };
+}
+
+async function snapshotLayouts(dir: string): Promise<{ reader: SnapshotReader; layouts: Map<string, ParsedLayout> }> {
+  const reader = await SnapshotReader.open(dir);
+  const layouts = new Map<string, ParsedLayout>();
+  for (const l of reader.manifest.layouts) layouts.set(l.uid, parseLayout(await reader.layout(l.uid), await reader.drawings(l.uid)));
+  return { reader, layouts };
+}
+
+async function compare(olderDir: string, newerDir: string) {
+  const a = await snapshotLayouts(olderDir);
+  const b = await snapshotLayouts(newerDir);
+  const read = async (r: SnapshotReader, rel: string, pick: (v: any) => Record<string, unknown>) => {
+    try {
+      return pick(await r.readJson(rel));
+    } catch {
+      return {};
+    }
+  };
+  const flatTools = (v: { tools: Record<string, Record<string, unknown>> }) => Object.fromEntries(Object.entries(v.tools).flatMap(([tool, t]) => Object.entries(t).map(([n, c]) => [`${n} (${tool.replace('LineTool', '')})`, c])));
+  const studyT = (v: { templates: { name: string; content: unknown }[] }) => Object.fromEntries(v.templates.map((t) => [t.name, t.content]));
+  const scripts = (v: { scripts: { name: string; version: string }[] }) => Object.fromEntries(v.scripts.map((s) => [s.name, s.version]));
+  const other = [
+    ...diffNamed('Drawing template', await read(a.reader, 'templates/drawing-templates.json', flatTools), await read(b.reader, 'templates/drawing-templates.json', flatTools)),
+    ...diffNamed('Indicator template', await read(a.reader, 'templates/study-templates.json', studyT), await read(b.reader, 'templates/study-templates.json', studyT)),
+    ...diffNamed('Theme', await read(a.reader, 'templates/themes.json', (v) => v.themes), await read(b.reader, 'templates/themes.json', (v) => v.themes)),
+    ...diffNamed('Pine script', await read(a.reader, 'scripts/index.json', scripts), await read(b.reader, 'scripts/index.json', scripts)),
+  ];
+  return { layouts: diffSnapshots(a.layouts, b.layouts), other };
+}
+
+async function doRestore(req: RestoreRequest) {
+  const c = await client();
+  const reader = await SnapshotReader.open(req.snapshotDir);
+  let mode: Parameters<typeof restoreLayout>[3] = { kind: 'new' };
+  if (req.mode === 'replace') {
+    const target = (await c.listLayouts()).find((l) => l.uid === req.targetUid);
+    if (!target || target.name !== req.confirmedName) throw new TvError('not-found', 'The layout name you typed does not match the layout you chose. Nothing was changed.');
+    mode = { kind: 'replace', targetUid: req.targetUid, confirmedByUser: true };
+  }
+  log(`restore ${req.uid} from ${req.snapshotDir} mode=${req.mode}`);
+  const r = await restoreLayout(c, reader, req.uid, mode, {
+    root: store.settings.backupFolder,
+    journal: new RestoreJournal(path.join(app.getPath('userData'), 'restore-journal.json')),
+    buildTime: await transport.buildTime(),
+    restoredWord: store.settings.lang === 'da' ? 'gendannet' : 'restored',
+    onProgress: (step, name) => progress({ kind: 'restore', step, ...(name === undefined ? {} : { name }) }),
+  });
+  progress({ kind: 'restore', step: 'verify' });
+  const onChart = await countOnChartPage(r.uid);
+  log(`restore done ${r.uid} ok=${r.check.ok} missing=${r.check.missingDrawings.length} onChart=${JSON.stringify(onChart)}`);
+  return { ...r, onChart };
+}
+
+async function applyAutostart(enabled: boolean) {
+  if (!app.isPackaged) return;
+  if (process.platform === 'linux') await setLinuxAutostart(enabled, process.env.APPIMAGE ?? process.execPath);
+  else app.setLoginItemSettings({ openAtLogin: enabled, args: ['--hidden'] });
+}
+
+function registerIpc() {
+  ipcMain.handle(IPC.getState, () => state());
+  ipcMain.handle(IPC.setSettings, async (_e, patch: Partial<Settings>) => {
+    const before = store.settings.dailyBackup;
+    await store.update({ settings: patch });
+    if (patch.dailyBackup !== undefined && patch.dailyBackup !== before) await applyAutostart(patch.dailyBackup);
+    updateTray();
+    return state();
+  });
+  ipcMain.handle(IPC.chooseFolder, async () => {
+    const r = await dialog.showOpenDialog(win!, { properties: ['openDirectory', 'createDirectory'], defaultPath: store.settings.backupFolder });
+    if (!r.canceled && r.filePaths[0]) await store.update({ settings: { backupFolder: r.filePaths[0] } });
+    return state();
+  });
+  ipcMain.handle(IPC.signIn, () => exclusive('signin', doSignIn));
+  ipcMain.handle(IPC.signOut, async () => {
+    await signOut();
+    transport.reset();
+    username = null;
+    return state();
+  });
+  ipcMain.handle(IPC.backupNow, () => exclusive('backup', () => doBackup(false)));
+  ipcMain.handle(IPC.listSnapshots, () => listSnapshots(store.settings.backupFolder));
+  ipcMain.handle(IPC.loadLayout, (_e, dir: string, uid: string) => guarded(() => loadLayout(dir, uid)));
+  ipcMain.handle(IPC.compare, (_e, a: string, b: string) => guarded(() => compare(a, b)));
+  ipcMain.handle(IPC.restoreTargets, () =>
+    guarded(async () => {
+      const c = await client();
+      const list = await c.listLayouts();
+      const slots = await c.slots(list.length);
+      return { layouts: list.map((l) => ({ uid: l.uid, name: l.name })), ...slots };
+    }),
+  );
+  ipcMain.handle(IPC.restore, (_e, req: RestoreRequest) => exclusive('restore', () => doRestore(req)));
+  ipcMain.handle(IPC.restoreTemplates, (_e, dir: string) => exclusive('restore', async () => restoreTemplates(await client(), await SnapshotReader.open(dir))));
+  ipcMain.handle(IPC.openFolder, async (_e, dir: string) => {
+    await shell.openPath(dir);
+  });
+  ipcMain.handle(IPC.openOnTradingView, async (_e, url: string) => {
+    if (new URL(url).hostname === 'www.tradingview.com') await shell.openExternal(url);
+  });
+}
+
+function iconPath() {
+  return path.join(__dirname, 'icon.png');
+}
+
+function showWindow() {
+  if (!win || win.isDestroyed()) createWindow();
+  win!.show();
+  win!.focus();
+}
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 1280,
+    height: 860,
+    minWidth: 1000,
+    minHeight: 700,
+    show: false,
+    title: 'ChartKeeper',
+    icon: iconPath(),
+    webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, sandbox: true, nodeIntegration: false },
+  });
+  win.setMenuBarVisibility(false);
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('will-navigate', (e) => e.preventDefault());
+  void win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
+  win.once('ready-to-show', () => {
+    if (!startHidden) win?.show();
+  });
+  win.on('close', (e) => {
+    if (!quitting && store.settings.dailyBackup) {
+      e.preventDefault();
+      win?.hide();
+    }
+  });
+}
+
+function updateTray() {
+  if (!tray) return;
+  const da = store.settings.lang === 'da';
+  tray.setToolTip(busy === 'backup' ? (da ? 'ChartKeeper tager backup…' : 'ChartKeeper is backing up…') : 'ChartKeeper');
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      { label: da ? 'Åbn ChartKeeper' : 'Open ChartKeeper', click: showWindow },
+      { label: da ? 'Tag backup nu' : 'Back up now', enabled: !busy, click: () => void exclusive('backup', () => doBackup(true)) },
+      { type: 'separator' },
+      {
+        label: da ? 'Afslut' : 'Quit',
+        click: () => {
+          quitting = true;
+          app.quit();
+        },
+      },
+    ]),
+  );
+}
+
+async function scheduledCheck() {
+  const s = store.settings;
+  if (!s.dailyBackup || busy) return;
+  const last = store.lastBackup?.ok ? new Date(store.lastBackup.at) : null;
+  if (!isBackupDue(new Date(), s.dailyHour, last)) return;
+  if (!(await hasSessionCookie())) return;
+  await exclusive('backup', () => doBackup(true));
+}
+
+async function main() {
+  if (!app.requestSingleInstanceLock()) return app.quit();
+  app.on('second-instance', showWindow);
+  await app.whenReady();
+  await lockDown(app.getPath('userData'));
+  store = await Store.open(path.join(app.getPath('userData'), 'settings.json'), defaultSettings(app.getPath('documents'), app.getLocale()));
+  tvSession();
+  registerIpc();
+  createWindow();
+  tray = new Tray(nativeImage.createFromPath(iconPath()).resize({ width: 18, height: 18 }));
+  tray.on('click', showWindow);
+  updateTray();
+  setInterval(() => void scheduledCheck(), 15 * 60_000);
+  setTimeout(() => void scheduledCheck(), 60_000);
+  app.on('activate', showWindow);
+  app.on('before-quit', () => {
+    quitting = true;
+    transport.close();
+  });
+  app.on('window-all-closed', () => {
+    if (!store.settings.dailyBackup) app.quit();
+  });
+  log(`started v${app.getVersion()} on ${os.platform()} ${os.release()}${startHidden ? ' (hidden)' : ''}`);
+}
+
+void main();
