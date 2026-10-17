@@ -1,6 +1,6 @@
 import { drawingsForChart, type ParsedChart, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
 import { sameTicker } from '../../core/tv/content';
-import type { Bar, ChartData } from '../../core/model';
+import type { Bar, ChartData, StudyValues } from '../../core/model';
 import { obj } from '../../core/props';
 import { DRAWING_KINDS } from './drawings/registry';
 import { guessPriceFormat, mainSeriesSpec, type MainSeriesSpec, type PriceFormatSpec } from './series';
@@ -49,6 +49,8 @@ export interface ChartPlan {
   times: number[];
   timeIndex: TimeIndex;
   priceFormat: PriceFormatSpec;
+  /** TradingView's own values for study-backed drawings, by drawing id. */
+  drawingStudies: Readonly<Record<string, StudyValues>>;
   /** Panes that will be drawn, top to bottom. */
   panes: PlannedPane[];
   rendered: { drawings: string[]; studies: string[] };
@@ -164,7 +166,7 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
   }
   for (const p of panes) p.drawings.sort((a, b) => a.zorder - b.zorder);
 
-  return { chart, main, bars, times, timeIndex, priceFormat, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
+  return { chart, main, bars, times, timeIndex, priceFormat, drawingStudies: data?.drawingStudies ?? {}, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
 }
 
 export interface LayoutPlan {

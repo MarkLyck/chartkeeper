@@ -1,5 +1,5 @@
 import type { DrawingPoint } from '../../../core/layout';
-import type { Bar } from '../../../core/model';
+import type { Bar, StudyValues } from '../../../core/model';
 import { num, obj, str, type Props } from '../../../core/props';
 import { dashPattern } from '../colors';
 
@@ -32,6 +32,8 @@ export interface DrawContext {
   /** True on a dark chart background. */
   dark: boolean;
   background: string;
+  /** TradingView's own values for a study-backed drawing (Anchored VWAP, Fixed Range Volume Profile), when the backup has them. */
+  drawingStudy(drawingId: string): StudyValues | undefined;
 }
 
 export const FONT_FAMILY = `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;

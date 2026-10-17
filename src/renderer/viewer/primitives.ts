@@ -1,6 +1,7 @@
 import type {
   AutoscaleInfo,
   IChartApi,
+  IPanePrimitive,
   IPrimitivePaneRenderer,
   IPrimitivePaneView,
   ISeriesApi,
@@ -13,7 +14,7 @@ import type {
   Time,
 } from 'lightweight-charts';
 import type { DrawingPoint, ParsedDrawing } from '../../core/layout';
-import type { Bar } from '../../core/model';
+import type { Bar, StudyValues } from '../../core/model';
 import { FONT_FAMILY, type DrawContext } from './drawings/canvas';
 import { DRAWING_KINDS, type AxisLabel } from './drawings/registry';
 import { dashPattern, luminance } from './colors';
@@ -69,24 +70,43 @@ export interface DrawingsEnv {
   formatPrice(price: number): string;
   formatTime(point: DrawingPoint): string;
   priceStep: number;
+  /** TradingView's own values for study-backed drawings, by drawing id. */
+  drawingStudies: Readonly<Record<string, StudyValues>>;
+  /** z-order of the series the drawings are attached to: TradingView draws lower drawings under it. */
+  seriesZorder: number;
 }
 
 /** Axis labels keep white text like TradingView's, except on very light colours. */
 const textOn = (bg: string) => (luminance(bg) > 180 ? '#131722' : '#ffffff');
 
-/** All drawings of one pane, drawn above the price series, plus their price and time axis labels. */
+/**
+ * The drawings of one pane and their price and time axis labels. Like
+ * TradingView, drawings whose z-order is below the series' are painted under
+ * it (above the grid) by `belowSeries()`; the rest are painted above it.
+ */
 export class DrawingsPrimitive extends BasePrimitive {
   private readonly priceViews: ISeriesPrimitiveAxisView[] = [];
   private readonly timeViews: ISeriesPrimitiveAxisView[] = [];
+  private readonly above: readonly ParsedDrawing[];
+  private readonly below: readonly ParsedDrawing[];
 
   constructor(
-    private readonly drawings: readonly ParsedDrawing[],
+    drawings: readonly ParsedDrawing[],
     private readonly denv: DrawingsEnv,
   ) {
     super('top');
+    this.above = drawings.filter((d) => d.zorder >= denv.seriesZorder);
+    this.below = drawings.filter((d) => d.zorder < denv.seriesZorder);
     for (const d of drawings) {
-      for (const label of DRAWING_KINDS[d.type]?.axisLabels?.(d.props, d.points) ?? []) this.addAxisView(label);
+      for (const label of DRAWING_KINDS[d.type]?.axisLabels?.(d.props, d.points, denv, d) ?? []) this.addAxisView(label);
     }
+  }
+
+  /** A pane primitive for the drawings under the series; lightweight-charts paints pane primitives after the grid and before every series. */
+  belowSeries(): IPanePrimitive<Time> {
+    const renderer: IPrimitivePaneRenderer = { draw: (target) => this.paint(target, this.below) };
+    const views: IPrimitivePaneView[] = [{ zOrder: () => 'normal', renderer: () => renderer }];
+    return { paneViews: () => views };
   }
 
   private addAxisView(label: AxisLabel): void {
@@ -114,8 +134,12 @@ export class DrawingsPrimitive extends BasePrimitive {
   }
 
   protected draw(target: DrawTarget): void {
+    this.paint(target, this.above);
+  }
+
+  private paint(target: DrawTarget, drawings: readonly ParsedDrawing[]): void {
     const env = this.env;
-    if (!env) return;
+    if (!env || drawings.length === 0) return;
     const scale = logicalScale(env.chart);
     if (!scale) return;
     const { timeIndex } = this.denv;
@@ -138,8 +162,9 @@ export class DrawingsPrimitive extends BasePrimitive {
         priceStep: this.denv.priceStep,
         dark: this.denv.dark,
         background: this.denv.background,
+        drawingStudy: (id) => this.denv.drawingStudies[id],
       };
-      for (const d of this.drawings) {
+      for (const d of drawings) {
         const kind = DRAWING_KINDS[d.type];
         if (!kind) continue;
         context.save();

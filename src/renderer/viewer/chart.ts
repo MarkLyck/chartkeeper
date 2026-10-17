@@ -236,6 +236,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     bars: plan.bars,
     dark: theme.dark,
     background: theme.background,
+    drawingStudies: plan.drawingStudies,
     formatPrice: (p: number) => formatValue(p, plan.priceFormat),
     formatTime: timeFormatter(plan),
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,
@@ -267,7 +268,12 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       host ??= first;
     }
     if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 28 : 4) });
-    if (host && pane.drawings.length) host.attachPrimitive(new DrawingsPrimitive(pane.drawings, drawingsEnv));
+    if (host && pane.drawings.length) {
+      // Only the main series has a TradingView z-order to sort drawings against; in indicator panes drawings stay on top.
+      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
+      host.attachPrimitive(drawings);
+      chart.panes()[index]?.attachPrimitive(drawings.belowSeries());
+    }
   });
 
   const total = plan.panes.reduce((sum, p) => sum + p.stretchFactor, 0);

@@ -30,6 +30,8 @@ export interface ParsedChart {
   chartProperties: Record<string, unknown>;
   /** TradingView's saved view: pixels per bar, and empty bars right of the last bar. Null when the layout has none. */
   timeScale: { barSpacing: number; rightOffset: number } | null;
+  /** z-order of the main series; TradingView draws drawings with a lower z-order under it. */
+  seriesZorder: number;
   panes: ParsedPane[];
 }
 
@@ -196,6 +198,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
       timezone: anyStr(chart.timezone, 'Etc/UTC'),
       chartProperties: isObj(chart.chartProperties) ? chart.chartProperties : {},
       timeScale: barSpacing !== null && barSpacing > 0 ? { barSpacing, rightOffset: num(ts.m_rightOffset, 0) } : null,
+      seriesZorder: num(main.zorder, 0),
       panes,
     };
   });

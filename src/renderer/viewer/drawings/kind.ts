@@ -1,7 +1,15 @@
 import type { DrawingPoint, ParsedDrawing } from '../../../core/layout';
+import type { Bar, StudyValues } from '../../../core/model';
 import type { Props } from '../../../core/props';
 import type { NotShownReason } from '../strings';
 import { pstr, type DrawContext } from './canvas';
+
+/** What axis labels may need beyond the drawing's own state. */
+export interface AxisEnv {
+  bars: readonly Bar[];
+  priceStep: number;
+  drawingStudies: Readonly<Record<string, StudyValues>>;
+}
 
 export type AxisLabel = { axis: 'price'; price: number; color: string } | { axis: 'time'; point: DrawingPoint; color: string };
 
@@ -10,7 +18,7 @@ export interface DrawingKind {
   minPoints: number;
   /** `drawing` carries what is not in the style properties: `source.positionPercents`, `source.version`, ... */
   draw(dc: DrawContext, props: Props, points: DrawingPoint[], drawing: ParsedDrawing): void;
-  axisLabels?(props: Props, points: DrawingPoint[]): AxisLabel[];
+  axisLabels?(props: Props, points: DrawingPoint[], env: AxisEnv, drawing: ParsedDrawing): AxisLabel[];
   /** Set when the viewer draws the tool but can't match TradingView exactly; listed as partly shown with this reason. */
   caveat?: NotShownReason;
 }
