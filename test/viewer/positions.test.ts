@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { ParsedDrawing } from '../../src/core/layout';
 import type { Bar } from '../../src/core/model';
 import { placePattern, rangeLabelLines } from '../../src/renderer/viewer/drawings/measures';
+import { forecastDate, forecastLabels, playTrade, positionLabels, positionLevels } from '../../src/renderer/viewer/drawings/positions';
 import { formatSpan, formatVolume } from '../../src/renderer/viewer/drawings/stats';
 import { anchoredVwap, storedProfile, VOLUME_KINDS, volumeProfile, vwapSettings } from '../../src/renderer/viewer/drawings/volume';
 
@@ -39,6 +40,67 @@ describe('anchored VWAP', () => {
   it("prefers TradingView's stored values over the local calculation", () => {
     const stored = { av: { status: 'ok', metaInfoId: 'AnchoredVWAP@tv-basicstudies-280', rows: [[1, 10, 11, 9, null, null, null, null], [2, 17.6, 20, 15, null, null, null, null]] } };
     expect(labels(stored)).toEqual([{ axis: 'price', price: 17.6, color: '#1e88e5' }]);
+  });
+});
+
+describe('long and short positions', () => {
+  const props = {
+    stopLevel: 500,
+    profitLevel: 1000,
+    qty: 41.67,
+    lotSize: 1,
+    amountTarget: 1500,
+    amountStop: 750,
+    infoBlocks: { tpPL: { visible: false }, slPL: { visible: false } },
+  };
+  const long = positionLevels('long', 100, props, 0.01);
+  const fmt = (p: number) => p.toFixed(2);
+
+  it('puts stop and target the saved number of ticks from the entry, mirrored for a short', () => {
+    expect(long.stop).toBeCloseTo(95, 10);
+    expect(long.target).toBeCloseTo(110, 10);
+    const short = positionLevels('short', 100, props, 0.01);
+    expect([short.stop, short.target].map((v) => Math.round(v * 100) / 100)).toEqual([105, 90]);
+  });
+
+  it('enters on the first bar through the entry and closes on the first level hit, the stop winning a tie', () => {
+    const run = [bar(0, 99, 97, 98, 1), bar(1, 101, 98, 100, 1), bar(2, 105, 100, 104, 1), bar(3, 111, 103, 110, 1), bar(4, 120, 90, 100, 1)];
+    expect(playTrade(run, 'long', long, 0, 9)).toEqual({ entryBar: 1, closeBar: 3, close: long.target, closed: true });
+    const both = [bar(0, 101, 99, 100, 1), bar(1, 120, 90, 100, 1)];
+    expect(playTrade(both, 'long', long, 0, 9)).toMatchObject({ closeBar: 1, close: long.stop, closed: true });
+    expect(playTrade(run.slice(0, 3), 'long', long, 0, 2)).toEqual({ entryBar: 1, closeBar: 2, close: 104, closed: false });
+  });
+
+  it("writes TradingView's stats labels", () => {
+    const trade = { entryBar: 1, closeBar: 3, close: long.target, closed: true };
+    expect(positionLabels('long', long, trade, props, fmt, 0.01)).toEqual({
+      target: 'Target: 10.00 (10.000%) 1,000, Amount: 1500',
+      stop: 'Stop: 5.00 (5.000%) 500, Amount: 750',
+      middle: 'Closed PnL: 10.00, Qty: 41\nRisk/reward ratio: 2',
+    });
+    const losing = { entryBar: 1, closeBar: 2, close: 97.5, closed: false };
+    expect(positionLabels('long', long, losing, { ...props, compact: true }, fmt, 0.01)).toEqual({
+      target: '10.00 (10.000%) 1,000 1500',
+      stop: '5.00 (5.000%) 500 750',
+      middle: '−2.50 ~ 41\n2',
+    });
+  });
+});
+
+describe('forecast labels', () => {
+  const fmt = (p: number) => p.toFixed(2);
+
+  it('shows the source price and date, and the change, percent, duration, target price and date', () => {
+    const labels = forecastLabels({ time: 1787059800, offset: 0, price: 313.8682 }, { time: 1790947800, offset: 0, price: 337.578 }, false, 'Etc/UTC', fmt);
+    expect(labels.source).toEqual(['313.87', '2026-08-18']);
+    expect(labels.target).toEqual(['23.71 (7.55%) in 45d', '337.58', '2026-10-02']);
+  });
+
+  it("adds the time in the chart's timezone on intraday charts", () => {
+    const labels = forecastLabels({ time: 1792171800, offset: 0, price: 351.905 }, { time: 1792233000, offset: 0, price: 384.284 }, true, 'Etc/UTC', fmt);
+    expect(labels.source[1]).toBe('2026-10-16 17:30');
+    expect(labels.target).toEqual(['32.38 (9.20%) in 17h', '384.28', '2026-10-17  10:30']);
+    expect(forecastDate(1792171800, true, 'America/New_York', ' ')).toBe('2026-10-16 13:30');
   });
 });
 
