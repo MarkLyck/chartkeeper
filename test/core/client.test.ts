@@ -92,6 +92,10 @@ describe('a layout as TradingView sends it', () => {
     expect(() => parseLayoutJson(content({ panes: [] }), entry)).toThrow(/has no charts/);
   });
 
+  it('reports a chart without panes, saying where, instead of saving a backup that cannot be opened', () => {
+    expect(() => parseLayoutJson(content({ charts: [{ chartId: 1 }] }), entry)).toThrow(expect.objectContaining({ kind: 'format-changed', detail: expect.stringContaining('panes') }));
+  });
+
   it('merges indicator definitions kept inside the content with the separate map, and keeps them out of the content', () => {
     const r = parseLayoutJson(
       { ...content({ charts: [], studyMetaInfoMap: { 'Old@x': { id: 'inline' }, 'Both@x': { id: 'inline' } } }), content_study_meta: JSON.stringify({ 'Both@x': { id: 'separate' } }) },
