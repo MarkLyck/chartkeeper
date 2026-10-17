@@ -10,6 +10,7 @@ import {
   tvDash,
   tvFill,
 } from '../../src/renderer/viewer/drawings/fib';
+import { fibCircleRadii, fibSpiralPoints, fibSpiralRadius, fibTimeBars, timeZoneLevels } from '../../src/renderer/viewer/drawings/fibTime';
 
 // Level sets as TradingView saved them in the gallery's drawings-fibs scene.
 const retracementProps = {
@@ -103,5 +104,40 @@ describe('TradingView drawing primitives', () => {
     expect(tvDash(1, 2)).toEqual([2, 6]);
     expect(tvDash(2, 2)).toEqual([10, 12]);
     expect(tvDash(3, 1)).toEqual([6, 6]);
+  });
+});
+
+describe('fib time tools', () => {
+  const zoneLevels = [0, 1, 2, 3, 5, 8, 13, 21].map((coeff) => ({ coeff }));
+
+  it('puts fib time zones at whole-bar Fibonacci multiples of the point distance', () => {
+    expect(fibTimeBars(zoneLevels, 100, 6)).toEqual([100, 106, 112, 118, 130, 148, 178, 226]);
+    expect(fibTimeBars([{ coeff: 0.382 }, { coeff: 1.618 }], 50, 10)).toEqual([54, 66]);
+  });
+
+  it('copies version 1 time zone colours, width and style into the levels', () => {
+    const props = { level1: [0, '#808080', true, 0, 2], level2: [1, '#2962FF', true, 0, 2], baselinecolor: '#111111', linecolor: '#222222', linewidth: 1, linestyle: 1 };
+    expect(timeZoneLevels(props, 1).map((l) => [l.color, l.width, l.style])).toEqual([
+      ['#111111', 1, 1],
+      ['#222222', 1, 1],
+    ]);
+    expect(timeZoneLevels(props, 2).map((l) => [l.color, l.width, l.style])).toEqual([
+      ['#808080', 2, 0],
+      ['#2962FF', 2, 0],
+    ]);
+  });
+
+  it('inscribes fib circle 1 in the box of the two points', () => {
+    expect(fibCircleRadii({ x: 0, y: 0 }, { x: 40, y: 20 }, 1)).toEqual({ rx: 20, ry: 10 });
+    expect(fibCircleRadii({ x: 0, y: 0 }, { x: 40, y: 20 }, 2.618)).toEqual({ rx: 52.36, ry: 26.18 });
+  });
+
+  it('grows the fib spiral by Fibonacci numbers and passes through point 2 after one turn', () => {
+    expect([0, 1, 2, 3, 4, 5].map(fibSpiralRadius)).toEqual([0, 1, 2, 3, 5, 8]);
+    const a = { x: 100, y: 100 };
+    const b = { x: 130, y: 60 };
+    const through = fibSpiralPoints(a, b, false)[201]!;
+    expect(through.x).toBeCloseTo(b.x);
+    expect(through.y).toBeCloseTo(b.y);
   });
 });
