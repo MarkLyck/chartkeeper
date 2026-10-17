@@ -1,4 +1,5 @@
 import { BrowserWindow, session, type Cookie, type Session } from 'electron';
+import { countSavedDrawings } from '../core/tv/content';
 import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import { pageFetch, pageUser, type HttpRequest, type HttpResponse, type PageTransport, type PageUser } from '../core/tv/http';
 import type { CdpCookie } from './browserSignIn';
@@ -193,13 +194,18 @@ export async function countOnChartPage(uid: string, timeoutMs = 60_000): Promise
         const api = window.TradingViewApi;
         try {
           if (api && api.chartsCount && api.chartsCount() > 0) {
-            let drawings = 0, studies = 0, ready = true;
+            let shapes = 0, studies = 0, ready = true;
             for (let i = 0; i < api.chartsCount(); i++) {
               const c = api.chart(i);
               if (!c.dataReady || !c.dataReady()) ready = false;
-              drawings += c.getAllShapes().length;
+              shapes += c.getAllShapes().length;
               studies += c.getAllStudies().length;
             }
+            let drawings = shapes;
+            try {
+              const saved = api.getSaveChartService().saveToJSON();
+              drawings = (${countSavedDrawings.toString()})(JSON.parse(saved.content));
+            } catch (e) {}
             if (ready && Date.now() - started > 5000) return resolve({ drawings, studies });
           }
         } catch (e) {}

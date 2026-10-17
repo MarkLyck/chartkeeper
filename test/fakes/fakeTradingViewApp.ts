@@ -83,7 +83,9 @@ function page(tv: FakeTradingView, url: URL, signedIn: boolean, buildTime: strin
     const n = shownCounts(l);
     const charts = Math.max(1, l.content.charts.length);
     // Every drawing and indicator on the first chart: the app only adds them up.
-    const api = `window.TradingViewApi = { chartsCount: () => ${charts}, chart: (i) => ({ dataReady: () => true, getAllShapes: () => new Array(i === 0 ? ${n.drawings} : 0).fill({}), getAllStudies: () => new Array(i === 0 ? ${n.studies} : 0).fill({}) }) };`;
+    // Like TradingView: getAllShapes() leaves out arrow marks, the saved layout has every drawing.
+    const saved = JSON.stringify({ content: JSON.stringify({ charts: [{ panes: [{ sources: Array.from({ length: n.drawings }, () => ({ type: 'LineToolTrendLine' })) }] }] }) });
+    const api = `window.TradingViewApi = { chartsCount: () => ${charts}, getSaveChartService: () => ({ saveToJSON: () => (${saved}) }), chart: (i) => ({ dataReady: () => true, getAllShapes: () => new Array(i === 0 ? Math.max(0, ${n.drawings} - 1) : 0).fill({}), getAllStudies: () => new Array(i === 0 ? ${n.studies} : 0).fill({}) }) };`;
     return html(`<script>${api}</script>`);
   }
   return null;

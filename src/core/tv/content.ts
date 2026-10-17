@@ -100,3 +100,18 @@ export function placeShared(content: TvContent, source: TvSource): Placement {
   const chart = Math.max(0, content.charts.findIndex((c) => symbol !== null && sameTicker(symbolOf(mainSeriesOf(c)) ?? '', symbol)));
   return { chart, pane: ownerPane(content.charts[chart]!, source.ownerSource) };
 }
+
+/**
+ * Drawings in a layout as TradingView serializes it (`saveToJSON().content`).
+ * Restore verification counts these, because the chart API's getAllShapes()
+ * leaves out some tools (left and right arrow marks). Runs inside the chart
+ * page via toString(), so it must not use anything outside itself.
+ */
+export function countSavedDrawings(content: unknown): number {
+  let n = 0;
+  const charts = (content as { charts?: unknown }).charts;
+  for (const chart of Array.isArray(charts) ? charts : [])
+    for (const pane of Array.isArray(chart?.panes) ? chart.panes : [])
+      for (const source of Array.isArray(pane?.sources) ? pane.sources : []) if (typeof source?.type === 'string' && source.type.startsWith('LineTool')) n++;
+  return n;
+}

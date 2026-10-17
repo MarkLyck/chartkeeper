@@ -149,3 +149,23 @@ describe('layout list entries', () => {
     expect(() => parseListEntry({ name: 'x' })).toThrow(/does not recognise/);
   });
 });
+
+describe('counting drawings in a layout TradingView saved', () => {
+  it('counts every drawing on every chart and pane, including arrow marks', async () => {
+    const { countSavedDrawings } = await import('../../src/core/tv/content');
+    const content = {
+      charts: [
+        { panes: [{ sources: [{ type: 'MainSeries' }, { type: 'LineToolArrowMarkLeft' }, { type: 'LineToolArrowMarkRight' }] }, { sources: [{ type: 'Study' }, { type: 'LineToolTrendLine' }] }] },
+        { panes: [{ sources: [{ type: 'LineToolText' }] }] },
+      ],
+    };
+    expect(countSavedDrawings(content)).toBe(4);
+    expect(countSavedDrawings({})).toBe(0);
+  });
+
+  it('runs on its own inside the chart page', async () => {
+    const { countSavedDrawings } = await import('../../src/core/tv/content');
+    const inPage = new Function(`return (${countSavedDrawings.toString()})`)() as typeof countSavedDrawings;
+    expect(inPage({ charts: [{ panes: [{ sources: [{ type: 'LineToolArrowMarkLeft' }] }] }] })).toBe(1);
+  });
+});
