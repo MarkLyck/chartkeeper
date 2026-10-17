@@ -145,13 +145,20 @@ save prices so charts can be viewed offline** in the settings.
 ```sh
 npm install
 npm test                 # unit tests: parsing, restore logic, viewer, strings
-npm run test:e2e         # starts the real app window
+npm run test:e2e         # starts the real app window and runs every flow against a fake TradingView
 npm run viewer:compare   # viewer next to TradingView's own rendering
 npm run test:live        # round trip on a real TradingView account (asks you to sign in)
 npm run dist             # installer for this computer, in release/
 npx tsx scripts/packaged-smoke.ts   # starts the packaged app from release/ and opens a backup
 npx tsx scripts/record-demos.ts     # demo videos in docs/demos (needs an unlocked screen)
 ```
+
+The end-to-end tests need no TradingView account. `npm run test:e2e` also
+builds `dist-test/fake-tradingview.js`, and the app loads it when it runs
+unpackaged with `CHARTKEEPER_FAKE_TRADINGVIEW=1`. The fake answers the
+tradingview.com requests of the app's private session, so the hidden
+TradingView page and the restore check run as shipped. A packaged app ignores
+the variable, and the installer never contains `dist-test/`.
 
 Set `CHARTKEEPER_BROWSER` to a browser's path to sign in with that browser, or
 to `none` to use ChartKeeper's own sign-in window.
