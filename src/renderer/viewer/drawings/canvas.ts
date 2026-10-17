@@ -167,28 +167,6 @@ export function drawText(ctx: CanvasRenderingContext2D, text: string, x: number,
   return { x: bx, y: by, w: m.w, h: m.h };
 }
 
-/** Rounded box with a small tail pointing down at `anchor`, used by balloons, comments and price labels. */
-export function drawBubble(ctx: CanvasRenderingContext2D, text: string, anchor: Pt, o: TextOptions & { background: string; border: string | null }): void {
-  const m = measureText(ctx, text, { ...o, padding: o.padding ?? 6 });
-  const tail = 8;
-  const x = anchor.x - 10;
-  const y = anchor.y - tail - m.h;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.roundRect(x, y, m.w, m.h, 4);
-  ctx.moveTo(anchor.x - 4, y + m.h);
-  ctx.lineTo(anchor.x, anchor.y);
-  ctx.lineTo(anchor.x + 4, y + m.h);
-  ctx.fillStyle = o.background;
-  ctx.fill();
-  if (o.border) {
-    ctx.strokeStyle = o.border;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-  drawText(ctx, text, x, y, { ...o, background: null, border: null, padding: o.padding ?? 6 });
-}
-
 /** Text drawn along a line, kept upright; vertLabelsAlign "top" puts it above the line, "bottom" below. */
 export function textAlongLine(ctx: CanvasRenderingContext2D, text: string, a: Pt, b: Pt, p: Props, color: string): void {
   if (!text) return;
