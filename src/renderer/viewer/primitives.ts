@@ -346,11 +346,11 @@ function drawStandardPivots(ctx: CanvasRenderingContext2D, plan: StandardPivots,
   }
 }
 
-const CALLOUT = { gap: 2, pointer: 4, halfPointer: 5, padX: 3, padY: 0.5, font: -1 };
+const CALLOUT = { gap: 2, pointer: 4, halfPointer: 5, padX: 2.5, padY: 0.5 };
 
 /** A price box pointing at the pivot bar's high (box above) or low (box below), for pivots on bars in view. */
 function drawHighLowPivots(ctx: CanvasRenderingContext2D, plan: HighLowPivots, x: (i: number) => number, y: (p: number) => number, width: number, formatPrice: (p: number) => string): void {
-  ctx.font = `${plan.fontSize + CALLOUT.font}px ${FONT_FAMILY}`;
+  ctx.font = `${plan.fontSize}px ${FONT_FAMILY}`;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   ctx.lineWidth = 1;
