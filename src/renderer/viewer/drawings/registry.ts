@@ -1,5 +1,6 @@
 import { CHANNEL_KINDS } from './channels';
 import { CYCLE_KINDS } from './cycles';
+import { ELLIOTT_KINDS } from './elliott';
 import { FIB_KINDS } from './fib';
 import { FREEHAND_KINDS } from './freehand';
 import { GANN_KINDS } from './gann';
@@ -22,6 +23,7 @@ export const DRAWING_KINDS: Readonly<Record<string, DrawingKind>> = {
   ...FIB_KINDS,
   ...GANN_KINDS,
   ...PATTERN_KINDS,
+  ...ELLIOTT_KINDS,
   ...CYCLE_KINDS,
   ...SHAPE_KINDS,
   ...FREEHAND_KINDS,

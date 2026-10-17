@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { elliottLabel } from '../../src/renderer/viewer/drawings/elliott';
 import { abcdLegs, cypherLegs, labelAbove, lineCrossSegment, trianglePatternShape, xabcdLegs } from '../../src/renderer/viewer/drawings/patterns';
 
 const ratios = (legs: { ratio: number }[]) => legs.map((l) => l.ratio);
@@ -70,5 +71,49 @@ describe('pattern geometry', () => {
     const t2 = { x: 200, y: 50 };
     expect(lineCrossSegment(t1, t2, { x: 0, y: 100 }, { x: 50, y: 0 })).toEqual({ x: 25, y: 50 });
     expect(lineCrossSegment(t1, t2, { x: 0, y: 100 }, { x: 50, y: 60 })).toBeNull();
+  });
+});
+
+describe('Elliott wave labels', () => {
+  const impulse = (degree: number, i = 1) => elliottLabel('LineToolElliottImpulse', degree, i);
+  const text = (degree: number, type = 'LineToolElliottImpulse', i = 1) => {
+    const l = elliottLabel(type, degree, i)!;
+    return l.circled ? `circled ${l.text}` : l.text;
+  };
+
+  it('labels each degree the way TradingView does', () => {
+    const byDegree = Array.from({ length: 15 }, (_, degree) => text(degree));
+    expect(byDegree).toEqual([
+      'circled 1', // Supermillennium
+      '(1)',
+      '1',
+      'circled I', // Grand supercycle
+      '(I)',
+      'I',
+      'circled 1', // Primary
+      '(1)', // Intermediate
+      '1', // Minor
+      'circled i', // Minute
+      '(i)',
+      'i', // Subminuette
+      'circled 1', // Micro
+      '(1)',
+      '1', // Minuscule
+    ]);
+  });
+
+  it('uses letters for corrective waves, lower case on alternate label sets', () => {
+    expect(text(7, 'LineToolElliottCorrection', 3)).toBe('(C)');
+    expect(text(10, 'LineToolElliottCorrection', 2)).toBe('(b)');
+    expect(text(7, 'LineToolElliottTripleCombo', 5)).toBe('(Z)');
+    expect(text(5, 'LineToolElliottTriangle', 4)).toBe('d');
+    expect(text(7, 'LineToolElliottDoubleCombo', 2)).toBe('(X)');
+  });
+
+  it('sizes labels by label set and has nothing past the last wave', () => {
+    expect(impulse(7)).toMatchObject({ font: 18, circle: 22, bold: false });
+    expect(impulse(0)).toMatchObject({ font: 24, circle: 36, bold: true });
+    expect(impulse(14)).toMatchObject({ font: 11, bold: true });
+    expect(elliottLabel('LineToolElliottCorrection', 7, 4)).toBeNull();
   });
 });
