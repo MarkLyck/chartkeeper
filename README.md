@@ -31,9 +31,11 @@ your PC", click **More info**, then **Run anyway**. Follow the steps and click
 **Finish**. ChartKeeper is now on your desktop and in the Start menu.
 
 **Mac.** Double-click the `.dmg` file and drag **ChartKeeper** to the
-**Applications** folder. The first time, open the Applications folder,
-**right-click** ChartKeeper and choose **Open**, then click **Open** again.
-After that you can open it normally. After you install a new version, your
+**Applications** folder. The first time you open it, the Mac says it can't
+check ChartKeeper for malware. Click **Done**. Then open **System Settings**,
+choose **Privacy & Security**, scroll down to the message about ChartKeeper,
+and click **Open Anyway**. Type your Mac password and click **Open**. After that
+you can open it normally. After you install a new version, your
 Mac may ask whether ChartKeeper may use "ChartKeeper Safe Storage". Type your
 Mac password and click **Always Allow**. That is where ChartKeeper keeps your
 TradingView sign-in locked.
@@ -150,9 +152,11 @@ alligevel**. Følg trinene, og klik på **Udfør**. ChartKeeper ligger nu på
 skrivebordet og i Start-menuen.
 
 **Mac.** Dobbeltklik på `.dmg`-filen, og træk **ChartKeeper** over i mappen
-**Programmer**. Første gang skal du åbne mappen Programmer, **højreklikke** på
-ChartKeeper, vælge **Åbn** og klikke **Åbn** igen. Derefter kan du åbne den
-helt normalt. Når du har installeret en ny version, spørger din Mac måske, om
+**Programmer**. Første gang du åbner den, siger din Mac, at den ikke kan tjekke ChartKeeper for
+skadelig software. Klik på **Udført**. Åbn derefter **Systemindstillinger**, vælg
+**Anonymitet og sikkerhed**, rul ned til beskeden om ChartKeeper, og klik på
+**Åbn alligevel**. Skriv din Mac-adgangskode, og klik på **Åbn**. Derefter kan
+du åbne den helt normalt. Når du har installeret en ny version, spørger din Mac måske, om
 ChartKeeper må bruge "ChartKeeper Safe Storage". Skriv din Mac-adgangskode, og
 klik på **Tillad altid**. Det er der, ChartKeeper holder dit TradingView-login
 låst.

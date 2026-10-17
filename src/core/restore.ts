@@ -1,10 +1,11 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import { obj } from './props';
 import { captureLayout } from './backup';
 import { countLayout, parseLayout } from './layout';
 import { checkRestore, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
-import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader } from './snapshot';
+import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader, writePrivate } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { urls } from './tv/endpoints';
@@ -52,7 +53,7 @@ export function contentWithDrawings(record: LayoutRecord, drawings: DrawingsReco
 export function symbolFields(record: LayoutRecord): Record<string, string> {
   const e = record.listEntry;
   const first = record.content.charts[0];
-  const series: Record<string, unknown> = (first && mainSeriesOf(first)?.state) ?? {};
+  const series = obj(first && mainSeriesOf(first)?.state);
   const symbol = String(e.symbol ?? series.symbol ?? '');
   const exchange = symbol.includes(':') ? symbol.split(':')[0]! : '';
   const pick = (k: string, fallback: string) => (typeof e[k] === 'string' && e[k] ? String(e[k]) : fallback);
@@ -113,8 +114,7 @@ export class RestoreJournal {
   async put(entry: JournalEntry): Promise<void> {
     const all = (await this.read()).filter((e) => e.key !== entry.key);
     all.push(entry);
-    await fs.mkdir(path.dirname(this.file), { recursive: true, mode: 0o700 });
-    await fs.writeFile(this.file, JSON.stringify(all, null, 2), { mode: 0o600 });
+    await writePrivate(this.file, JSON.stringify(all, null, 2));
   }
 
   private async read(): Promise<JournalEntry[]> {

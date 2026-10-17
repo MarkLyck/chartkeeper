@@ -1,4 +1,5 @@
 import { app, dialog, ipcMain, shell as osShell, type BrowserWindow } from 'electron';
+import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { listSnapshots, SnapshotReader } from '../core/snapshot';
 import { compareSnapshots, openLayout } from '../core/snapshotView';
@@ -48,7 +49,8 @@ export function registerIpc({ status, tasks, shell }: IpcDeps): void {
     }),
   );
   handle('signOut', async () => {
-    await account.signOut();
+    // Not while a backup or restore is using the session.
+    await status.exclusive('signin', () => account.signOut());
     return status.read();
   });
   handle('backupNow', () => tasks.backup(false));
@@ -59,7 +61,7 @@ export function registerIpc({ status, tasks, shell }: IpcDeps): void {
   handle('loadLayout', (dir, uid) => guarded(async () => openLayout(await SnapshotReader.open(dir), uid)));
   handle('compare', (a, b) => guarded(async () => compareSnapshots(await SnapshotReader.open(a), await SnapshotReader.open(b))));
   handle('restoreTargets', () =>
-    guarded(async () => {
+    status.exclusive('restore', async () => {
       const c = await account.client();
       const list = await c.listLayouts();
       const slots = await c.slots(list.length);
@@ -69,14 +71,21 @@ export function registerIpc({ status, tasks, shell }: IpcDeps): void {
   handle('restore', (req) => tasks.restore(req));
   handle('restoreTemplates', (dir) => tasks.restoreTemplates(dir));
   handle('openFolder', async (dir) => {
-    await osShell.openPath(dir);
+    // Only folders inside the backup folder: shell.openPath would also run a program.
+    if (isInside(store.settings.backupFolder, dir) && (await fs.stat(dir).catch(() => null))?.isDirectory()) await osShell.openPath(dir);
   });
   handle('openOnTradingView', async (url) => {
-    if (new URL(url).hostname === 'www.tradingview.com') await osShell.openExternal(url);
+    const u = new URL(url);
+    if (u.protocol === 'https:' && u.hostname === 'www.tradingview.com') await osShell.openExternal(u.toString());
   });
 }
 
-async function applyAutostart(enabled: boolean) {
+export function isInside(root: string, target: string): boolean {
+  const rel = path.relative(path.resolve(root), path.resolve(target));
+  return rel === '' || (!rel.startsWith('..') && !path.isAbsolute(rel));
+}
+
+export async function applyAutostart(enabled: boolean) {
   if (!app.isPackaged) return;
   if (process.platform === 'linux') await setLinuxAutostart(enabled, process.env.APPIMAGE ?? process.execPath);
   else app.setLoginItemSettings({ openAtLogin: enabled, args: ['--hidden'] });

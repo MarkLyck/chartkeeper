@@ -78,13 +78,20 @@ export async function renameWithRetry(from: string, to: string, sleep = (ms: num
   }
 }
 
-/** Writes files private to the current user (no effect on Windows, where the profile folder is private already). */
-async function writePrivate(file: string, data: string) {
+/**
+ * Writes a file atomically and private to the current user (mode has no effect
+ * on Windows, where the profile folder is private already). Each write uses its
+ * own temporary name, so overlapping writes of the same file can't collide.
+ */
+export async function writePrivate(file: string, data: string) {
   await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
-  const tmp = `${file}.tmp`;
+  const tmp = `${file}.${process.pid}-${Math.random().toString(36).slice(2, 10)}.tmp`;
   await fs.writeFile(tmp, data, { mode: 0o600 });
   await renameWithRetry(tmp, file);
 }
+
+/** How Windows and macOS disks compare file names: ignoring case and Unicode composition. */
+export const fileNameKey = (rel: string) => rel.normalize('NFC').toLowerCase();
 
 export type ManifestBody = Omit<Manifest, 'files' | 'status' | 'error' | 'formatVersion'>;
 
@@ -118,8 +125,11 @@ export class SnapshotWriter {
   }
 
   async writeText(rel: string, text: string): Promise<void> {
+    const key = rel.split(path.sep).join('/');
+    const clash = Object.keys(this.files).find((f) => f !== key && fileNameKey(f) === fileNameKey(key));
+    if (clash) throw new Error(`Two files in the backup would share one name on this disk: ${clash} and ${key}.`);
     await writePrivate(path.join(this.workDir, rel), text);
-    this.files[rel.split(path.sep).join('/')] = { sha256: sha256(text), bytes: Buffer.byteLength(text) };
+    this.files[key] = { sha256: sha256(text), bytes: Buffer.byteLength(text) };
   }
 
   /** Writes one captured layout and returns its manifest entry (without price data). */
@@ -134,6 +144,11 @@ export class SnapshotWriter {
   }
 
   async finish(body: ManifestBody): Promise<string> {
+    // Read everything back before calling the backup complete.
+    for (const [rel, { sha256: want }] of Object.entries(this.files)) {
+      const got = sha256(await fs.readFile(path.join(this.workDir, rel), 'utf8'));
+      if (got !== want) throw new Error(`The file ${rel} did not save correctly.`);
+    }
     return this.close({ ...body, formatVersion: FORMAT_VERSION, status: 'complete', files: this.files }, this.stamp);
   }
 
@@ -210,12 +225,15 @@ async function readParsed<T>(file: string, schema: z.ZodType<T>): Promise<T> {
 }
 
 /** Like readParsed, but null when the file is not there. */
+/**
+ * Extras (prices, templates, scripts) that are missing or damaged read as
+ * absent, so the layout itself can still be opened, compared and restored.
+ */
 async function readOptional<T>(file: string, schema: z.ZodType<T>): Promise<T | null> {
   try {
     return await readParsed(file, schema);
-  } catch (e) {
-    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null;
-    throw e;
+  } catch {
+    return null;
   }
 }
 

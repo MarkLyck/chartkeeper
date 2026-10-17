@@ -6,13 +6,13 @@ import { isObj } from '../props';
  * ChartKeeper walks are declared; everything else passes through untouched.
  * See docs/INVESTIGATION.md, "Layout content".
  */
-const looseRecord = z.record(z.string(), z.unknown());
-
+// Sources stay permissive: one odd indicator or drawing must not make a whole
+// backup INCOMPLETE or stop an old backup from opening. Readers check fields as they use them.
 const TvSourceShape = z.looseObject({
-  id: z.string(),
-  type: z.string(),
-  state: looseRecord.optional(),
-  ownerSource: z.string().nullish(),
+  id: z.union([z.string(), z.number()]).optional(),
+  type: z.unknown().optional(),
+  state: z.unknown().optional(),
+  ownerSource: z.unknown().optional(),
 });
 const TvPaneShape = z.looseObject({ sources: z.array(TvSourceShape) });
 const TvChartShape = z.looseObject({ chartId: z.union([z.string(), z.number()]).optional(), panes: z.array(TvPaneShape) });
@@ -37,6 +37,9 @@ const isTvSource = (v: unknown): v is TvSource => TvSourceShape.safeParse(v).suc
 
 export class LayoutParseError extends Error {}
 
+/** A source's id as text (TradingView ids are strings; a number is tolerated). */
+export const sourceId = (s: TvSource): string => (s.id === undefined ? '' : String(s.id));
+
 export const isDrawingType = (type: unknown): type is string => typeof type === 'string' && type.startsWith('LineTool');
 
 /** The storage id of chart `index`: "1", "2", ... Drawing buckets and chart-<id>.json price files use the same key. */
@@ -44,7 +47,7 @@ export const chartIdOf = (chart: TvChart, index: number): string => (chart.chart
 
 export const mainSeriesOf = (chart: TvChart): TvSource | undefined => chart.panes.flatMap((p) => p.sources).find((s) => s.type === 'MainSeries');
 
-const symbolOf = (source: TvSource | undefined): string | null => (typeof source?.state?.symbol === 'string' ? source.state.symbol : null);
+const symbolOf = (source: TvSource | undefined): string | null => (isObj(source?.state) && typeof source.state.symbol === 'string' ? source.state.symbol : null);
 
 /** "BATS:AAPL" and "NASDAQ:AAPL" are the same company; TradingView shares drawings between them. */
 export function sameTicker(a: string, b: string): boolean {
@@ -79,8 +82,8 @@ export interface Placement {
 }
 
 /** The pane holding the drawing's owner (its price series or indicator), else the price pane. */
-function ownerPane(chart: TvChart, owner: string | null | undefined): number {
-  const byOwner = chart.panes.findIndex((p) => p.sources.some((s) => s.id === owner));
+function ownerPane(chart: TvChart, owner: unknown): number {
+  const byOwner = owner === undefined || owner === null ? -1 : chart.panes.findIndex((p) => p.sources.some((s) => s.id !== undefined && String(s.id) === String(owner)));
   if (byOwner >= 0) return byOwner;
   return Math.max(0, chart.panes.findIndex((p) => p.sources.some((s) => s.type === 'MainSeries')));
 }

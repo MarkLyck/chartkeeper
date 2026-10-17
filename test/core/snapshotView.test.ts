@@ -33,8 +33,8 @@ describe('opening a layout from a snapshot', () => {
   it('shows the drawings synced to all layouts once each, next to the prices', async () => {
     const reader = await snapshot(1);
     const user = (await reader.userDrawings())!;
-    const inContent = referenceInAccount().content.charts[0]!.panes[0]!.sources.find((s) => s.type.startsWith('LineTool'))!;
-    user.sources[inContent.id] = { id: inContent.id, ownerSource: '_seriesId', state: inContent };
+    const inContent = referenceInAccount().content.charts[0]!.panes[0]!.sources.find((s) => String(s.type).startsWith('LineTool'))!;
+    user.sources[String(inContent.id)] = { id: inContent.id, ownerSource: '_seriesId', state: inContent };
     await fs.writeFile(path.join(reader.dir, SNAPSHOT_FILES.userDrawings), JSON.stringify(user));
 
     const { layout, data } = await openLayout(reader, 'AbCd1234');

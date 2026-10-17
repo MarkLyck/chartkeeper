@@ -36,7 +36,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
       return h('section', { class: 'card signin signin-ok', attrs: { 'aria-label': t('signin.signedIn') } },
         h('span', { class: 'dot dot-ok', attrs: { 'aria-hidden': 'true' } }),
         h('p', { class: 'signin-status' }, s.username ? t('signin.signedInAs', { name: s.username }) : t('signin.signedIn')),
-        button(t('signin.signOut'), async () => ctx.update(await ctx.api.signOut()), { kind: 'link', id: 'signout' }));
+        button(t('signin.signOut'), async () => ctx.update(await ctx.api.signOut()), { kind: 'link', id: 'signout', disabled: s.busy !== null }));
     if (signingIn || s.busy === 'signin')
       return h('section', { class: 'card signin' }, spinner(t('signin.waitingTitle')), h('p', {}, t('signin.waitingBody')));
     return h('section', { class: 'card signin', attrs: { 'aria-label': t('signin.notSignedIn') } },

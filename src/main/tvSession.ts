@@ -87,12 +87,17 @@ export async function signOut(): Promise<void> {
 }
 
 function hiddenWindow(): BrowserWindow {
-  return new BrowserWindow({
+  const w = new BrowserWindow({
     show: false,
     width: 1400,
     height: 900,
     webPreferences: { partition: PARTITION, contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false },
   });
+  w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  w.webContents.on('will-navigate', (e, url) => {
+    if (!isRequestAllowed(url)) e.preventDefault();
+  });
+  return w;
 }
 
 /**
@@ -102,12 +107,21 @@ function hiddenWindow(): BrowserWindow {
 export class ElectronPageTransport implements PageTransport {
   private win: BrowserWindow | null = null;
   private ready: Promise<void> | null = null;
+  /** Rejects when this page is closed: a script still running in a destroyed page would otherwise never settle. */
+  private closed: { promise: Promise<never>; reject: (e: Error) => void } | null = null;
+
+  constructor(private readonly callTimeoutMs = 90_000) {}
 
   private page(): Promise<BrowserWindow> {
     if (!this.ready || !this.win || this.win.isDestroyed()) {
       tvSession();
       this.win = hiddenWindow();
       const w = this.win;
+      let reject!: (e: Error) => void;
+      const promise = new Promise<never>((_, r) => (reject = r));
+      promise.catch(() => undefined);
+      this.closed = { promise, reject };
+      w.once('closed', () => reject(new Error('The TradingView page was closed.')));
       this.ready = w.loadURL(urls.home).then(
         () => undefined,
         (e: unknown) => {
@@ -121,19 +135,31 @@ export class ElectronPageTransport implements PageTransport {
     return this.ready.then(() => w);
   }
 
-  async send(req: HttpRequest): Promise<HttpResponse> {
+  /** Runs a script in the page; fails instead of hanging if the page closes or stops answering. */
+  private async run<T>(script: string): Promise<T> {
     const w = await this.page();
-    return w.webContents.executeJavaScript(`(${pageFetch.toString()})(${JSON.stringify(req)})`, true) as Promise<HttpResponse>;
+    const closed = this.closed!.promise;
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error('TradingView did not answer in time.')), this.callTimeoutMs);
+    });
+    try {
+      return (await Promise.race([w.webContents.executeJavaScript(script, true), closed, timeout])) as T;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
-  async user(): Promise<PageUser | null> {
-    const w = await this.page();
-    return w.webContents.executeJavaScript(`(${pageUser.toString()})()`, true) as Promise<PageUser | null>;
+  send(req: HttpRequest): Promise<HttpResponse> {
+    return this.run(`(${pageFetch.toString()})(${JSON.stringify(req)})`);
   }
 
-  async buildTime(): Promise<string | null> {
-    const w = await this.page();
-    return w.webContents.executeJavaScript('typeof BUILD_TIME === "string" ? BUILD_TIME : null', true) as Promise<string | null>;
+  user(): Promise<PageUser | null> {
+    return this.run(`(${pageUser.toString()})()`);
+  }
+
+  buildTime(): Promise<string | null> {
+    return this.run('typeof BUILD_TIME === "string" ? BUILD_TIME : null');
   }
 
   /** Reload, e.g. after signing in, so `window.user` is fresh. */
@@ -142,9 +168,11 @@ export class ElectronPageTransport implements PageTransport {
   }
 
   close(): void {
+    this.closed?.reject(new Error('The TradingView page was closed.'));
     if (this.win && !this.win.isDestroyed()) this.win.destroy();
     this.win = null;
     this.ready = null;
+    this.closed = null;
   }
 }
 

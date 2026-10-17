@@ -26,6 +26,7 @@ export async function setLinuxAutostart(enabled: boolean, exec: string, home = o
     return;
   }
   await fs.mkdir(path.dirname(file), { recursive: true });
-  const quoted = `"${exec.replace(/(["\\`$])/g, '\\$1')}"`;
+  // Desktop entry Exec rules: quote, escape ", `, $ and \ inside quotes, and double %.
+  const quoted = `"${exec.replace(/(["\\`$])/g, '\\$1').replace(/%/g, '%%')}"`;
   await fs.writeFile(file, ['[Desktop Entry]', 'Type=Application', 'Name=ChartKeeper', `Exec=${quoted} --hidden`, 'X-GNOME-Autostart-enabled=true', 'NoDisplay=false', ''].join('\n'));
 }

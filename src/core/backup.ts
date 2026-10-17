@@ -1,6 +1,6 @@
 import { parseLayout } from './layout';
 import type { DrawingBucket, DrawingsRecord, DrawingTemplatesFile, ManifestLayout, ScriptsIndex, StudyTemplatesFile, ThemesFile } from './model';
-import { APP_NAME, layoutFiles, noExtras, SNAPSHOT_FILES, SnapshotWriter, type ManifestBody } from './snapshot';
+import { APP_NAME, layoutFiles, noExtras, SNAPSHOT_FILES, SnapshotWriter, type ManifestBody, fileNameKey } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf } from './tv/content';
 import { fetchChartData, type SocketFactory } from './tv/datafeed';
@@ -137,8 +137,8 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
     const used = new Set<string>();
     for (const s of scripts) {
       let file = `scripts/${safeFileName(s.name)}.pine`;
-      for (let i = 2; used.has(file); i++) file = `scripts/${safeFileName(s.name)} (${i}).pine`;
-      used.add(file);
+      for (let i = 2; used.has(fileNameKey(file)); i++) file = `scripts/${safeFileName(s.name)} (${i}).pine`;
+      used.add(fileNameKey(file));
       await writer.writeText(file, s.source);
       index.push({ id: s.id, name: s.name, version: s.version, file, meta: s.meta });
     }

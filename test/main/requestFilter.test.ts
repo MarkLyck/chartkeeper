@@ -28,3 +28,13 @@ describe('ChartKeeper only talks to TradingView', () => {
     expect(['eviltradingview.com', '.eviltradingview.com', 'tradingview.com.evil.example', ''].map(isTradingViewHost)).toEqual([false, false, false, false]);
   });
 });
+
+describe('opening folders from the window', () => {
+  it('only opens folders inside the backup folder', async () => {
+    const { isInside } = await import('../../src/main/ipc');
+    expect(isInside('/Users/t/Backups', '/Users/t/Backups/snapshots/2026-10-17_10-00-00')).toBe(true);
+    expect(isInside('/Users/t/Backups', '/Users/t/Backups')).toBe(true);
+    expect(isInside('/Users/t/Backups', '/Users/t/Backups/../Evil.app')).toBe(false);
+    expect(isInside('/Users/t/Backups', '/Applications/Calculator.app')).toBe(false);
+  });
+});

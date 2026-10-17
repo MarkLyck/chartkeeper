@@ -37,6 +37,8 @@ describe('Linux autostart', () => {
       await setLinuxAutostart(true, '/home/t/Apps/Chart Keeper.AppImage', home);
       const file = path.join(home, '.config/autostart/chartkeeper.desktop');
       expect(await fs.readFile(file, 'utf8')).toContain('Exec="/home/t/Apps/Chart Keeper.AppImage" --hidden');
+      await setLinuxAutostart(true, '/home/t/100% sure/ChartKeeper.AppImage', home);
+      expect(await fs.readFile(file, 'utf8')).toContain('Exec="/home/t/100%% sure/ChartKeeper.AppImage" --hidden');
       await setLinuxAutostart(false, '', home);
       await expect(fs.stat(file)).rejects.toThrow();
     } finally {

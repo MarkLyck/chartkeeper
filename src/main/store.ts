@@ -1,6 +1,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { z } from 'zod';
+import { writePrivate } from '../core/snapshot';
 import type { Settings } from '../shared/api';
 
 const SettingsSchema = z.object({
@@ -60,12 +61,14 @@ export class Store {
     return this.state.signInNoticeDay;
   }
 
-  async update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup']; lastSuccessAt?: string | null; signInNoticeDay?: string | null }): Promise<void> {
+  private writing: Promise<void> = Promise.resolve();
+
+  /** Applies the change at once; writes to disk one at a time, newest state last. */
+  update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup']; lastSuccessAt?: string | null; signInNoticeDay?: string | null }): Promise<void> {
     this.state = StateSchema.parse({ ...this.state, ...patch, settings: { ...this.state.settings, ...patch.settings } });
-    await fs.mkdir(path.dirname(this.file), { recursive: true, mode: 0o700 });
-    const tmp = `${this.file}.tmp`;
-    await fs.writeFile(tmp, JSON.stringify(this.state, null, 2), { mode: 0o600 });
-    await fs.rename(tmp, this.file);
+    const snapshot = JSON.stringify(this.state, null, 2);
+    this.writing = this.writing.catch(() => undefined).then(() => writePrivate(this.file, snapshot));
+    return this.writing;
   }
 }
 

@@ -19,11 +19,11 @@ export function referenceInAccount(uid = 'AbCd1234', name = 'Min AAPL'): FakeLay
   let n = 0;
   for (const pane of content.charts[0]!.panes) {
     pane.sources = pane.sources.filter((s) => {
-      if (!s.type.startsWith('LineTool')) return true;
+      if (!String(s.type).startsWith('LineTool')) return true;
       n++;
       if (n <= 3) return true;
       const bucket = n % 4 === 0 ? '_shared' : '1';
-      storage[bucket]![s.id] = { id: s.id, ownerSource: s.ownerSource, state: s, symbol: 'NASDAQ:AAPL', currencyId: null, unitId: null };
+      storage[bucket]![String(s.id)] = { id: s.id, ownerSource: s.ownerSource, state: s, symbol: 'NASDAQ:AAPL', currencyId: null, unitId: null };
       return false;
     });
   }

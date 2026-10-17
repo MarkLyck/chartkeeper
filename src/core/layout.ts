@@ -1,6 +1,6 @@
 import type { DrawingBucket, DrawingsRecord, LayoutRecord } from './model';
-import { anyStr, isObj, num } from './props';
-import { chartIdOf, drawingSourceFromStored, isDrawingType, LayoutParseError, mainSeriesOf, placeDrawing, sameTicker, type TvSource } from './tv/content';
+import { anyStr, isObj, num, obj } from './props';
+import { chartIdOf, drawingSourceFromStored, isDrawingType, LayoutParseError, mainSeriesOf, placeDrawing, sameTicker, type TvSource, sourceId } from './tv/content';
 
 /**
  * A layout reduced to what people recognise on screen: charts, panes,
@@ -92,11 +92,11 @@ const STUDY_TYPES = /^(Study|study_|StudyStrategy|study$)/;
 export const isStudyType = (type: unknown): boolean => typeof type === 'string' && STUDY_TYPES.test(type);
 
 export function parseDrawing(source: TvSource, origin: DrawingOrigin): ParsedDrawing {
-  const props = source.state ?? {};
+  const props = obj(source.state);
   const points = Array.isArray(source.points) ? source.points : [];
   return {
-    id: source.id,
-    type: source.type,
+    id: sourceId(source),
+    type: anyStr(source.type),
     points: points.filter(isObj).map((p) => ({ time: num(p.time_t, 0), offset: num(p.offset, 0), price: num(p.price, 0) })),
     props,
     symbol: typeof props.symbol === 'string' ? props.symbol : null,
@@ -136,12 +136,12 @@ function metaInfoId(source: TvSource, meta: Record<string, unknown> | null): str
 
 function parseStudy(source: TvSource, map: Record<string, Record<string, unknown>>): ParsedStudy {
   const meta = resolveMetaInfo(source, map);
-  const state = source.state ?? {};
+  const state = obj(source.state);
   const id = metaInfoId(source, meta);
   const plots = meta && Array.isArray(meta.plots) ? meta.plots.filter(isObj).map((p) => ({ id: anyStr(p.id), type: anyStr(p.type), ...(typeof p.target === 'string' ? { target: p.target } : {}) })) : [];
   const styles = isObj(state.styles) ? (state.styles as Record<string, Record<string, unknown>>) : {};
   return {
-    id: source.id,
+    id: sourceId(source),
     metaInfoId: id,
     name: anyStr(meta?.description, anyStr(state.description, id)),
     shortName: anyStr(meta?.shortDescription, anyStr(meta?.description, id)),
@@ -181,7 +181,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
     });
     const main = mainSeriesOf(chart);
     if (!main) throw new LayoutParseError(`Chart ${chartId} in "${record.name}" has no price series.`);
-    const seriesState = main.state ?? {};
+    const seriesState = obj(main.state);
     return {
       chartId,
       symbol: anyStr(seriesState.symbol),

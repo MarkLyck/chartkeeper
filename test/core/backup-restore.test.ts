@@ -1,18 +1,19 @@
-import { promises as fs } from 'node:fs';
+import { promises as fs, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { runBackup } from '../../src/core/backup';
 import { countLayout, parseLayout } from '../../src/core/layout';
+import { LayoutRecordSchema } from '../../src/core/model';
 import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
 import { checkRestore } from '../../src/core/restorePolicy';
 import { listSnapshots, SNAPSHOT_FILES, SnapshotReader } from '../../src/core/snapshot';
-import { TvClient } from '../../src/core/tv/client';
+import { parseLayoutJson, parseListEntry, TvClient } from '../../src/core/tv/client';
 import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
 import { PoliteHttp } from '../../src/core/tv/http';
 import { fakeDataSocket } from '../fakes/fakeDataSocket';
 import { FakeTradingView, type FakeLayout } from '../fakes/fakeTradingView';
-import { referenceInAccount, referenceRecord } from '../fakes/fixtures';
+import { FIXTURES, referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
 const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
 let root: string;
@@ -40,7 +41,7 @@ function numericChartIds(): FakeLayout {
   for (const pane of msft.panes) {
     pane.sources = pane.sources.filter((s) => !isDrawingType(s.type));
     for (const s of pane.sources) {
-      if (s.type === 'MainSeries') s.state = { ...s.state, symbol: 'NASDAQ:MSFT', shortName: 'MSFT' };
+      if (s.type === 'MainSeries') s.state = { ...(s.state as object), symbol: 'NASDAQ:MSFT', shortName: 'MSFT' };
       else s.id += '-msft';
     }
   }
@@ -100,6 +101,16 @@ describe('backup', () => {
     expect(data!.bars).toHaveLength(50);
     expect(Object.values(data!.studies).every((s) => s.status === 'ok')).toBe(true);
     expect(await fs.readFile(path.join(snap!.dir, 'scripts/Thomas Trend.pine'), 'utf8')).toContain('indicator("Thomas Trend")');
+  });
+
+  it('keeps two Pine scripts whose names differ only in case as two files', async () => {
+    tv.scripts.push({ scriptIdPart: 'USER;def456', scriptName: 'thomas trend', version: '1.0', source: '//@version=6\nindicator("lower")' });
+    const r = await backup();
+    expect(r.ok).toBe(true);
+    const dir = (await listSnapshots(root))[0]!.dir;
+    const files = (await fs.readdir(path.join(dir, 'scripts'))).filter((f) => f.endsWith('.pine')).sort();
+    expect(files).toEqual(['Thomas Trend.pine', 'thomas trend (2).pine']);
+    expect(await fs.readFile(path.join(dir, 'scripts', 'thomas trend (2).pine'), 'utf8')).toContain('lower');
   });
 
   it('only reads: it sends no POST or PUT to TradingView', async () => {
@@ -175,11 +186,19 @@ describe('restore', () => {
     const stored = new Map(Object.values(fake.storage).flatMap((b) => Object.entries(b)).map(([id, dto]) => [id, drawingSourceFromStored(id, dto)]));
     const sent = JSON.parse(saveForm(rec, drawings, 'Kopi').content!) as TvContent;
     expect(sent.name).toBe('Kopi');
-    const inlined = sent.charts.flatMap((c) => c.panes.flatMap((p) => p.sources.filter((s) => stored.has(s.id))));
+    const inlined = sent.charts.flatMap((c) => c.panes.flatMap((p) => p.sources.filter((s) => stored.has(String(s.id)))));
     expect(inlined).toEqual([...stored.values()].filter((s) => inlined.some((i) => i.id === s.id)));
     expect(inlined.map((s) => s.id).sort()).toEqual([...stored.keys()].sort());
-    for (const c of sent.charts) for (const p of c.panes) p.sources = p.sources.filter((s) => !stored.has(s.id));
+    for (const c of sent.charts) for (const p of c.panes) p.sources = p.sources.filter((s) => !stored.has(String(s.id)));
     expect(JSON.stringify(sent)).toBe(JSON.stringify({ ...fake.content, name: 'Kopi' }));
+  });
+
+  it('sends the stored content back with its keys in the original order, through the real parse path', () => {
+    const tvSaved = JSON.parse(readFileSync(path.join(FIXTURES, 'tv-saved-layout.json'), 'utf8'));
+    const rec = parseLayoutJson({ content: tvSaved.content, content_study_meta: tvSaved.study_meta_info_map, name: 'X' }, parseListEntry({ image_url: 'Ord1' }));
+    const onDisk = LayoutRecordSchema.parse(JSON.parse(JSON.stringify(rec)));
+    const sent = saveForm(onDisk, { buckets: {}, reportedTotal: null }, 'X').content!;
+    expect(sent).toBe(JSON.stringify({ ...JSON.parse(tvSaved.content), name: 'X' }));
   });
 
   it('takes symbol fields from the list entry, or else from the price series', () => {

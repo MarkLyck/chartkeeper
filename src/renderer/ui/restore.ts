@@ -166,6 +166,7 @@ export function restoreScreen(ctx: Ctx): Screen {
       c.mode !== 'replace' ? null
       : tg.layouts.length === 0 ? h('p', { class: 'note' }, t('restore.noTargets'))
       : h('div', { class: 'replace-fields' },
+          notice('warning', t('restore.closeTabNote')),
           h('label', { htmlFor: 'target-pick', class: 'field-label' }, t('restore.target')), targetSelect,
           target
             ? h('div', { class: 'confirm-name' },
@@ -239,15 +240,16 @@ export function restoreScreen(ctx: Ctx): Screen {
   function doneStep(c: Extract<Step, { k: 'done' }>): (HTMLElement | null)[] {
     const o = c.outcome;
     const missing = o.check.missingDrawings.length;
-    // When TradingView's own count could not run, the table says so; the read-back still matched.
-    const ok = o.check.verdict !== 'mismatch';
+    const ok = o.check.verdict === 'verified';
     return [
       h('section', { class: `result ${ok ? 'result-success' : 'result-warning'}` },
         ok ? icons.check() : icons.warn(),
         h('div', { class: 'result-body' },
           h('h2', { class: 'result-title step-title', tabIndex: -1 }, t('restore.done', { name: o.name })),
           h('div', { class: 'actions' }, button(t('restore.open'), () => ctx.api.openOnTradingView(o.url), { kind: 'primary', big: true, id: 'restore-open' })))),
-      ok ? null : notice('warning', t('restore.missingTitle'), missing ? h('p', {}, tn('restore.missing', missing)) : null, h('p', {}, t('restore.mismatchNote'))),
+      o.check.verdict === 'mismatch' ? notice('warning', t('restore.missingTitle'), missing ? h('p', {}, tn('restore.missing', missing)) : null, h('p', {}, t('restore.mismatchNote'))) : null,
+      o.check.verdict === 'shown-unchecked' ? notice('warning', t('restore.uncheckedTitle'), h('p', {}, t('restore.uncheckedNote'))) : null,
+      o.safetyBackup ? h('p', { class: 'note' }, t('restore.reloadNote')) : null,
       verifyTable(o),
       o.safetyBackup ? h('div', { class: 'card card-quiet' }, h('p', {}, t('restore.safety')), h('p', { class: 'path' }, o.safetyBackup), button(t('common.openFolder'), () => ctx.api.openFolder(o.safetyBackup!), { id: 'safety-open' })) : null,
       o.resumed ? h('p', { class: 'note' }, t('restore.resumed')) : null,

@@ -2,11 +2,34 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { cleanupInterrupted, listSnapshots, renameWithRetry, SnapshotReader, SnapshotWriter, snapshotStamp } from '../../src/core/snapshot';
+import { cleanupInterrupted, listSnapshots, renameWithRetry, SnapshotReader, SnapshotWriter, snapshotStamp, writePrivate } from '../../src/core/snapshot';
 
 const body = { app: { name: 'ChartKeeper', version: 't' }, createdAt: '2026-10-17T10:00:00Z', account: { username: 'u', plan: null }, layouts: [], extras: { studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 }, warnings: [] };
 
 describe('snapshot folders', () => {
+  it('refuses two files whose names only differ in case, which would overwrite each other on Windows and macOS', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const w = await SnapshotWriter.begin(root);
+    await w.writeText('scripts/RSI Divergence.pine', 'a');
+    await expect(w.writeText('scripts/rsi divergence.pine', 'b')).rejects.toThrow(/share one name/);
+  });
+
+  it('reads every file back before calling a backup complete', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const w = await SnapshotWriter.begin(root);
+    await w.writeText('a.json', '{"a":1}');
+    await fs.writeFile(path.join(w.workDir, 'a.json'), '{"a":2}');
+    await expect(w.finish(body)).rejects.toThrow(/did not save correctly/);
+  });
+
+  it('lets overlapping writes of one file all succeed', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const file = path.join(dir, 'settings.json');
+    await Promise.all(Array.from({ length: 50 }, (_, i) => writePrivate(file, String(i))));
+    expect(Number(await fs.readFile(file, 'utf8'))).toBeGreaterThanOrEqual(0);
+    expect((await fs.readdir(dir)).filter((f) => f.endsWith('.tmp'))).toEqual([]);
+  });
+
   it('uses a timestamp that is a valid folder name on Windows, macOS and Linux', () => {
     expect(snapshotStamp(new Date(2026, 9, 17, 9, 5, 3))).toBe('2026-10-17_09-05-03');
   });

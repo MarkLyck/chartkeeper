@@ -71,6 +71,16 @@ describe('drawings from the drawing storage', () => {
   });
 });
 
+describe('unusual sources', () => {
+  it('keeps a layout with an odd indicator or a numeric id readable instead of failing the backup', () => {
+    const content = JSON.parse(tvSaved.content);
+    content.charts[0].panes[0].sources.push({ type: 'Study', id: 7, state: null }, { id: 'x', type: 'StudyStrategy', state: [], ownerSource: 5 });
+    const rec = parseLayoutJson({ content: JSON.stringify(content), content_study_meta: tvSaved.study_meta_info_map }, parseListEntry({ image_url: 'Odd1' }));
+    const layout = parseLayout(rec, null);
+    expect(layout.charts[0]!.panes[0]!.studies.map((s) => s.id)).toContain('7');
+  });
+});
+
 describe('free layout slots', () => {
   it('knows the limits of the published plans', () => {
     expect(layoutSlots({ count: 1 }, 1, 'free')).toMatchObject({ limit: 1, free: false });
