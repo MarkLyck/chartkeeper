@@ -191,8 +191,8 @@ async function main() {
   await fs.mkdir(WORK, { recursive: true });
   await fs.mkdir(OUT, { recursive: true });
   const jobs: [string, () => Promise<{ main: string; pip?: { file: string; at: number } }>][] = [
-    ['1-real-app-viewer-and-sign-in-en', realApp],
-    ['2-backup-compare-restore-simulated-en', async () => ({ main: await simulated() })],
+    ['1-real-app-viewer-and-sign-in', realApp],
+    ['2-backup-compare-restore-simulated', async () => ({ main: await simulated() })],
   ];
   // Optional filter, e.g. `record-demos.ts simulated` to skip the real-app video.
   const only = process.argv[2];

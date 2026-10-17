@@ -12,7 +12,7 @@ only changes something on TradingView when you ask it to restore a chart.
 ## 1. Install
 
 Download the file for your computer from the
-[latest release](https://github.com/MarkLyck/chartkeeper/releases/latest):
+[releases page](https://github.com/MarkLyck/chartkeeper/releases):
 
 | Computer | File |
 | --- | --- |
