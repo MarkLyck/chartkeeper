@@ -13,7 +13,7 @@ const studies = layout.charts[0]!.panes.flatMap((p) => p.studies);
 
 describe('websocket frames', () => {
   it('splits several frames in one message, including multi-byte text', () => {
-    const a = JSON.stringify({ m: 'x', p: ['Køb'] });
+    const a = JSON.stringify({ m: 'x', p: ['café ✓'] });
     expect(decodeFrames(encodeFrame(a) + encodeFrame('~h~3'))).toEqual([a, '~h~3']);
   });
 });

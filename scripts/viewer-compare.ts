@@ -178,7 +178,9 @@ async function galleryInput(reference: ParsedLayout, refData: ChartData) {
   const volMa = sma(bars.map((b) => b[5]), 20);
   const basis = sma(closes, 20);
   const dev = closes.map((_, i) => (i < 19 ? null : Math.sqrt(closes.slice(i - 19, i + 1).reduce((a, c) => a + (c - basis[i]!) ** 2, 0) / 20)));
-  const rsiRef = new Map((refData.studies['20Xh7n'] as { rows: (number | null)[][] }).rows.map((r) => [r[0], r[1]]));
+  const refStudy = (metaInfoPrefix: string) => Object.entries(refData.studies).find(([, s]) => s.metaInfoId.startsWith(metaInfoPrefix))!;
+  const [maId, ma] = refStudy('MASimple@');
+  const rsiRef = new Map((refStudy('RSI@')[1] as { rows: (number | null)[][] }).rows.map((r) => [r[0], r[1]]));
   const rsi = bars.map((b) => rsiRef.get(b[0]) ?? null);
   const rsiMa = rsi.map((_, i) => (i < 14 || rsi.slice(i - 13, i + 1).some((v) => v === null) ? null : (rsi.slice(i - 13, i + 1) as number[]).reduce((a, b) => a + b, 0) / 14));
   const studies: ChartData['studies'] = {
@@ -199,7 +201,7 @@ async function galleryInput(reference: ParsedLayout, refData: ChartData) {
     layout,
     data: {
       [chart1.chartId]: { ...refData, chartId: chart1.chartId, studies },
-      '2': { ...refData, chartId: '2', studies: { FIqn6C: refData.studies.FIqn6C!, [errStudy.id]: { status: 'error', metaInfoId: errStudy.metaInfoId, error: 'study_limit_exceeded' } } },
+      '2': { ...refData, chartId: '2', studies: { [maId]: ma, [errStudy.id]: { status: 'error', metaInfoId: errStudy.metaInfoId, error: 'study_limit_exceeded' } } },
       '3': null,
     },
     options: { lang: 'da' },

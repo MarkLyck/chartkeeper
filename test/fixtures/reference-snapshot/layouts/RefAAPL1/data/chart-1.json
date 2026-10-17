@@ -2,7 +2,7 @@
   "chartId": "1",
   "symbol": "NASDAQ:AAPL",
   "interval": "D",
-  "fetchedAt": "2026-10-17T14:13:02.674Z",
+  "fetchedAt": "2026-10-17T18:18:34.427Z",
   "bars": [
     [
       1666359000,
@@ -8006,7 +8006,7 @@
     ]
   ],
   "studies": {
-    "FIqn6C": {
+    "TKTOAM": {
       "status": "ok",
       "metaInfoId": "MASimple@tv-basicstudies-280",
       "rows": [
@@ -12416,7 +12416,7 @@
         "indexes": []
       }
     },
-    "20Xh7n": {
+    "YuxZ0W": {
       "status": "ok",
       "metaInfoId": "RSI@tv-basicstudies-280",
       "rows": [

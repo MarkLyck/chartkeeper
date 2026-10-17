@@ -15,6 +15,9 @@ beforeAll(async () => {
   chartData = (await reader.chartData(UID, '1'))!;
 });
 
+/** Study ids are TradingView's random ids, new on every capture of the reference. */
+const studyId = (metaInfoPrefix: string) => Object.entries(chartData.studies).find(([, s]) => s.metaInfoId.startsWith(metaInfoPrefix))![0];
+
 /**
  * The never-silently-drop rule: on every chart, each drawing and indicator is
  * either drawn or listed as not shown (as a whole, not just partially), and
@@ -43,7 +46,7 @@ describe('planLayout on the reference snapshot', () => {
     expectEveryItemAccountedFor(layout, plan);
     expect(plan.notShown).toEqual([]);
     expect(plan.charts[0]!.rendered.drawings).toHaveLength(11);
-    expect(plan.charts[0]!.rendered.studies.sort()).toEqual(['20Xh7n', 'FIqn6C']);
+    expect(plan.charts[0]!.rendered.studies.sort()).toEqual([studyId('MASimple@'), studyId('RSI@')].sort());
     const panes = plan.charts[0]!.panes;
     expect(panes.map((p) => [p.main, p.studies.map((s) => s.study.shortName)])).toEqual([
       [true, ['MA']],
@@ -86,7 +89,7 @@ describe('planLayout on a layout with problems', () => {
       },
     };
     const layout = parseLayout({ ...record, content }, drawings);
-    const ma = chartData.studies.FIqn6C!;
+    const ma = chartData.studies[studyId('MASimple@')]!;
     if (ma.status !== 'ok') throw new Error('the reference Moving Average has values');
     const data: ChartData = {
       ...chartData,

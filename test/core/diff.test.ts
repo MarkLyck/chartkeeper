@@ -19,7 +19,7 @@ describe('comparing two backups', () => {
     after.content.charts = structuredClone(after.content.charts);
     const s2 = sourcesOf(after);
     s2.splice(s2.findIndex((s) => s.type === 'LineToolFibRetracement'), 1);
-    s2.push({ type: 'LineToolText', id: 'new1', state: { text: 'Sælg', symbol: 'NASDAQ:AAPL' }, points: [{ time_t: 1785000000, offset: 0, price: 320 }], zorder: 1 });
+    s2.push({ type: 'LineToolText', id: 'new1', state: { text: 'Sell', symbol: 'NASDAQ:AAPL' }, points: [{ time_t: 1785000000, offset: 0, price: 320 }], zorder: 1 });
     const ma = s2.find((s) => s.metaInfo === 'MASimple@tv-basicstudies-280')!;
     ma.state.inputs.length = 100;
     const changes = diffLayouts(parseLayout(base(), null), parseLayout(after, null));
@@ -30,7 +30,7 @@ describe('comparing two backups', () => {
       to: [{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 333 }],
     });
     expect(changes).toContainEqual(expect.objectContaining({ kind: 'removed', what: 'drawing', toolType: 'LineToolFibRetracement' }));
-    expect(changes).toContainEqual({ kind: 'added', what: 'drawing', toolType: 'LineToolText', text: 'Sælg', symbol: 'NASDAQ:AAPL', points: [{ time: 1785000000, offset: 0, price: 320 }] });
+    expect(changes).toContainEqual({ kind: 'added', what: 'drawing', toolType: 'LineToolText', text: 'Sell', symbol: 'NASDAQ:AAPL', points: [{ time: 1785000000, offset: 0, price: 320 }] });
     expect(changes).toContainEqual({ kind: 'changed', what: 'study-inputs', shortName: 'MA', inputs: [{ key: 'length', from: '50', to: '100' }] });
   });
 

@@ -3,7 +3,7 @@
     "name": "ChartKeeper",
     "version": "reference"
   },
-  "createdAt": "2026-10-17T14:13:02.680Z",
+  "createdAt": "2026-10-17T18:18:34.435Z",
   "account": {
     "username": "reference",
     "plan": null
@@ -19,7 +19,7 @@
       "charts": 1,
       "drawings": 11,
       "studies": 2,
-      "lastModified": 1792246381,
+      "lastModified": 1792261113,
       "priceData": true
     }
   ],
@@ -35,7 +35,7 @@
   "status": "complete",
   "files": {
     "layouts/RefAAPL1/layout.json": {
-      "sha256": "99bc00b3d3650e53d1eea5f6d46e42a657903d77b7b3a59168510922c55178c9",
+      "sha256": "ea08f6ed21967775dc9bfcd847453665f32605d59857d52cc51e9248a178546b",
       "bytes": 70792
     },
     "layouts/RefAAPL1/drawings.json": {
@@ -43,7 +43,7 @@
       "bytes": 45
     },
     "layouts/RefAAPL1/data/chart-1.json": {
-      "sha256": "e413a9c6ab1a024b9e730743aea32b54483f78469b8a9b433e3c0e41f783c5c6",
+      "sha256": "7f782d14bbb62c10dc18c5515309aceda34d3b87479921aac2c66ad7fc252651",
       "bytes": 258425
     }
   }

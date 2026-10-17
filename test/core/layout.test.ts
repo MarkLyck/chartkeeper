@@ -26,7 +26,7 @@ describe('parsing a layout exactly as TradingView saved it', () => {
     const trend = drawings.find((d) => d.type === 'LineToolTrendLine')!;
     expect(trend.points).toEqual([{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 315 }]);
     expect(trend.props).toMatchObject({ linecolor: '#ff9800', linewidth: 3 });
-    expect(drawings.find((d) => d.type === 'LineToolText')!.props.text).toBe('Køb her');
+    expect(drawings.find((d) => d.type === 'LineToolText')!.props.text).toBe('Buy here');
   });
 
   it('resolves indicators against the separate study_meta_info_map', () => {

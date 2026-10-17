@@ -3,7 +3,7 @@
   "id": 1,
   "name": "Reference AAPL",
   "description": "Known layout used to compare the viewer with TradingView",
-  "lastModified": 1792246381,
+  "lastModified": 1792261113,
   "content": {
     "name": "Reference AAPL",
     "layout": "s",
@@ -1128,7 +1128,7 @@
                   "drawBorder": false,
                   "wordWrap": false,
                   "wordWrapWidth": 200,
-                  "text": "Køb her",
+                  "text": "Buy here",
                   "anchored": false,
                   "symbolStateVersion": 2,
                   "zOrderVersion": 2,
@@ -1492,7 +1492,7 @@
               },
               {
                 "type": "Study",
-                "id": "FIqn6C",
+                "id": "TKTOAM",
                 "state": {
                   "inputs": {
                     "length": 50,
@@ -1568,7 +1568,7 @@
                   "pc0001",
                   "el0001",
                   "_seriesId",
-                  "FIqn6C"
+                  "TKTOAM"
                 ]
               }
             ],
@@ -1582,7 +1582,7 @@
             "sources": [
               {
                 "type": "Study",
-                "id": "20Xh7n",
+                "id": "YuxZ0W",
                 "state": {
                   "inputs": {
                     "length": 14,
@@ -1639,13 +1639,13 @@
                 "metaInfo": "RSI@tv-basicstudies-280"
               }
             ],
-            "mainSourceId": "20Xh7n",
+            "mainSourceId": "YuxZ0W",
             "stretchFactor": 1000,
             "leftAxisesState": [],
             "rightAxisesState": [
               {
                 "state": {
-                  "id": "I7LfHgOJ3wmd",
+                  "id": "W1ApfJ3ZjUgB",
                   "m_priceRange": null,
                   "m_isAutoScale": true,
                   "m_isPercentage": false,
@@ -1663,7 +1663,7 @@
                   "hasCalculatedPriceRange": true
                 },
                 "sources": [
-                  "20Xh7n"
+                  "YuxZ0W"
                 ]
               }
             ],
