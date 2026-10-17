@@ -19,7 +19,7 @@ import type { Bar, ChartData, LayoutRecord } from '../src/core/model';
 import { layoutDir, layoutFiles, noExtras, SnapshotWriter } from '../src/core/snapshot';
 import { decodeFrames, fetchChartData, nodeSocketFactory } from '../src/core/tv/datafeed';
 import type { TvChart, TvContent, TvSource } from '../src/core/tv/content';
-import { chartStyle, CHART_STYLES, LINE_TOOL_TYPES, LINE_TOOLS, MAX_STUDIES_SIGNED_OUT, NOT_CAPTURABLE, PAID_STYLE_REASON, SAVED_AS, SOURCE_FIELDS, type LineToolType } from '../test/gallery/catalog';
+import { chartStyle, CHART_STYLES, LINE_TOOL_TYPES, LINE_TOOLS, MAX_STUDIES_SIGNED_OUT, NOT_CAPTURABLE, PAID_STYLE_REASON, SAVED_AS, SOURCE_FIELDS, MULTI_CHART_REASON, type LineToolType } from '../test/gallery/catalog';
 import { SCENES, type Anchor, type ChartSpec, type Props, type Scene } from '../test/gallery/scenes';
 
 const ROOT = path.resolve(__dirname, '..');
@@ -38,7 +38,8 @@ interface SceneMeta {
   description: string;
   uid: string;
   theme: Scene['theme'];
-  arrangement: Scene['arrangement'];
+  /** TradingView's multi-chart code; always "s" (see MULTI_CHART_REASON). */
+  arrangement: 's';
   capturedAt: string;
   tradingViewBuild: string | null;
   image: string;
@@ -60,6 +61,7 @@ interface ChartMeta {
   box: { x: number; y: number; width: number; height: number };
   visibleRange: { from: number; to: number };
   priceRange: { from: number; to: number } | null;
+  /** `drawings`: drawing sources in TradingView's saved layout. `shapes`: getAllShapes(), which leaves out the left and right arrow marks. */
   tradingView: { drawings: number; shapes: number; studies: string[] };
 }
 
@@ -74,7 +76,7 @@ function deepMerge(base: Json, ...over: (Json | undefined)[]): Json {
   return out;
 }
 
-/** Turns off chart decorations the viewer does not draw: trading buttons, logo, earnings/dividend/split and event markers, countdown. */
+/** Turns off chart decorations the viewer does not draw: trading buttons, symbol logo, earnings/dividend/split and event markers, countdown. */
 const QUIET_CHART: Json = {
   paneProperties: { legendProperties: { showTradingButtons: false, showTradingButtonsMobile: false, showLogo: false } },
   chartEventsSourceProperties: { visible: false },
@@ -156,7 +158,7 @@ async function waitFor(what: string, check: () => Promise<boolean> | boolean, ti
 // ---------------------------------------------------------------------------
 // Placing drawings
 
-interface PlainSeries {
+interface SeriesWindow {
   bars: Bar[];
   /** Index of the last bar and the first visible bar. */
   last: number;
@@ -164,6 +166,8 @@ interface PlainSeries {
   lo: number;
   hi: number;
   step: number;
+  /** Below 1 when the series has fewer bars than the scene shows (Point & Figure, Kagi, Renko): anchors shrink with it. */
+  scale: number;
 }
 
 const barCache = new Map<string, Bar[]>();
@@ -179,19 +183,20 @@ async function plainBars(spec: ChartSpec): Promise<Bar[]> {
   return data.bars;
 }
 
-function seriesWindow(bars: Bar[], visibleBars: number): PlainSeries {
+function seriesWindow(bars: Bar[], visibleBars: number): SeriesWindow {
   const last = bars.length - 1;
   const first = Math.max(0, last - visibleBars + 1);
   const shown = bars.slice(first);
   const gaps = bars.slice(-30).map((b, i, a) => (i ? b[0] - a[i - 1]![0] : Infinity)).sort((a, b) => a - b);
-  return { bars, last, first, lo: Math.min(...shown.map((b) => b[3])), hi: Math.max(...shown.map((b) => b[2])), step: gaps[Math.floor(gaps.length / 2)]! };
+  return { bars, last, first, lo: Math.min(...shown.map((b) => b[3])), hi: Math.max(...shown.map((b) => b[2])), step: gaps[Math.floor(gaps.length / 2)]!, scale: Math.min(1, bars.length / visibleBars) };
 }
 
-function resolveAnchor(w: PlainSeries, a: Anchor): { time: number; price: number } {
+function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: number } {
+  const back = (bars: number) => Math.round(bars * w.scale);
   if (!Array.isArray(a)) {
     const { swing, from, to } = a as Extract<Anchor, { swing: unknown }>;
     let best = -1;
-    for (let i = w.last - from; i <= w.last - to; i++) {
+    for (let i = w.last - back(from); i <= w.last - back(to); i++) {
       const bar = w.bars[i];
       if (!bar) continue;
       if (best < 0 || (swing === 'high' ? bar[2] > w.bars[best]![2] : bar[3] < w.bars[best]![3])) best = i;
@@ -200,7 +205,7 @@ function resolveAnchor(w: PlainSeries, a: Anchor): { time: number; price: number
     return { time: w.bars[best]![0], price: swing === 'high' ? w.bars[best]![2] : w.bars[best]![3] };
   }
   const [barsFromRight, price] = a as Extract<Anchor, readonly unknown[]>;
-  const i = w.last - barsFromRight;
+  const i = w.last - back(barsFromRight);
   if (i < 0) throw new Error(`Anchor ${barsFromRight} is left of the loaded bars`);
   const bar = w.bars[Math.min(i, w.last)]!;
   const time = i > w.last ? bar[0] + (i - w.last) * w.step : bar[0];
@@ -213,11 +218,11 @@ const drawingId = (chartIndex: number, i: number) => `c${chartIndex + 1}d${Strin
 // ---------------------------------------------------------------------------
 // Layout content
 
-function buildContent(base: TvContent, scene: Scene, windows: PlainSeries[]): TvContent {
+function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], withDrawings = true): TvContent {
   const content = structuredClone(base) as TvContent & Json;
   const baseChart = content.charts[0]!;
   content.name = scene.name;
-  content.layout = scene.arrangement;
+  content.layout = 's';
   delete content.layoutsSizes;
   content.charts = scene.charts.map((spec, ci): TvChart => {
     const chart = structuredClone(baseChart) as TvChart & Json;
@@ -227,10 +232,11 @@ function buildContent(base: TvContent, scene: Scene, windows: PlainSeries[]): Tv
     main.state = deepMerge(main.state as Json, QUIET_SERIES, { symbol: spec.symbol, shortName: spec.symbol.split(':').pop(), interval: spec.interval, style: spec.style }, spec.series);
     chart.chartProperties = deepMerge(chart.chartProperties as Json, QUIET_CHART, spec.chartProperties);
     chart.lineToolsGroups = { groups: [] };
-    const plotWidth = CHART_AREA_WIDTH / scene.charts.length - PRICE_AXIS_WIDTH;
-    chart.timeScale = deepMerge(chart.timeScale as Json, { m_barSpacing: +(plotWidth / (spec.visibleBars + spec.rightMarginBars)).toFixed(3), m_rightOffset: spec.rightMarginBars, usePercentageRightOffset: false });
     const w = windows[ci]!;
-    const drawings: TvSource[] = spec.drawings.map((dr, i) => ({
+    const plotWidth = CHART_AREA_WIDTH / scene.charts.length - PRICE_AXIS_WIDTH;
+    const shownBars = w.last - w.first + 1 + spec.rightMarginBars;
+    chart.timeScale = deepMerge(chart.timeScale as Json, { m_barSpacing: +(plotWidth / shownBars).toFixed(3), m_rightOffset: spec.rightMarginBars, usePercentageRightOffset: false });
+    const drawings: TvSource[] = (withDrawings ? spec.drawings : []).map((dr, i) => ({
       type: dr.type,
       id: drawingId(ci, i),
       state: { symbol: spec.symbol, interval: spec.interval, ...structuredClone(dr.props ?? {}) },
@@ -241,6 +247,7 @@ function buildContent(base: TvContent, scene: Scene, windows: PlainSeries[]): Tv
       zorder: -5000 + i,
       ownerSource: main.id,
       ...structuredClone(SOURCE_FIELDS[dr.type] ?? {}),
+      ...structuredClone(dr.source ?? {}),
       linkKey: `lk${scene.name.replace(/[^a-z0-9]/gi, '')}${ci}${i}`,
     }));
     mainPane.sources = [main, ...drawings];
@@ -253,16 +260,32 @@ function buildContent(base: TvContent, scene: Scene, windows: PlainSeries[]): Tv
 // ---------------------------------------------------------------------------
 // The TradingView page
 
-async function openChartPage(log: FrameLog) {
+interface Session {
+  page: Page;
+  log: FrameLog;
+  bases: Record<Scene['theme'], TvContent>;
+  openedAt: number;
+  close: () => Promise<void>;
+}
+
+/**
+ * A fresh signed-out chart page. After about four minutes the page opens a
+ * "Join for free" dialog that has no close button and stops drawing updates,
+ * so sessions are replaced before they get that old.
+ */
+const SESSION_MS = 180000;
+
+async function openSession(): Promise<Session> {
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: VIEWPORT });
+  const log = new FrameLog();
   log.attach(page);
   // tsx compiles named functions inside page.evaluate callbacks to __name(...) calls.
   await page.addInitScript('window.__name = (f) => f');
   await page.goto('https://www.tradingview.com/chart/?symbol=NASDAQ%3AAAPL&interval=D', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => (window as any).TradingViewApi?.activeChart, null, { timeout: 60000 });
   await sleep(6000);
-  return { browser, page };
+  return { page, log, bases: await baseContents(page), openedAt: Date.now(), close: () => browser.close() };
 }
 
 async function baseContents(page: Page): Promise<Record<Scene['theme'], TvContent>> {
@@ -303,13 +326,14 @@ async function loadScene(page: Page, log: FrameLog, scene: Scene, content: TvCon
 }
 
 async function applyStyle(page: Page, log: FrameLog, ci: number, style: number) {
-  const now = await page.evaluate((i) => (window as any).TradingViewApi.chart(i).chartType(), ci);
-  if (now === style) return;
+  const type = () => page.evaluate((i) => (window as any).TradingViewApi.chart(i).chartType() as number, ci);
+  if ((await type()) === style) return;
   const before = log.count('series_completed');
   await page.evaluate(([i, s]) => (window as any).TradingViewApi.chart(i).setChartType(s), [ci, style] as const);
-  await waitFor(`style ${style}`, () => log.count('series_completed') > before, 30000);
-  const after = await page.evaluate((i) => (window as any).TradingViewApi.chart(i).chartType(), ci);
-  if (after !== style) throw new Error(`TradingView kept chart style ${after} instead of ${style}`);
+  await waitFor(`style ${style}`, async () => (await type()) === style, 10000).catch(async () => {
+    throw new Error(`TradingView kept chart style ${await type()} instead of ${style}`);
+  });
+  if (chartStyle(style).computed) await waitFor(`bars for style ${style}`, () => log.count('series_completed') > before, 30000);
 }
 
 async function addStudies(page: Page, log: FrameLog, ci: number, spec: ChartSpec) {
@@ -362,15 +386,27 @@ async function assertClean(page: Page) {
   if (problems.length) throw new Error(`The chart area is not clean: ${problems.join('; ')}`);
 }
 
+async function cleanShot(page: Page, clip: { x: number; y: number; width: number; height: number }): Promise<Buffer> {
+  await assertClean(page);
+  return page.screenshot({ clip });
+}
+
 // ---------------------------------------------------------------------------
 // One scene
 
 async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['theme'], TvContent>, scene: Scene): Promise<void> {
   const started = Date.now();
-  const windows = await Promise.all(scene.charts.map(async (c) => seriesWindow(await plainBars(c), c.visibleBars)));
-  const content = buildContent(bases[scene.theme], scene, windows);
   await setTheme(page, scene.theme);
-  await loadScene(page, log, scene, content);
+  const windows: SeriesWindow[] = await Promise.all(scene.charts.map(async (c) => seriesWindow(await plainBars(c), c.visibleBars)));
+  if (chartStyle(scene.charts[0].style).computed) {
+    // Place the drawings on the bars TradingView computes for this style, which only the page knows: load it once without drawings.
+    await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows, false));
+    await applyStyle(page, log, 0, scene.charts[0].style);
+    const bars = log.lastSeries ? log.seriesBars(log.lastSeries) : [];
+    if (bars.length < 10) throw new Error(`TradingView sent only ${bars.length} bars for style ${scene.charts[0].style}`);
+    windows[0] = seriesWindow(bars, scene.charts[0].visibleBars);
+  }
+  await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows));
 
   const ids = scene.charts.map((c, ci) => c.drawings.map((_, i) => drawingId(ci, i)));
   for (const [ci, spec] of scene.charts.entries()) {
@@ -389,7 +425,6 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
   );
   await page.mouse.move(VIEWPORT.width - 3, VIEWPORT.height - 3);
   await sleep(2000);
-  await assertClean(page);
 
   const view = await page.evaluate((count) => {
     const tv = (window as any).TradingViewApi;
@@ -411,15 +446,15 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
     return { charts, clip, build: String((window as any).BUILD_TIME ?? '') || null };
   }, scene.charts.length);
   const saved = await page.evaluate(() => (window as any).TradingViewApi.getSaveChartService().saveToJSON());
-  const shot = await page.screenshot({ clip: view.clip });
+  const shot = await cleanShot(page, view.clip);
 
   const isolated = new Map<string, Buffer>();
   for (const id of ids.flat()) {
     await setVisibility(page, ids, (x) => x === id);
-    isolated.set(id, await page.screenshot({ clip: view.clip }));
+    isolated.set(id, await cleanShot(page, view.clip));
   }
   await setVisibility(page, ids, () => false);
-  isolated.set('_base', await page.screenshot({ clip: view.clip }));
+  isolated.set('_base', await cleanShot(page, view.clip));
   await setVisibility(page, ids, () => true);
 
   const record: LayoutRecord = {
@@ -441,6 +476,7 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
     const spec = scene.charts[ci]!;
     const style = chartStyle(spec.style);
     const v = view.charts[ci]!;
+    if (v.style !== spec.style) throw new Error(`Chart ${ci + 1} shows style ${v.style}, the scene asks for ${spec.style}`);
     const savedDrawings = chart.panes.flatMap((p) => p.drawings);
     if (savedDrawings.length !== spec.drawings.length) throw new Error(`Chart ${ci + 1}: TradingView kept ${savedDrawings.length} of ${spec.drawings.length} drawings`);
     const studies = chart.panes.flatMap((p) => p.studies);
@@ -483,7 +519,7 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
     description: scene.description,
     uid: scene.name,
     theme: scene.theme,
-    arrangement: scene.arrangement,
+    arrangement: 's',
     capturedAt: new Date(started).toISOString(),
     tradingViewBuild: view.build,
     image: 'tradingview.png',
@@ -531,7 +567,6 @@ function validate(scenes: readonly Scene[]) {
   for (const s of scenes) {
     if (names.has(s.name)) throw new Error(`Two scenes are called ${s.name}`);
     names.add(s.name);
-    if ((s.arrangement === 's') !== (s.charts.length === 1)) throw new Error(`${s.name}: arrangement ${s.arrangement} does not match ${s.charts.length} charts`);
     for (const c of s.charts) {
       if (c.studies.length > MAX_STUDIES_SIGNED_OUT) throw new Error(`${s.name}: a signed-out chart computes at most ${MAX_STUDIES_SIGNED_OUT} indicators`);
       if (chartStyle(c.style).computed && (c.studies.length || s.charts.length > 1)) throw new Error(`${s.name}: computed styles are captured on single charts without indicators`);
@@ -598,7 +633,7 @@ async function writeIndex(): Promise<string[]> {
       charts: m.charts.map((c) => ({ chartId: c.chartId, symbol: c.symbol, interval: c.interval, style: c.style.id, barsSource: c.barsSource, studies: c.tradingView.studies })),
       drawings: m.drawings.map((dr) => ({ id: dr.id, type: dr.type, requestedType: dr.requestedType, image: dr.image })),
     })),
-    coverage: { drawingTools: tools, chartStyles: styles },
+    coverage: { drawingTools: tools, chartStyles: styles, multiChartLayouts: { scenes: [], notCapturable: MULTI_CHART_REASON } },
   };
   await fs.writeFile(path.join(OUT, 'index.json'), JSON.stringify(index, null, 2) + '\n');
 
@@ -612,6 +647,11 @@ async function writeIndex(): Promise<string[]> {
     'Each folder holds a snapshot (`manifest.json`, `layouts/<scene>/`), `tradingview.png` (chart area), `meta.json`',
     '(visible time and price range, pixel size, TradingView counts, chart style, drawing id to type), `isolated/<id>.png`',
     '(only that drawing visible) and `isolated/_base.png` (no drawings).',
+    '',
+    'Every layout turns off the trading buttons, the symbol logo, earnings/dividend/split markers and the countdown.',
+    'TradingView still draws its watermark (bottom left) and the chart events button (bottom right) on every',
+    'signed-out chart; mask those two corners when comparing pixels. Bars of computed styles (Renko, Kagi, Point & Figure,',
+    'Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the main series (`barsSource: "tradingview"`).',
     '',
     '## Scenes',
     '',
@@ -636,6 +676,7 @@ async function writeIndex(): Promise<string[]> {
     ...styles.map((s) => `| ${s.id} | ${s.name} | ${s.scenes.join(', ') || '**not captured**'} | ${cell(s.notCapturable ?? (s.computed ? 'Bars computed by TradingView, stored as received.' : ''))} |`),
     '',
   ];
+  md.push('## Multi-chart layouts', '', `Not captured. ${MULTI_CHART_REASON}`, '');
   if (missing.length) md.push('## Missing', '', ...missing.map((x) => `- ${x}`), '');
   await fs.writeFile(path.join(OUT, 'INDEX.md'), md.join('\n'));
   return missing;
@@ -651,23 +692,33 @@ async function main() {
   await fs.mkdir(BUILD, { recursive: true });
 
   const started = Date.now();
-  const log = new FrameLog();
-  const { browser, page } = await openChartPage(log);
   const failed: string[] = [];
+  let session: Session | null = null;
   try {
-    const bases = await baseContents(page);
     for (const scene of scenes) {
       console.log(`scene ${scene.name}`);
-      try {
-        await captureScene(page, log, bases, scene);
-      } catch (e) {
-        failed.push(scene.name);
-        console.error(`  FAILED ${scene.name}: ${(e as Error).message}`);
-        await page.screenshot({ path: path.join(BUILD, `${scene.name}-failure.png`) }).catch(() => undefined);
+      for (let attempt = 1; ; attempt++) {
+        if (!session || Date.now() - session.openedAt > SESSION_MS) {
+          await session?.close();
+          session = await openSession();
+        }
+        try {
+          await captureScene(session.page, session.log, session.bases, scene);
+          break;
+        } catch (e) {
+          console.error(`  ${attempt === 1 ? 'retrying on a fresh page' : 'FAILED'} ${scene.name}: ${(e as Error).message}`);
+          await session.page.screenshot({ path: path.join(BUILD, `${scene.name}-failure-${attempt}.png`) }).catch(() => undefined);
+          await session.close();
+          session = null;
+          if (attempt === 2) {
+            failed.push(scene.name);
+            break;
+          }
+        }
       }
     }
   } finally {
-    await browser.close();
+    await session?.close();
   }
   const missing = await writeIndex();
   console.log(`${scenes.length - failed.length} of ${scenes.length} scenes in ${((Date.now() - started) / 1000).toFixed(0)} s`);

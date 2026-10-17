@@ -19,6 +19,8 @@ export interface DrawingSpec {
   readonly type: LineToolType;
   readonly at: readonly Anchor[];
   readonly props?: Props;
+  /** Fields of the layout source itself, next to `state` (e.g. `positionPercents` of anchored text). */
+  readonly source?: Props;
 }
 
 export interface StudySpec {
@@ -47,9 +49,8 @@ export interface Scene {
   readonly name: string;
   readonly description: string;
   readonly theme: 'light' | 'dark';
-  /** TradingView's multi-chart code; one chart per entry in `charts`. */
-  readonly arrangement: 's' | '2h';
-  readonly charts: readonly [ChartSpec] | readonly [ChartSpec, ChartSpec];
+  /** One chart: signed-out TradingView allows one chart per tab (MULTI_CHART_REASON in catalog.ts). */
+  readonly charts: readonly [ChartSpec];
 }
 
 const chart = (c: Pick<ChartSpec, 'symbol'> & Partial<ChartSpec>): ChartSpec => ({
@@ -62,9 +63,9 @@ const chart = (c: Pick<ChartSpec, 'symbol'> & Partial<ChartSpec>): ChartSpec => 
   ...c,
 });
 
-const scene = (s: Omit<Scene, 'theme' | 'arrangement'> & Partial<Pick<Scene, 'theme' | 'arrangement'>>): Scene => ({ theme: 'light', arrangement: 's', ...s });
+const scene = (s: Omit<Scene, 'theme'> & Partial<Pick<Scene, 'theme'>>): Scene => ({ theme: 'light', ...s });
 
-const d = (type: LineToolType, at: readonly Anchor[], props: Props = {}): DrawingSpec => ({ type, at, props });
+const d = (type: LineToolType, at: readonly Anchor[], props: Props = {}, source?: Props): DrawingSpec => ({ type, at, props, ...(source ? { source } : {}) });
 
 // Unit-square point patterns (x: 0 left .. 1 right, y: 0 bottom .. 1 top) used by `tile`.
 type Unit = readonly (readonly [number, number])[];
@@ -162,7 +163,12 @@ interface TileItem {
 function tile(items: readonly TileItem[], cols: number, rows: number, visibleBars = 150): DrawingSpec[] {
   const boxes = grid(cols, rows, visibleBars);
   if (items.length > boxes.length) throw new Error(`${items.length} drawings do not fit a ${cols}x${rows} grid`);
-  return items.map((it, i) => d(it.type, place(boxes[i]!, unitFor(it.type, it.count)), it.props));
+  return items.map((it, i) => {
+    const box = boxes[i]!;
+    // Anchored tools sit at a fraction of the pane (x from the left, y from the top), not at a bar and price.
+    const anchored = it.type.endsWith('Absolute') ? { positionPercents: { x: +(1 - (box.left + box.right) / 2 / (visibleBars + 12)).toFixed(3), y: +(1 - (box.top + box.bottom) / 2).toFixed(3) } } : undefined;
+    return d(it.type, place(box, unitFor(it.type, it.count)), it.props, anchored);
+  });
 }
 
 const C = {
@@ -338,17 +344,20 @@ const DRAWING_FAMILIES: { name: string; description: string; symbol: string; col
   },
   {
     name: 'labels',
-    description: 'Labels: balloon, comment, price label, price note, signpost, table.',
+    description: 'Labels: balloon, signpost, price label, price note, comment, table.',
     symbol: 'NASDAQ:AAPL',
     cols: 3,
     rows: 2,
     items: [
       { type: 'LineToolBalloon', props: { text: 'Balloon', color: '#ffffff', backgroundColor: C.blue, borderColor: C.blue } },
-      { type: 'LineToolComment', props: { text: 'Comment', color: '#ffffff', backgroundColor: C.green, borderColor: C.green } },
+      { type: 'LineToolSignpost', props: { text: 'Signpost', plateColor: C.red } },
       { type: 'LineToolPriceLabel', props: { color: '#ffffff', backgroundColor: C.orange, borderColor: C.orange } },
       { type: 'LineToolPriceNote', props: { lineColor: C.purple, textColor: C.purple, text: 'Price note' } },
-      { type: 'LineToolSignpost', props: { text: 'Signpost', plateColor: C.red } },
-      { type: 'LineToolTable', props: { backgroundColor: '#ffffff', borderColor: C.gray, textColor: '#131722' } },
+      { type: 'LineToolComment', props: { text: 'Comment', color: '#ffffff', backgroundColor: C.green, borderColor: C.green } },
+      {
+        type: 'LineToolTable',
+        props: { backgroundColor: '#ffffff', borderColor: C.gray, textColor: '#131722', rowsCount: 3, colsCount: 2, cells: [['Ticker', 'AAPL'], ['Bias', 'Long'], ['Stop', '318']], columnWidths: [90, 90], rowHeights: [26, 26, 26] },
+      },
     ],
   },
   {
@@ -532,39 +541,11 @@ const advancedDark = scene({
         d('LineToolTriangle', [[30, 0.6], [20, 0.9], [8, 0.65]], { color: '#AED581', backgroundColor: 'rgba(174, 213, 129, 0.2)', fillBackground: true }),
         d('LineToolHighlighter', [[150, 0.02], [130, 0.06], [110, 0.03], [95, 0.08]], { linecolor: 'rgba(255, 235, 59, 0.5)', width: 14 }),
         d('LineToolEmoji', [[5, 0.98]], { emoji: '⚡', size: 36 }),
-        d('LineToolNoteAbsolute', [[140, 0.8]], { text: 'Hourly view', markerColor: '#FFB74D' }),
+        d('LineToolNoteAbsolute', [[140, 0.8]], { text: 'Hourly view', markerColor: '#FFB74D' }, { positionPercents: { x: 0.08, y: 0.3 } }),
         d('LineToolPrediction', [[2, 'close'], [-15, 0.9]], { linecolor: '#4DD0E1', linewidth: 2 }),
       ],
     }),
   ],
 });
 
-const multichart = scene({
-  name: 'multichart',
-  description: 'Two charts side by side (layout "2h"): AAPL daily candles with RSI and two drawings, MSFT weekly line with a Moving Average and two drawings.',
-  arrangement: '2h',
-  charts: [
-    chart({
-      symbol: 'NASDAQ:AAPL',
-      visibleBars: 90,
-      studies: [{ name: 'Relative Strength Index' }],
-      drawings: [
-        d('LineToolTrendLine', [{ swing: 'low', from: 85, to: 50 }, { swing: 'low', from: 30, to: 2 }], line(C.blue, 2)),
-        d('LineToolRectangle', [[60, 0.75], [20, 0.95]], { color: C.orange, backgroundColor: 'rgba(255, 152, 0, 0.2)', fillBackground: true }),
-      ],
-    }),
-    chart({
-      symbol: 'NASDAQ:MSFT',
-      interval: 'W',
-      style: 2,
-      visibleBars: 80,
-      studies: [{ name: 'Moving Average', inputs: { length: 20 } }],
-      drawings: [
-        d('LineToolFibRetracement', [{ swing: 'low', from: 78, to: 40 }, { swing: 'high', from: 40, to: 0 }], { fillBackground: true, transparency: 90 }),
-        d('LineToolText', [[70, 0.95]], text('Weekly', C.purple, { fontsize: 16, bold: true })),
-      ],
-    }),
-  ],
-});
-
-export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes, multichart];
+export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes];

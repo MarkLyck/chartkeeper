@@ -120,14 +120,29 @@ export const SAVED_AS: Partial<Record<LineToolType, LineToolType>> = {
 };
 
 /**
- * Source fields some tools need before TradingView's loader accepts them.
- * Without `version: 2` the fib time zone runs a v1 migration that reads
- * properties it no longer has. The study-backed tools build their study from
- * an inline `metaInfo` and throw on `metaInfo.fullId` without one. TradingView's
- * own save writes the same fields.
+ * Source fields TradingView's own save writes for a newly drawn tool. `version`
+ * is the tool's current serialization version: without it the loader assumes
+ * version 1 and migrates the drawing, which throws for the fib time zone and
+ * inserts an extra point into Elliott waves. The study-backed tools build their
+ * study from an inline `metaInfo` and throw on `metaInfo.fullId` without one.
  */
 export const SOURCE_FIELDS: Partial<Record<LineToolType, Record<string, unknown>>> = {
   LineToolFibTimeZone: { version: 2 },
+  LineToolFibRetracement: { version: 2 },
+  LineToolTrendBasedFibExtension: { version: 2 },
+  LineToolFibChannel: { version: 2 },
+  LineToolParallelChannel: { version: 2 },
+  LineToolRegressionTrend: { version: 2 },
+  LineToolRiskRewardLong: { version: 2 },
+  LineToolRiskRewardShort: { version: 2 },
+  LineToolArc: { version: 2 },
+  LineToolEllipse: { version: 2 },
+  LineToolBarsPattern: { version: 2 },
+  LineToolElliottImpulse: { version: 4 },
+  LineToolElliottTriangle: { version: 4 },
+  LineToolElliottTripleCombo: { version: 4 },
+  LineToolElliottCorrection: { version: 4 },
+  LineToolElliottDoubleCombo: { version: 4 },
   LineToolAnchoredVWAP: { metaInfo: { id: 'AnchoredVWAP@tv-basicstudies-280', fullId: 'AnchoredVWAP@tv-basicstudies-280', productId: 'tv-basicstudies' } },
   LineToolFixedRangeVolumeProfile: { metaInfo: { id: 'VbPFixed@tv-basicstudies-280', fullId: 'VbPFixed@tv-basicstudies-280', productId: 'tv-basicstudies' } },
 };
@@ -167,6 +182,9 @@ export const chartStyle = (id: number) => {
   if (!s) throw new Error(`Unknown chart style ${id}`);
   return s;
 };
+
+export const MULTI_CHART_REASON =
+  'Signed out, TradingView allows one chart per tab: setLayout("2h") opens the "Several charts per tab" upgrade dialog and loadLayoutState of a "2h" layout creates only the first chart.';
 
 export const PAID_STYLE_REASON = 'Needs a paid plan. On a signed-out chart setChartType() leaves the previous style in place.';
 
