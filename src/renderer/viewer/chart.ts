@@ -304,8 +304,10 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       chart.timeScale().setVisibleLogicalRange({ from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) });
     } else if (saved) {
       // TradingView reopens a layout at its saved bar spacing, with the last bar `rightOffset` bars from the right edge.
-      chart.timeScale().applyOptions({ barSpacing: saved.barSpacing, rightOffset: saved.rightOffset });
-      chart.timeScale().scrollToPosition(saved.rightOffset, false);
+      // lightweight-charts places every bar 1 px further left than TradingView (its index-to-x subtracts 1), so offset by 1 px less.
+      const rightOffset = saved.rightOffset - 1 / saved.barSpacing;
+      chart.timeScale().applyOptions({ barSpacing: saved.barSpacing, rightOffset });
+      chart.timeScale().scrollToPosition(rightOffset, false);
     } else {
       chart.timeScale().setVisibleLogicalRange({ from: last - 150, to: last + 10 });
     }
