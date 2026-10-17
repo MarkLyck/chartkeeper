@@ -4,7 +4,7 @@ import { captureLayout } from './backup';
 import { countLayout, parseLayout } from './layout';
 import { checkRestore, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
-import { APP_NAME, noExtras, SNAPSHOT_FILES, SnapshotWriter, type SnapshotReader } from './snapshot';
+import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { TvError } from './tv/errors';
@@ -232,49 +232,45 @@ async function saveSafetyCopy(client: TvClient, target: LayoutListEntry, root: s
   });
 }
 
+export type TemplateKind = 'study-template' | 'drawing-template' | 'theme';
+
 export interface TemplateRestoreResult {
-  added: string[];
-  skipped: string[];
+  added: { kind: TemplateKind; name: string }[];
+  skipped: { kind: TemplateKind; name: string }[];
+  /** Kinds whose file this backup does not have. */
+  missing: TemplateKind[];
 }
 
 /** Adds templates and themes from a snapshot that the account doesn't have. Existing ones are never changed. */
 export async function restoreTemplates(client: TvClient, snapshot: SnapshotReader): Promise<TemplateRestoreResult> {
-  const added: string[] = [];
-  const skipped: string[] = [];
-  const read = async <T>(file: Promise<T | null>, rel: string, empty: T): Promise<T> => {
-    const v = await file;
-    if (v === null) skipped.push(`${rel} (not in this backup)`);
-    return v ?? empty;
+  const result: TemplateRestoreResult = { added: [], skipped: [], missing: [] };
+  const addUnless = async (exists: boolean, kind: TemplateKind, name: string, add: () => Promise<void>) => {
+    if (exists) {
+      result.skipped.push({ kind, name });
+      return;
+    }
+    await add();
+    result.added.push({ kind, name });
   };
-  const studies = (await read(snapshot.studyTemplates(), SNAPSHOT_FILES.studyTemplates, { templates: [] })).templates;
+
+  const studies = await snapshot.studyTemplates();
+  if (!studies) result.missing.push('study-template');
   const existingStudies = new Set((await client.studyTemplates()).map((t) => String(t.name)));
-  for (const t of studies) {
-    const n = String(t.name);
-    if (existingStudies.has(n)) skipped.push(`Indicator template "${n}"`);
-    else {
-      await client.addStudyTemplate({ name: n, content: t.content, meta_info: t.meta_info });
-      added.push(`Indicator template "${n}"`);
-    }
+  for (const t of studies?.templates ?? []) {
+    const name = String(t.name);
+    await addUnless(existingStudies.has(name), 'study-template', name, () => client.addStudyTemplate({ name, content: t.content, meta_info: t.meta_info }));
   }
-  const tools = (await read(snapshot.drawingTemplates(), SNAPSHOT_FILES.drawingTemplates, { tools: {} })).tools;
-  for (const [tool, templates] of Object.entries(tools)) {
+
+  const tools = await snapshot.drawingTemplates();
+  if (!tools) result.missing.push('drawing-template');
+  for (const [tool, templates] of Object.entries(tools?.tools ?? {})) {
     const existing = new Set(await client.drawingTemplateNames(tool));
-    for (const [n, content] of Object.entries(templates)) {
-      if (existing.has(n)) skipped.push(`Drawing template "${n}"`);
-      else {
-        await client.addDrawingTemplate(tool, n, content);
-        added.push(`Drawing template "${n}"`);
-      }
-    }
+    for (const [name, content] of Object.entries(templates)) await addUnless(existing.has(name), 'drawing-template', name, () => client.addDrawingTemplate(tool, name, content));
   }
-  const themes = (await read(snapshot.themes(), SNAPSHOT_FILES.themes, { themes: {} })).themes;
+
+  const themes = await snapshot.themes();
+  if (!themes) result.missing.push('theme');
   const existingThemes = new Set(Object.keys(await client.themes()));
-  for (const [n, content] of Object.entries(themes)) {
-    if (existingThemes.has(n)) skipped.push(`Theme "${n}"`);
-    else {
-      await client.addTheme(n, content);
-      added.push(`Theme "${n}"`);
-    }
-  }
-  return { added, skipped };
+  for (const [name, content] of Object.entries(themes?.themes ?? {})) await addUnless(existingThemes.has(name), 'theme', name, () => client.addTheme(name, content));
+  return result;
 }

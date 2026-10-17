@@ -40,6 +40,8 @@ function stamp(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
 }
 
+const point = (day: string, price: number) => ({ time: Date.parse(`${day}T00:00:00Z`) / 1000, offset: 0, price });
+
 function daysAgo(days: number, hour: number, minute: number): Date {
   const d = new Date();
   d.setDate(d.getDate() - days);
@@ -237,17 +239,17 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
         layouts: [
           {
             uid: ref.uid, name: ref.name, status: 'changed', changes: [
-              { kind: 'added', subject: 'Trend line', detail: 'Trend line on NASDAQ:AAPL (2026-09-02 @ 228.5, 2026-10-10 @ 241.2)' },
-              { kind: 'removed', subject: 'Horizontal line', detail: 'Horizontal line "Støtte" on NASDAQ:AAPL (2026-08-01 @ 215)' },
-              { kind: 'changed', subject: 'Indicator RSI', detail: 'settings: length 14 → 21' },
-              { kind: 'changed', subject: 'Fib retracement', detail: 'moved: 2026-07-01 @ 190, 2026-09-15 @ 236 → 2026-07-01 @ 190, 2026-10-01 @ 244' },
+              { kind: 'added', what: 'drawing', toolType: 'LineToolTrendLine', text: null, symbol: 'NASDAQ:AAPL', points: [point('2026-09-02', 228.5), point('2026-10-10', 241.2)] },
+              { kind: 'removed', what: 'drawing', toolType: 'LineToolHorzLine', text: 'Støtte', symbol: 'NASDAQ:AAPL', points: [point('2026-08-01', 215)] },
+              { kind: 'changed', what: 'study-inputs', shortName: 'RSI', inputs: [{ key: 'length', from: '14', to: '21' }] },
+              { kind: 'changed', what: 'drawing-moved', toolType: 'LineToolFibRetracement', from: [point('2026-07-01', 190), point('2026-09-15', 236)], to: [point('2026-07-01', 190), point('2026-10-01', 244)] },
             ],
           },
           { uid: c25.uid, name: c25.name, status: 'added', changes: [] },
           { uid: vestas.uid, name: vestas.name, status: 'removed', changes: [] },
           { uid: novo.uid, name: novo.name, status: 'same', changes: [] },
         ],
-        other: [{ kind: 'added', subject: 'Indicator template', detail: 'Mine glidende gennemsnit' }],
+        other: [{ kind: 'added', what: 'study-template', name: 'Mine glidende gennemsnit' }],
       };
       return { ok: true, value };
     },
@@ -288,7 +290,14 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
     async restoreTemplates(dir) {
       record('restoreTemplates', dir);
       await wait(control.stepMs * 2);
-      return { ok: true, value: { added: ['Mine glidende gennemsnit', 'Tema: Lys med blå'], skipped: ['Bollinger standard'] } };
+      return {
+        ok: true,
+        value: {
+          added: [{ kind: 'study-template', name: 'Mine glidende gennemsnit' }, { kind: 'theme', name: 'Lys med blå' }],
+          skipped: [{ kind: 'study-template', name: 'Bollinger standard' }],
+          missing: [],
+        },
+      };
     },
     async openFolder(dir) {
       record('openFolder', dir);

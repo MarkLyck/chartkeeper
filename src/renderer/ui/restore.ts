@@ -1,7 +1,8 @@
 import { sameLayoutName, type Tally } from '../../core/restorePolicy';
 import type { ManifestLayout } from '../../core/model';
-import type { AppError, RestoreOutcome, RestoreRequest, RestoreTargets, SnapshotSummary } from '../../shared/api';
+import type { AppError, RestoreOutcome, RestoreRequest, RestoreTargets, SnapshotSummary, TemplatesOutcome } from '../../shared/api';
 import { formatDateTime, restoreStepText, t, tn } from '../i18n';
+import { templateItemText, templateMissingText } from './changes';
 import { button, confirmDialog, details, errorBox, icons, notice, progressBar, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
@@ -23,7 +24,7 @@ type Step =
   | { k: 'done'; source: Source; outcome: RestoreOutcome }
   | { k: 'failed'; source: Source; error: AppError; mode: Mode };
 
-type Templates = null | { k: 'running' } | { k: 'ok'; value: { added: string[]; skipped: string[] } } | { k: 'error'; error: AppError };
+type Templates = null | { k: 'running' } | { k: 'ok'; value: TemplatesOutcome } | { k: 'error'; error: AppError };
 
 const STEP_NUMBER: Record<Step['k'], 1 | 2 | 3> = { choose: 1, how: 2, running: 3, done: 3, failed: 3 };
 
@@ -99,15 +100,20 @@ export function restoreScreen(ctx: Ctx): Screen {
       tpl === null ? null
       : tpl.k === 'running' ? spinner(t('restore.templatesRunning'))
       : tpl.k === 'error' ? errorBox(ctx, tpl.error)
-      : tpl.value.added.length === 0 && tpl.value.skipped.length === 0 ? notice('info', t('restore.templatesNothing'))
-      : notice('success', t('restore.templatesTitle'),
-          tpl.value.added.length ? h('div', {}, h('h3', { class: 'list-title' }, t('restore.templatesAdded')), h('ul', { class: 'plain-list' }, tpl.value.added.map((n) => h('li', {}, n)))) : null,
-          tpl.value.skipped.length ? h('div', {}, h('h3', { class: 'list-title' }, t('restore.templatesSkipped')), h('ul', { class: 'plain-list' }, tpl.value.skipped.map((n) => h('li', {}, n)))) : null);
+      : templatesResult(tpl.value);
     return h('section', { class: 'card templates', attrs: { 'aria-labelledby': 'tpl-title' } },
       h('h2', { id: 'tpl-title' }, t('restore.templatesTitle')),
       h('p', { class: 'note' }, t('restore.templatesNote')),
       button(t('restore.templatesButton'), () => void run(), { id: 'restore-templates', disabled: tpl?.k === 'running' || ctx.state().busy !== null }),
       result);
+  }
+
+  function templatesResult(r: TemplatesOutcome): HTMLElement {
+    const added = r.added.map(templateItemText);
+    const skipped = [...r.skipped.map(templateItemText), ...r.missing.map(templateMissingText)];
+    if (added.length === 0 && skipped.length === 0) return notice('info', t('restore.templatesNothing'));
+    const list = (title: string, items: string[]) => (items.length ? h('div', {}, h('h3', { class: 'list-title' }, title), h('ul', { class: 'plain-list' }, items.map((n) => h('li', {}, n)))) : null);
+    return notice('success', t('restore.templatesTitle'), list(t('restore.templatesAdded'), added), list(t('restore.templatesSkipped'), skipped));
   }
 
   async function toHow(source: Source, mode: Mode = 'new') {

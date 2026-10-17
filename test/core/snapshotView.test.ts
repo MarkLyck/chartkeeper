@@ -62,12 +62,19 @@ describe('comparing two snapshots', () => {
     const r = await compareSnapshots(older, newer);
     expect(r.layouts).toHaveLength(1);
     expect(r.layouts[0]).toMatchObject({ uid: 'AbCd1234', status: 'changed' });
-    expect(r.layouts[0]!.changes.map((c) => `${c.kind} ${c.subject}`)).toEqual(['removed Trend line']);
-    expect(r.other.map((c) => `${c.kind} ${c.subject}: ${c.detail}`).sort()).toEqual([
-      'added Theme: Lys',
-      'changed Pine script: Thomas Trend',
-      'removed Indicator template: My RSI setup',
+    expect(r.layouts[0]!.changes).toEqual([expect.objectContaining({ kind: 'removed', what: 'drawing', toolType: 'LineToolTrendLine' })]);
+    expect(r.other).toEqual([
+      { kind: 'removed', what: 'study-template', name: 'My RSI setup' },
+      { kind: 'added', what: 'theme', name: 'Lys' },
+      { kind: 'changed', what: 'script', name: 'Thomas Trend' },
     ]);
+  });
+
+  it('names a changed drawing template with its tool', async () => {
+    const older = await snapshot(1);
+    tv.drawingTemplates.LineToolTrendLine!['Thick orange'] = { linecolor: '#000' };
+    const r = await compareSnapshots(older, await snapshot(2));
+    expect(r.other).toEqual([{ kind: 'changed', what: 'drawing-template', name: 'Thick orange', toolType: 'LineToolTrendLine' }]);
   });
 
   it('treats a template file missing from the older snapshot as empty', async () => {
@@ -75,6 +82,6 @@ describe('comparing two snapshots', () => {
     await fs.rm(path.join(older.dir, SNAPSHOT_FILES.themes));
     const newer = await snapshot(2);
     const r = await compareSnapshots(older, newer);
-    expect(r.other).toEqual([{ kind: 'added', subject: 'Theme', detail: 'Thomas dark' }]);
+    expect(r.other).toEqual([{ kind: 'added', what: 'theme', name: 'Thomas dark' }]);
   });
 });

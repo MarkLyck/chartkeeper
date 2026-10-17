@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diffLayouts, diffSnapshots, toolName } from '../../src/core/diff';
+import { diffLayouts, diffNamed, diffSnapshots } from '../../src/core/diff';
 import { parseLayout } from '../../src/core/layout';
 import { referenceRecord } from '../fakes/fixtures';
 
@@ -23,12 +23,15 @@ describe('comparing two backups', () => {
     const ma = s2.find((s) => s.metaInfo === 'MASimple@tv-basicstudies-280')!;
     ma.state.inputs.length = 100;
     const changes = diffLayouts(parseLayout(base(), null), parseLayout(after, null));
-    const text = changes.map((c) => `${c.kind} ${c.subject}: ${c.detail}`);
-    expect(text).toContainEqual(expect.stringMatching(/^changed Trend line: moved: .* 315 → .* 333$/));
-    expect(text).toContainEqual(expect.stringMatching(/^removed Fib retracement/));
-    expect(text).toContainEqual(expect.stringMatching(/^added Text: Text "Sælg"/));
-    expect(text).toContainEqual(expect.stringMatching(/^changed Indicator MA: settings: length: 50 → 100/));
     expect(changes).toHaveLength(4);
+    expect(changes).toContainEqual({
+      kind: 'changed', what: 'drawing-moved', toolType: 'LineToolTrendLine',
+      from: [{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 315 }],
+      to: [{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 333 }],
+    });
+    expect(changes).toContainEqual(expect.objectContaining({ kind: 'removed', what: 'drawing', toolType: 'LineToolFibRetracement' }));
+    expect(changes).toContainEqual({ kind: 'added', what: 'drawing', toolType: 'LineToolText', text: 'Sælg', symbol: 'NASDAQ:AAPL', points: [{ time: 1785000000, offset: 0, price: 320 }] });
+    expect(changes).toContainEqual({ kind: 'changed', what: 'study-inputs', shortName: 'MA', inputs: [{ key: 'length', from: '50', to: '100' }] });
   });
 
   it('lists added and removed layouts', () => {
@@ -37,7 +40,12 @@ describe('comparing two backups', () => {
     expect(diffSnapshots(new Map([[a.uid, a]]), new Map([[b.uid, b]])).map((d) => [d.name, d.status])).toEqual([['Reference AAPL', 'removed'], ['Other', 'added']]);
   });
 
-  it('names drawing tools in plain words', () => {
-    expect(toolName('LineToolTrendBasedFibExtension')).toBe('Trend based fib extension');
+  it('compares named items by content', () => {
+    const items = (o: Record<string, unknown>) => new Map(Object.entries(o).map(([k, content]) => [k, { item: k, content }]));
+    expect(diffNamed(items({ a: 1, b: { x: 1, y: 2 }, c: 1 }), items({ b: { y: 2, x: 1 }, c: 2, d: 1 }))).toEqual([
+      { kind: 'added', item: 'd' },
+      { kind: 'removed', item: 'a' },
+      { kind: 'changed', item: 'c' },
+    ]);
   });
 });

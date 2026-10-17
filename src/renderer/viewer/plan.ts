@@ -3,7 +3,8 @@ import { sameTicker } from '../../core/tv/content';
 import type { Bar, ChartData } from '../../core/model';
 import { DRAWING_KINDS } from './drawings/registry';
 import { guessPriceFormat, mainSeriesSpec, type MainSeriesSpec, type PriceFormatSpec } from './series';
-import { drawingName, reasonText, STRINGS, type Lang, type NotShownReason } from './strings';
+import type { Lang } from '../../shared/api';
+import { drawingName, reasonText, STRINGS, type NotShownReason } from './strings';
 import { hasPineGraphics, planStudyRender, studyPriceFormat, type StudyRender } from './studies';
 import { isIntraday, parseInterval, TimeIndex, timeZoneOffset } from './time';
 

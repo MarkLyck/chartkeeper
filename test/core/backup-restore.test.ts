@@ -6,7 +6,7 @@ import { runBackup } from '../../src/core/backup';
 import { countLayout, parseLayout } from '../../src/core/layout';
 import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
 import { checkRestore } from '../../src/core/restorePolicy';
-import { listSnapshots, SnapshotReader } from '../../src/core/snapshot';
+import { listSnapshots, SNAPSHOT_FILES, SnapshotReader } from '../../src/core/snapshot';
 import { TvClient } from '../../src/core/tv/client';
 import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
 import { PoliteHttp } from '../../src/core/tv/http';
@@ -306,7 +306,19 @@ describe('restore', () => {
     const snap = await snapshot();
     tv.drawingTemplates = { LineToolTrendLine: {} };
     const r = await restoreTemplates(client(), snap);
-    expect(r.added).toEqual(['Drawing template "Thick orange"']);
-    expect(r.skipped.sort()).toEqual(['Indicator template "My RSI setup"', 'Theme "Thomas dark"']);
+    expect(r).toEqual({
+      added: [{ kind: 'drawing-template', name: 'Thick orange' }],
+      skipped: [{ kind: 'study-template', name: 'My RSI setup' }, { kind: 'theme', name: 'Thomas dark' }],
+      missing: [],
+    });
+    expect(tv.drawingTemplates.LineToolTrendLine).toEqual({ 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } });
+  });
+
+  it('skips template files a backup does not have, and says which', async () => {
+    const snap = await snapshot();
+    await fs.rm(path.join(snap.dir, SNAPSHOT_FILES.themes));
+    tv.themes = {};
+    expect(await restoreTemplates(client(), snap)).toMatchObject({ added: [], missing: ['theme'] });
+    expect(tv.themes).toEqual({});
   });
 });

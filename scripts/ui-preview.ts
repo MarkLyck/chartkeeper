@@ -153,6 +153,9 @@ async function main() {
     await page.selectOption('#compare-pick', { index: 2 });
     await page.click('#compare-go');
     await page.waitForSelector('.compare .diff');
+    const compared = await page.textContent('.compare');
+    const words = lang === 'da' ? ['Trendlinje', 'flyttet:', 'Indikatorskabelon'] : ['Trend line', 'moved:', 'Indicator template'];
+    expect(words.every((w) => compared?.includes(w)), `[${lang}] the comparison is not worded in the window's language`);
     await shot(page, 'view-compare');
     await page.click('#compare-close');
     await page.waitForSelector('.chart-box canvas');
@@ -173,6 +176,7 @@ async function main() {
     await shot(page, 'restore-step1');
     await page.click('#restore-templates');
     await page.waitForSelector('.templates .notice-success');
+    expect((await page.textContent('.templates'))?.includes(lang === 'da' ? 'Tema »Lys med blå«' : 'Theme “Lys med blå”') === true, `[${lang}] restored templates are not worded in the window's language`);
     await shot(page, 'restore-templates');
     await page.click('#restore-next');
     await page.waitForSelector('#mode-new');

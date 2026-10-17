@@ -2,6 +2,7 @@ import type { AppError, CompareOutcome, LoadedLayout, SnapshotSummary } from '..
 import type { Change, LayoutDiff } from '../../core/diff';
 import { getLang, t } from '../i18n';
 import { renderLayout } from '../viewer';
+import { changeText } from './changes';
 import { button, errorBox, notice, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
@@ -160,11 +161,12 @@ const STATUS_KEYS = {
 
 function changeItem(c: Change): HTMLElement {
   const m = MARKS[c.kind];
+  const { subject, detail } = changeText(c);
   return h('li', { class: `change ${m.cls}` },
     h('span', { class: 'mark', attrs: { 'aria-hidden': 'true' } }),
     h('span', { class: 'change-kind' }, t(m.key)),
-    h('span', { class: 'change-subject' }, c.subject),
-    c.detail ? h('span', { class: 'change-detail' }, c.detail) : null);
+    h('span', { class: 'change-subject' }, subject),
+    detail ? h('span', { class: 'change-detail' }, detail) : null);
 }
 
 function comparePanel(ctx: Ctx, c: Extract<Main, { k: 'compare' }>, newer: SnapshotSummary, all: SnapshotSummary[], close: () => void): HTMLElement {

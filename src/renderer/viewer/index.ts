@@ -4,11 +4,11 @@ import { applyGrid, arrangementGrid } from './arrangement';
 import { chartTheme, renderChart, type RenderedChart } from './chart';
 import { notShownPanel } from './panel';
 import { planLayout, type NotShownItem } from './plan';
-import type { Lang } from './strings';
+import type { Lang } from '../../shared/api';
 
 export type { NotShownItem } from './plan';
 export { planChart, planLayout } from './plan';
-export type { Lang, NotShownReason } from './strings';
+export type { NotShownReason } from './strings';
 
 export interface RenderOptions {
   lang: Lang;

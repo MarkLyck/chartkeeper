@@ -1,47 +1,35 @@
-import type { ParsedDrawing, ParsedLayout, ParsedStudy } from './layout';
+import type { DrawingPoint, ParsedDrawing, ParsedLayout, ParsedStudy } from './layout';
 
-/** One human-readable change between two backups. */
-export interface Change {
-  kind: 'added' | 'removed' | 'changed';
-  /** What the change is about, e.g. "Trend line", "Indicator RSI", "Layout". */
-  subject: string;
-  detail: string;
+/** A property whose value changed. Values are JSON with sorted keys, or null when the property was not set. */
+export interface PropChange {
+  key: string;
+  from: string | null;
+  to: string | null;
 }
+
+export type ChangeKind = 'added' | 'removed' | 'changed';
+export type NamedKind = 'study-template' | 'drawing-template' | 'theme' | 'script';
+
+/** One change between two backups, as data. The window words it in the user's language. */
+export type Change =
+  | { kind: 'changed'; what: 'layout-name' | 'arrangement'; from: string; to: string }
+  | { kind: 'added' | 'removed'; what: 'chart'; index: number; symbol: string; interval: string }
+  | { kind: 'changed'; what: 'chart-symbol' | 'chart-interval'; index: number; from: string; to: string }
+  | { kind: 'changed'; what: 'chart-style'; index: number }
+  | { kind: 'added' | 'removed'; what: 'study'; shortName: string; name: string }
+  | { kind: 'changed'; what: 'study-inputs'; shortName: string; inputs: PropChange[] }
+  | { kind: 'changed'; what: 'study-style'; shortName: string }
+  | { kind: 'added' | 'removed'; what: 'drawing'; toolType: string; text: string | null; symbol: string | null; points: DrawingPoint[] }
+  | { kind: 'changed'; what: 'drawing-moved'; toolType: string; from: DrawingPoint[]; to: DrawingPoint[] }
+  | { kind: 'changed'; what: 'drawing-props'; toolType: string; props: PropChange[] }
+  | { kind: ChangeKind; what: Exclude<NamedKind, 'drawing-template'>; name: string }
+  | { kind: ChangeKind; what: 'drawing-template'; name: string; toolType: string };
 
 export interface LayoutDiff {
   uid: string;
   name: string;
   status: 'added' | 'removed' | 'changed' | 'same';
   changes: Change[];
-}
-
-export interface SnapshotDiff {
-  layouts: LayoutDiff[];
-  other: Change[];
-}
-
-/** "LineToolFibRetracement" -> "Fib retracement" */
-export function toolName(type: string): string {
-  const base = type.replace(/^LineTool/, '');
-  const known: Record<string, string> = {
-    TrendLine: 'Trend line',
-    HorzLine: 'Horizontal line',
-    HorzRay: 'Horizontal ray',
-    VertLine: 'Vertical line',
-    FibRetracement: 'Fib retracement',
-    ParallelChannel: 'Parallel channel',
-    ArrowMarkUp: 'Arrow up',
-    ArrowMarkDown: 'Arrow down',
-  };
-  return known[base] ?? base.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase()).replace(/ ([A-Z])/g, (_, c: string) => ` ${c.toLowerCase()}`);
-}
-
-const fmtTime = (t: number) => new Date(t * 1000).toISOString().slice(0, 10);
-const fmtPoints = (d: ParsedDrawing) => d.points.map((p) => `${fmtTime(p.time)} @ ${+p.price.toFixed(6)}`).join(', ');
-
-function describeDrawing(d: ParsedDrawing): string {
-  const text = typeof d.props.text === 'string' && d.props.text ? ` "${d.props.text}"` : '';
-  return `${toolName(d.type)}${text} on ${d.symbol ?? 'the chart'} (${fmtPoints(d)})`;
 }
 
 function allDrawings(l: ParsedLayout): Map<string, ParsedDrawing> {
@@ -57,56 +45,62 @@ function allStudies(l: ParsedLayout): Map<string, ParsedStudy> {
   return m;
 }
 
-const stable = (v: unknown): string => JSON.stringify(v, (_k, val: unknown) => (val && typeof val === 'object' && !Array.isArray(val) ? Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b))) : val));
+const stable = (v: unknown): string | null =>
+  JSON.stringify(v, (_k, val: unknown) => (val && typeof val === 'object' && !Array.isArray(val) ? Object.fromEntries(Object.entries(val).sort(([a], [b]) => a.localeCompare(b))) : val)) ?? null;
 
-function propChanges(a: Record<string, unknown>, b: Record<string, unknown>): string[] {
+function propChanges(a: Record<string, unknown>, b: Record<string, unknown>): PropChange[] {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
-  const out: string[] = [];
-  for (const k of keys) if (stable(a[k]) !== stable(b[k])) out.push(`${k}: ${stable(a[k]) ?? '–'} → ${stable(b[k]) ?? '–'}`);
+  const out: PropChange[] = [];
+  for (const key of keys) {
+    const [from, to] = [stable(a[key]), stable(b[key])];
+    if (from !== to) out.push({ key, from, to });
+  }
   return out;
 }
 
+const drawingText = (d: ParsedDrawing) => (typeof d.props.text === 'string' && d.props.text ? d.props.text : null);
+
 export function diffLayouts(before: ParsedLayout, after: ParsedLayout): Change[] {
   const changes: Change[] = [];
-  if (before.name !== after.name) changes.push({ kind: 'changed', subject: 'Layout', detail: `renamed from "${before.name}" to "${after.name}"` });
-  if (before.arrangement !== after.arrangement) changes.push({ kind: 'changed', subject: 'Layout', detail: `chart arrangement ${before.arrangement} → ${after.arrangement}` });
+  if (before.name !== after.name) changes.push({ kind: 'changed', what: 'layout-name', from: before.name, to: after.name });
+  if (before.arrangement !== after.arrangement) changes.push({ kind: 'changed', what: 'arrangement', from: before.arrangement, to: after.arrangement });
 
   const charts = Math.max(before.charts.length, after.charts.length);
-  for (let i = 0; i < charts; i++) {
-    const a = before.charts[i];
-    const b = after.charts[i];
-    if (!a && b) changes.push({ kind: 'added', subject: `Chart ${i + 1}`, detail: `${b.symbol} ${b.interval}` });
-    else if (a && !b) changes.push({ kind: 'removed', subject: `Chart ${i + 1}`, detail: `${a.symbol} ${a.interval}` });
+  for (let index = 0; index < charts; index++) {
+    const a = before.charts[index];
+    const b = after.charts[index];
+    if (!a && b) changes.push({ kind: 'added', what: 'chart', index, symbol: b.symbol, interval: b.interval });
+    else if (a && !b) changes.push({ kind: 'removed', what: 'chart', index, symbol: a.symbol, interval: a.interval });
     else if (a && b) {
-      if (a.symbol !== b.symbol) changes.push({ kind: 'changed', subject: `Chart ${i + 1}`, detail: `symbol ${a.symbol} → ${b.symbol}` });
-      if (a.interval !== b.interval) changes.push({ kind: 'changed', subject: `Chart ${i + 1}`, detail: `interval ${a.interval} → ${b.interval}` });
-      if (a.style !== b.style) changes.push({ kind: 'changed', subject: `Chart ${i + 1}`, detail: `chart type changed` });
+      if (a.symbol !== b.symbol) changes.push({ kind: 'changed', what: 'chart-symbol', index, from: a.symbol, to: b.symbol });
+      if (a.interval !== b.interval) changes.push({ kind: 'changed', what: 'chart-interval', index, from: a.interval, to: b.interval });
+      if (a.style !== b.style) changes.push({ kind: 'changed', what: 'chart-style', index });
     }
   }
 
   const sa = allStudies(before);
   const sb = allStudies(after);
-  for (const [id, s] of sb) if (!sa.has(id)) changes.push({ kind: 'added', subject: `Indicator ${s.shortName}`, detail: s.name });
-  for (const [id, s] of sa) if (!sb.has(id)) changes.push({ kind: 'removed', subject: `Indicator ${s.shortName}`, detail: s.name });
+  for (const [id, s] of sb) if (!sa.has(id)) changes.push({ kind: 'added', what: 'study', shortName: s.shortName, name: s.name });
+  for (const [id, s] of sa) if (!sb.has(id)) changes.push({ kind: 'removed', what: 'study', shortName: s.shortName, name: s.name });
   for (const [id, s] of sb) {
     const old = sa.get(id);
     if (!old) continue;
-    const inputs = propChanges(old.inputs, s.inputs).filter((c) => !c.startsWith('text:'));
-    if (inputs.length) changes.push({ kind: 'changed', subject: `Indicator ${s.shortName}`, detail: `settings: ${inputs.join('; ')}` });
-    if (stable(old.styles) !== stable(s.styles)) changes.push({ kind: 'changed', subject: `Indicator ${s.shortName}`, detail: 'colors or line styles changed' });
+    const inputs = propChanges(old.inputs, s.inputs).filter((c) => c.key !== 'text');
+    if (inputs.length) changes.push({ kind: 'changed', what: 'study-inputs', shortName: s.shortName, inputs });
+    if (stable(old.styles) !== stable(s.styles)) changes.push({ kind: 'changed', what: 'study-style', shortName: s.shortName });
   }
 
   const da = allDrawings(before);
   const db = allDrawings(after);
-  for (const [id, d] of db) if (!da.has(id)) changes.push({ kind: 'added', subject: toolName(d.type), detail: describeDrawing(d) });
-  for (const [id, d] of da) if (!db.has(id)) changes.push({ kind: 'removed', subject: toolName(d.type), detail: describeDrawing(d) });
+  const drawing = (kind: 'added' | 'removed', d: ParsedDrawing): Change => ({ kind, what: 'drawing', toolType: d.type, text: drawingText(d), symbol: d.symbol, points: d.points });
+  for (const [id, d] of db) if (!da.has(id)) changes.push(drawing('added', d));
+  for (const [id, d] of da) if (!db.has(id)) changes.push(drawing('removed', d));
   for (const [id, d] of db) {
     const old = da.get(id);
     if (!old) continue;
-    const moved = stable(old.points) !== stable(d.points);
+    if (stable(old.points) !== stable(d.points)) changes.push({ kind: 'changed', what: 'drawing-moved', toolType: d.type, from: old.points, to: d.points });
     const props = propChanges(old.props, d.props);
-    if (moved) changes.push({ kind: 'changed', subject: toolName(d.type), detail: `moved: ${fmtPoints(old)} → ${fmtPoints(d)}` });
-    if (props.length) changes.push({ kind: 'changed', subject: toolName(d.type), detail: `style or text: ${props.slice(0, 6).join('; ')}${props.length > 6 ? ` (+${props.length - 6} more)` : ''}` });
+    if (props.length) changes.push({ kind: 'changed', what: 'drawing-props', toolType: d.type, props });
   }
   return changes;
 }
@@ -126,11 +120,16 @@ export function diffSnapshots(before: Map<string, ParsedLayout>, after: Map<stri
   return out.sort((x, y) => order[x.status] - order[y.status] || x.name.localeCompare(y.name));
 }
 
-/** Compares named items (templates, scripts) by content. */
-export function diffNamed(subject: string, before: Record<string, unknown>, after: Record<string, unknown>): Change[] {
-  const out: Change[] = [];
-  for (const k of Object.keys(after)) if (!(k in before)) out.push({ kind: 'added', subject, detail: k });
-  for (const k of Object.keys(before)) if (!(k in after)) out.push({ kind: 'removed', subject, detail: k });
-  for (const k of Object.keys(after)) if (k in before && stable(before[k]) !== stable(after[k])) out.push({ kind: 'changed', subject, detail: k });
+/** Named items (templates, themes, scripts) keyed by an id, with the content that decides whether one changed. */
+export type NamedItems<T> = Map<string, { item: T; content: unknown }>;
+
+export function diffNamed<T>(before: NamedItems<T>, after: NamedItems<T>): { kind: ChangeKind; item: T }[] {
+  const out: { kind: ChangeKind; item: T }[] = [];
+  for (const [k, v] of after) if (!before.has(k)) out.push({ kind: 'added', item: v.item });
+  for (const [k, v] of before) if (!after.has(k)) out.push({ kind: 'removed', item: v.item });
+  for (const [k, v] of after) {
+    const old = before.get(k);
+    if (old && stable(old.content) !== stable(v.content)) out.push({ kind: 'changed', item: v.item });
+  }
   return out;
 }

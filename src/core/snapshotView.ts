@@ -1,4 +1,4 @@
-import { diffNamed, diffSnapshots, type Change, type LayoutDiff } from './diff';
+import { diffNamed, diffSnapshots, type Change, type LayoutDiff, type NamedItems, type NamedKind } from './diff';
 import { parseLayout, type ParsedLayout } from './layout';
 import type { ChartData } from './model';
 import type { SnapshotReader } from './snapshot';
@@ -28,28 +28,36 @@ export interface SnapshotComparison {
  * to the account, not to one layout, so the layout diff leaves them out.
  */
 export async function compareSnapshots(older: SnapshotReader, newer: SnapshotReader): Promise<SnapshotComparison> {
-  const layouts = async (r: SnapshotReader) => {
-    const out = new Map<string, ParsedLayout>();
-    for (const l of r.manifest.layouts) out.set(l.uid, parseLayout(await r.layout(l.uid), await r.drawings(l.uid)));
-    return out;
-  };
-  const named = async (r: SnapshotReader) => {
-    const [tools, studies, themes, scripts] = [await r.drawingTemplates(), await r.studyTemplates(), await r.themes(), await r.scriptsIndex()];
-    return {
-      drawingTemplates: Object.fromEntries(Object.entries(tools?.tools ?? {}).flatMap(([tool, t]) => Object.entries(t).map(([n, c]) => [`${n} (${tool.replace('LineTool', '')})`, c]))),
-      studyTemplates: Object.fromEntries((studies?.templates ?? []).map((t) => [String(t.name), t.content])),
-      themes: themes?.themes ?? {},
-      scripts: Object.fromEntries((scripts?.scripts ?? []).map((s) => [s.name, s.version])),
-    };
-  };
-  const [a, b] = [await named(older), await named(newer)];
+  const [a, b] = [await namedItems(older), await namedItems(newer)];
+  const byName = (what: Exclude<NamedKind, 'drawing-template'>, before: NamedItems<string>, after: NamedItems<string>) =>
+    diffNamed(before, after).map(({ kind, item }): Change => ({ kind, what, name: item }));
   return {
-    layouts: diffSnapshots(await layouts(older), await layouts(newer)),
+    layouts: diffSnapshots(await parsedLayouts(older), await parsedLayouts(newer)),
     other: [
-      ...diffNamed('Drawing template', a.drawingTemplates, b.drawingTemplates),
-      ...diffNamed('Indicator template', a.studyTemplates, b.studyTemplates),
-      ...diffNamed('Theme', a.themes, b.themes),
-      ...diffNamed('Pine script', a.scripts, b.scripts),
+      ...diffNamed(a.drawingTemplates, b.drawingTemplates).map(({ kind, item }): Change => ({ kind, what: 'drawing-template', ...item })),
+      ...byName('study-template', a.studyTemplates, b.studyTemplates),
+      ...byName('theme', a.themes, b.themes),
+      ...byName('script', a.scripts, b.scripts),
     ],
+  };
+}
+
+async function parsedLayouts(r: SnapshotReader): Promise<Map<string, ParsedLayout>> {
+  const out = new Map<string, ParsedLayout>();
+  for (const l of r.manifest.layouts) out.set(l.uid, parseLayout(await r.layout(l.uid), await r.drawings(l.uid)));
+  return out;
+}
+
+/** A missing file reads as no items. */
+async function namedItems(r: SnapshotReader) {
+  const byName = (entries: [string, unknown][]): NamedItems<string> => new Map(entries.map(([name, content]) => [name, { item: name, content }]));
+  const drawingTemplates: NamedItems<{ name: string; toolType: string }> = new Map();
+  for (const [toolType, templates] of Object.entries((await r.drawingTemplates())?.tools ?? {}))
+    for (const [name, content] of Object.entries(templates)) drawingTemplates.set(`${toolType}/${name}`, { item: { name, toolType }, content });
+  return {
+    drawingTemplates,
+    studyTemplates: byName(((await r.studyTemplates())?.templates ?? []).map((t) => [String(t.name), t.content])),
+    themes: byName(Object.entries((await r.themes())?.themes ?? {})),
+    scripts: byName(((await r.scriptsIndex())?.scripts ?? []).map((s) => [s.name, s.version])),
   };
 }

@@ -20,7 +20,8 @@ import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesSpec } from './series';
-import { intervalLabel, STRINGS, type Lang } from './strings';
+import type { Lang } from '../../shared/api';
+import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
 
 type Obj = Record<string, unknown>;

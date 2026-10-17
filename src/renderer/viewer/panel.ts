@@ -1,6 +1,7 @@
 import type { ParsedLayout } from '../../core/layout';
 import type { NotShownItem } from './plan';
-import { intervalLabel, STRINGS, type Lang } from './strings';
+import type { Lang } from '../../shared/api';
+import { intervalLabel, STRINGS } from './strings';
 
 /** The "Not shown" list under the charts. Returns null when everything was drawn. */
 export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayout, lang: Lang, dark: boolean): HTMLElement | null {

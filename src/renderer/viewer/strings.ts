@@ -1,4 +1,4 @@
-export type Lang = 'en' | 'da';
+import type { Lang } from '../../shared/api';
 
 export type NotShownReason =
   | { code: 'hidden' }
