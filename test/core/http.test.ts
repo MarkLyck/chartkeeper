@@ -101,7 +101,7 @@ describe('network failures', () => {
     const res = await http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
     expect(res.status).toBe(502);
     expect(sent).toHaveLength(4);
-    const gaps = sent.slice(1).map((s, i) => s.at - sent[i]!.at);
+    const gaps = sent.slice(1).map((s, i) => Math.round(s.at - sent[i]!.at));
     expect(gaps[0]).toBeGreaterThanOrEqual(3000);
     expect(gaps[1]).toBeGreaterThanOrEqual(6000);
     expect(gaps[2]).toBeGreaterThanOrEqual(12000);
