@@ -123,6 +123,7 @@ interface Ctx {
   /** Whether bar i closed up, against its open or, with `onPrevClose`, the previous close. */
   up: (i: number, onPrevClose: boolean) => boolean;
   changeColors: { up: string; down: string };
+  precision: number;
 }
 
 type Built = Omit<MainSeriesSpec, 'fallbackFrom' | 'ohlc' | 'priceLine'>;
@@ -299,7 +300,7 @@ const STYLES: Record<number, (c: Ctx) => Built> = {
       body: s.drawBody === false ? null : color,
       border: s.showBorders === false ? null : str(s.borderColor, color),
       label: s.showLabels === false ? null : str(s.labelColor, color),
-      formatPrice: (p) => p.toFixed(2),
+      formatPrice: (p) => p.toFixed(c.precision),
       font: "-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif",
     });
     return { spec: styleSpec(c, view, styleBars(c), color), legend: { styleName: '', fields: fieldsOf('HL', () => color), change: null } };
@@ -375,13 +376,14 @@ export function mainSeriesSpec(chart: ParsedChart, bars: readonly Bar[], times: 
   const fallback = !STYLES[chart.style] || (COMPUTED_STYLES.has(chart.style) && !computed && chart.style !== 8);
   const style = fallback ? 1 : chart.style;
   const ohlc = style === 8 && !computed ? heikinAshi(bars) : bars.map(([, open, high, low, close]) => ({ open, high, low, close }));
+  const format = guessPriceFormat(bars, computed ? computedStyle : undefined);
   const legendProps = obj(obj(obj(chart.chartProperties).paneProperties).legendProperties);
   const c: Ctx = {
     st,
     ohlc,
     t: (i) => ts(times[i]!),
     common: {
-      priceFormat: { type: 'price', ...guessPriceFormat(bars, computed ? computedStyle : undefined) },
+      priceFormat: { type: 'price', ...format },
       priceLineVisible: false,
       lastValueVisible: true,
     },
@@ -390,6 +392,7 @@ export function mainSeriesSpec(chart: ParsedChart, bars: readonly Bar[], times: 
       return onPrevClose && prev ? ohlc[i]!.close >= prev.close : ohlc[i]!.close >= ohlc[i]!.open;
     },
     changeColors: { up: str(legendProps.barChangeUpColor, UP), down: str(legendProps.barChangeDownColor, DOWN) },
+    precision: format.precision,
   };
   const priceLine = st.showPriceLine === false ? null : { color: str(st.priceLineColor, ''), width: lineWidth(st.priceLineWidth, 1) };
   return { ...STYLES[style]!(c), ohlc, fallbackFrom: fallback ? chart.style : null, priceLine };
