@@ -34,6 +34,7 @@ const DRAWING_THRESHOLD = 6;
 const FOREGROUND_THRESHOLD = 40;
 const TOLERANCE = 3;
 const MAX_COLOR = 90;
+const THRESHOLD_MARGIN = 0.03;
 
 interface SceneMeta {
   scene: string;
@@ -144,6 +145,7 @@ async function main() {
   const summary = summarize(reports);
   await fs.writeFile(path.join(OUT, 'scores.json'), JSON.stringify({ summary, scenes: reports }, null, 2));
   await fs.writeFile(path.join(OUT, 'index.html'), reportHtml(reports, summary, baseline));
+  await fs.writeFile(path.join(OUT, 'proposed-thresholds.json'), JSON.stringify(proposeThresholds(summary), null, 2));
 
   const failures = reports.flatMap((r) => [
     ...r.problems.map((p) => `${r.scene}: ${p}`),
@@ -310,6 +312,13 @@ function summarize(reports: SceneReport[]): Summary {
     }
   }
   return { drawings, families, styles, indicators };
+}
+
+/** Worst measured score per item, less a margin for rendering noise, rounded down to 0.01: a starting point for test/gallery/thresholds.ts. */
+function proposeThresholds(s: Summary) {
+  const floor = (v: number) => Math.max(0, Math.floor((v - THRESHOLD_MARGIN) * 100) / 100);
+  const map = (o: Record<string, number>) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, floor(v)]));
+  return { drawings: map(Object.fromEntries(Object.entries(s.drawings).map(([t, d]) => [t, d.min]))), styles: map(s.styles), indicators: map(s.indicators) };
 }
 
 function printSummary(s: Summary, base: Baseline | null) {
