@@ -1,6 +1,6 @@
 import type { LineStyle, LineWidth } from 'lightweight-charts';
 import type { ParsedStudy, PlotDef } from '../../core/layout';
-import { fillColor, lwcLineStyle, withTransparency } from './colors';
+import { fillColor, lwcLineStyle, parseColor, rgbaCss, withTransparency } from './colors';
 import { lineWidth, ts, type PriceFormatSpec, type SeriesSpec } from './series';
 import { num, obj, str, type Props } from '../../core/props';
 
@@ -43,6 +43,10 @@ export interface PlotSeries {
   title: string;
   /** Main colour, for the legend. */
   color: string;
+  /** Per-bar colours from the plot's colorer, when it has one. */
+  barColors: (string | null)[] | null;
+  /** Whether TradingView shows the plot's value in the indicator's legend. */
+  inLegend: boolean;
   spec: SeriesSpec<'Line' | 'Histogram' | 'Area'>;
   values: Column;
 }
@@ -60,8 +64,42 @@ const INVISIBLE_KINDS = new Set(['alertcondition', 'data', 'dataoffset']);
 /** Plot kinds that only modify another plot, counted with the plot they belong to. */
 const PART_KINDS = new Set(['colorer', 'ohlc_high', 'ohlc_low', 'ohlc_close', 'ohlc_colorer', 'wick_colorer', 'border_colorer', 'up_colorer', 'down_colorer', 'text_colorer']);
 
-/** TradingView `display` is a bit mask; bit 1 means "show on the chart pane". Missing means everything. */
-export const shownOnPane = (style: Props): boolean => style.visible !== false && (style.display === undefined || (Number(style.display) & 1) !== 0);
+/** TradingView `display` bit masks of plots and inputs: 1 chart pane, 4 price scale, 8 legend ("status line"). Missing means everything. */
+const DISPLAY = { pane: 1, priceScale: 4, legend: 8 } as const;
+const displays = (display: unknown, bit: number) => display === undefined || (Number(display) & bit) !== 0;
+
+export const shownOnPane = (style: Props): boolean => style.visible !== false && displays(style.display, DISPLAY.pane);
+
+/** The colour without its transparency, as TradingView paints legend values and price axis labels. */
+export function opaque(color: string): string {
+  const c = parseColor(color);
+  return c ? rgbaCss({ ...c, a: 1 }) : color;
+}
+
+const HIDDEN_INPUT = /^(__|pine)/;
+
+/** Inputs TradingView leaves out of one indicator's legend: Volume shows its MA length only while the MA is drawn. */
+function skippedLegendInputs(study: ParsedStudy): string[] {
+  const ma = obj(study.styles.vol_ma);
+  return study.metaInfoId.startsWith('Volume@') && (ma.visible === false || ma.display === 0) ? ['length'] : [];
+}
+
+const shortInput = (v: unknown): v is number | string => typeof v === 'number' || (typeof v === 'string' && v !== '' && v.length < 24);
+
+/** "14 close": the input values TradingView shows after an indicator's name, in the order of its inputs. */
+export function legendInputs(study: ParsedStudy): string[] {
+  const metaInputs = Array.isArray(study.metaInfo?.inputs) ? study.metaInfo.inputs.map(obj) : null;
+  if (!metaInputs) return Object.entries(study.inputs).filter(([k, v]) => !HIDDEN_INPUT.test(k) && shortInput(v)).map(([, v]) => String(v));
+  const skipped = skippedLegendInputs(study);
+  const out: string[] = [];
+  for (const input of metaInputs) {
+    const id = str(input.id, '');
+    const v = study.inputs[id];
+    if (HIDDEN_INPUT.test(id) || input.isHidden === true || !displays(input.display, DISPLAY.legend) || skipped.includes(id) || !shortInput(v)) continue;
+    out.push(str(obj(input.optionsTitles)[String(v)], String(v)));
+  }
+  return out;
+}
 
 function paletteColor(study: ParsedStudy, paletteId: string, raw: number | null, transparency: unknown): string | null {
   if (raw === null) return null;
@@ -88,8 +126,9 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
   const common = {
     priceLineVisible: style.trackPrice === true,
     priceLineColor: color,
-    lastValueVisible: study.state.showLabelsOnPriceScale !== false && (style.display === undefined || (Number(style.display) & 4) !== 0),
+    lastValueVisible: study.state.showLabelsOnPriceScale !== false && displays(style.display, DISPLAY.priceScale),
   };
+  const legend = { barColors: colors ?? null, inLegend: displays(style.display, DISPLAY.legend) };
   const title = str(style.title, plot.id);
   const plottype = typeof style.plottype === 'number' ? style.plottype : 0;
   const t = (i: number) => ts(times[i]!);
@@ -100,6 +139,7 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
       plotId: plot.id,
       title,
       color,
+      ...legend,
       values,
       spec: {
         kind: 'Histogram',
@@ -117,6 +157,7 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
       plotId: plot.id,
       title,
       color,
+      ...legend,
       values,
       spec: {
         kind: 'Area',
@@ -144,6 +185,7 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
     plotId: plot.id,
     title,
     color,
+    ...legend,
     values,
     spec: {
       kind: 'Line',

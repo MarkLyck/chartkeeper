@@ -14,9 +14,10 @@ import type {
 } from 'lightweight-charts';
 import type { DrawingPoint, ParsedDrawing } from '../../core/layout';
 import type { Bar } from '../../core/model';
-import type { DrawContext } from './drawings/canvas';
+import { FONT_FAMILY, type DrawContext } from './drawings/canvas';
 import { DRAWING_KINDS, type AxisLabel } from './drawings/registry';
 import { dashPattern, luminance } from './colors';
+import { visiblePeriods, type HighLowPivots, type PivotPeriod, type PivotsPlan, type StandardPivots } from './pivots';
 import type { Band, Column, FillPlan } from './studies';
 import type { TimeIndex } from './time';
 
@@ -220,6 +221,132 @@ export class StudyBackdropPrimitive extends BasePrimitive {
         ctx.stroke();
       }
     });
+  }
+}
+
+/** Wide enough for every level name; TradingView sizes all label cells by the widest. */
+const PIVOT_LABEL_TEXTS = ['P', 'S1', 'R1', 'S2', 'R2', 'S3', 'R3', 'S4', 'R4', 'S5', 'R5', '/'];
+
+export interface PivotsEnv {
+  formatPrice(price: number): string;
+  lastBar: number;
+}
+
+/** Pivot Points Standard level lines with their labels and price axis labels, or Pivot Points High Low price callouts. */
+export class PivotsPrimitive extends BasePrimitive {
+  private axisViews: ISeriesPrimitiveAxisView[] = [];
+
+  constructor(
+    private readonly plan: PivotsPlan,
+    private readonly penv: PivotsEnv,
+  ) {
+    super('normal');
+  }
+
+  private lastVisibleBar(): number | null {
+    const range = this.env?.chart.timeScale().getVisibleLogicalRange();
+    return range ? Math.min(Math.floor(range.to), this.penv.lastBar) : null;
+  }
+
+  updateAllViews(): void {
+    if (this.plan.kind !== 'standard' || !this.plan.axisLabels) return;
+    const last = this.lastVisibleBar();
+    const current = last === null ? null : visiblePeriods(this.plan, last).current;
+    this.axisViews = (current?.levels ?? []).map((level) => ({
+      coordinate: () => this.env?.series.priceToCoordinate(level.price) ?? -1000,
+      text: () => this.penv.formatPrice(level.price),
+      textColor: () => textOn(level.color),
+      backColor: () => level.color,
+    }));
+  }
+
+  priceAxisViews(): readonly ISeriesPrimitiveAxisView[] {
+    return this.axisViews;
+  }
+
+  /** TradingView fits the main scale to the levels of every period in view. */
+  autoscaleInfo(from: Logical, to: Logical): AutoscaleInfo | null {
+    if (this.plan.kind !== 'standard') return null;
+    const prices = this.plan.periods.filter((p) => p.end >= from && p.start <= to).flatMap((p) => p.levels.map((l) => l.price));
+    return prices.length ? { priceRange: { minValue: Math.min(...prices), maxValue: Math.max(...prices) } } : null;
+  }
+
+  protected draw(target: DrawTarget): void {
+    const env = this.env;
+    const scale = env && logicalScale(env.chart);
+    const last = this.lastVisibleBar();
+    if (!env || !scale || last === null) return;
+    const y = (price: number) => env.series.priceToCoordinate(price) ?? NaN;
+    const x = (i: number) => scale.a + scale.b * i;
+    const plan = this.plan;
+    target.useMediaCoordinateSpace(({ context: ctx, mediaSize }) => {
+      if (plan.kind === 'standard') drawStandardPivots(ctx, plan, visiblePeriods(plan, last).drawn, x, y);
+      else drawHighLowPivots(ctx, plan, x, y, mediaSize.width, this.penv.formatPrice);
+    });
+  }
+}
+
+function drawStandardPivots(ctx: CanvasRenderingContext2D, plan: StandardPivots, periods: PivotPeriod[], x: (i: number) => number, y: (p: number) => number): void {
+  ctx.font = `${plan.fontSize}px ${FONT_FAMILY}`;
+  ctx.textBaseline = 'middle';
+  const cell = Math.round(Math.max(...PIVOT_LABEL_TEXTS.map((t) => ctx.measureText(t).width)) + 4);
+  const cellHeight = plan.fontSize + 8;
+  for (const period of periods) {
+    const x1 = Math.round(x(period.start));
+    const x2 = Math.round(x(period.end));
+    for (const line of period.lines) {
+      const ly = Math.round(y(line.price)) + (line.width % 2 ? 0.5 : 0);
+      ctx.strokeStyle = line.color;
+      ctx.lineWidth = line.width;
+      ctx.beginPath();
+      ctx.moveTo(x1, ly);
+      ctx.lineTo(x2, ly);
+      ctx.stroke();
+      if (!plan.showLabels) continue;
+      // Labels end where the line starts; merged levels ("S1/R1") continue to the right, one cell per name.
+      const ty = Math.round(y(line.price) - cellHeight / 2) + Math.round(cellHeight / 2) + 0.5;
+      ctx.fillStyle = line.color;
+      line.label.split('/').forEach((name, k) => {
+        if (k > 0) ctx.fillText('/', Math.round(x1 - cell / 2 + (k - 1) * cell) + 0.5, ty);
+        ctx.fillText(name, Math.round(x1 - cell + k * cell) + 0.5, ty);
+      });
+    }
+  }
+}
+
+const CALLOUT = { gap: 3, pointer: 4, halfPointer: 5, padX: 4, padY: 1 };
+
+/** A price box pointing at the pivot bar's high (box above) or low (box below), for pivots on bars in view. */
+function drawHighLowPivots(ctx: CanvasRenderingContext2D, plan: HighLowPivots, x: (i: number) => number, y: (p: number) => number, width: number, formatPrice: (p: number) => string): void {
+  ctx.font = `${plan.fontSize}px ${FONT_FAMILY}`;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.lineWidth = 1;
+  const boxHeight = plan.fontSize + 2 * CALLOUT.padY;
+  for (const p of plan.pivots) {
+    const cx = Math.round(x(p.index));
+    if (cx < 0 || cx > width) continue;
+    const text = formatPrice(p.price);
+    const half = Math.round(ctx.measureText(text).width / 2 + CALLOUT.padX);
+    const dir = p.high ? -1 : 1;
+    const tip = Math.round(y(p.price)) + dir * CALLOUT.gap;
+    const base = tip + dir * CALLOUT.pointer;
+    const far = base + dir * boxHeight;
+    ctx.beginPath();
+    ctx.moveTo(cx, tip);
+    ctx.lineTo(cx + CALLOUT.halfPointer, base);
+    ctx.lineTo(cx + half, base);
+    ctx.lineTo(cx + half, far);
+    ctx.lineTo(cx - half, far);
+    ctx.lineTo(cx - half, base);
+    ctx.lineTo(cx - CALLOUT.halfPointer, base);
+    ctx.closePath();
+    ctx.fillStyle = plan.backColor;
+    ctx.fill();
+    ctx.strokeStyle = plan.borderColor;
+    ctx.stroke();
+    ctx.fillStyle = plan.textColor;
+    ctx.fillText(text, cx, (base + far) / 2);
   }
 }
 

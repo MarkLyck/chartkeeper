@@ -2,6 +2,7 @@ import { diffNamed, diffSnapshots, type Change, type LayoutDiff, type NamedItems
 import { parseLayout, type ParsedLayout } from './layout';
 import type { ChartData } from './model';
 import type { SnapshotReader } from './snapshot';
+import { inflateStudyGraphics } from './studyGraphics';
 
 export interface LoadedLayout {
   layout: ParsedLayout;
@@ -13,7 +14,10 @@ export interface LoadedLayout {
 export async function openLayout(reader: SnapshotReader, uid: string): Promise<LoadedLayout> {
   const layout = parseLayout(await reader.layout(uid), await reader.drawings(uid), await reader.userDrawings());
   const data: Record<string, ChartData | null> = {};
-  for (const c of layout.charts) data[c.chartId] = await reader.chartData(uid, c.chartId);
+  for (const c of layout.charts) {
+    const chartData = await reader.chartData(uid, c.chartId);
+    data[c.chartId] = chartData && inflateStudyGraphics(chartData);
+  }
   return { layout, data };
 }
 

@@ -16,11 +16,12 @@ import {
   type SeriesType,
   type TimeChartOptions,
 } from 'lightweight-charts';
-import type { DrawingPoint, ParsedStudy } from '../../core/layout';
+import type { DrawingPoint } from '../../core/layout';
 import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
-import { DrawingsPrimitive, StudyBackdropPrimitive } from './primitives';
+import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
+import { legendInputs, opaque } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
@@ -112,14 +113,6 @@ function formatValue(v: number | null | undefined, format: PriceFormatSpec): str
   return String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
 }
 
-const HIDDEN_INPUT = /^(__|pine)/;
-/** "MA 50 close": the inputs TradingView shows after an indicator's name. */
-function inputsSummary(study: ParsedStudy): string {
-  return Object.entries(study.inputs)
-    .filter(([k, v]) => !HIDDEN_INPUT.test(k) && (typeof v === 'number' || (typeof v === 'string' && v !== '' && v.length < 24)))
-    .map(([, v]) => String(v))
-    .join(' ');
-}
 
 /** Time axis label of a drawing, like TradingView's "Mon 14 Sep '26": the date of the bar the point sits on. */
 function timeFormatter(plan: ChartPlan): (p: DrawingPoint) => string {
@@ -181,21 +174,27 @@ function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
   };
 }
 
+/** TradingView's legend writes negatives with a minus sign and volume units after a space ("64.36 M"). */
+const legendNumber = (text: string) => text.replace(/^-/, '\u2212').replace(/(\d)([KMB])$/, '$1 $2');
+
+/** One row per indicator: its name, its inputs in a lighter colour, then each plot's value in the plot's colour at that bar. */
 function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): Legend {
   const el = legendBox(theme);
   el.style.top = `${top}px`;
+  el.style.lineHeight = '24px';
   const rows = studies.map((s) => {
     const row = document.createElement('div');
     const values = document.createElement('span');
-    row.append(span(`${s.study.shortName} ${inputsSummary(s.study)}`.trim()), values);
+    const inputs = legendInputs(s.study);
+    row.append(span(s.study.shortName), ...(inputs.length ? [span(inputs.join(' '), withTransparency(theme.textColor, 35))] : []), values);
     el.append(row);
-    return { s, values };
+    return { s, values, plots: s.render.series.filter((p) => p.inLegend) };
   });
   return {
     el,
     update(i) {
-      for (const { s, values } of rows) {
-        values.replaceChildren(...s.render.series.map((p) => span(formatValue(p.values[i], s.priceFormat), p.color)));
+      for (const { s, values, plots } of rows) {
+        values.replaceChildren(...plots.map((p) => span(legendNumber(formatValue(p.values[i], s.priceFormat)), opaque(p.barColors?.[i] ?? p.color))));
       }
     },
   };
@@ -264,9 +263,10 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       const target = first ?? host;
       if (!target) continue;
       if (ps.render.fills.length || ps.render.bands.length) target.attachPrimitive(new StudyBackdropPrimitive(ps.render.fills, ps.render.bands));
+      if (ps.pivots) target.attachPrimitive(new PivotsPrimitive(ps.pivots, { formatPrice: drawingsEnv.formatPrice, lastBar: plan.bars.length - 1 }));
       host ??= first;
     }
-    if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 26 : 6) });
+    if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 28 : 4) });
     if (host && pane.drawings.length) host.attachPrimitive(new DrawingsPrimitive(pane.drawings, drawingsEnv));
   });
 

@@ -1,9 +1,11 @@
 import { drawingsForChart, type ParsedChart, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
 import { sameTicker } from '../../core/tv/content';
 import type { Bar, ChartData } from '../../core/model';
+import { obj } from '../../core/props';
 import { DRAWING_KINDS } from './drawings/registry';
 import { guessPriceFormat, mainSeriesSpec, type MainSeriesSpec, type PriceFormatSpec } from './series';
 import { drawingName, reasonText, STRINGS, type NotShownReason } from './strings';
+import { planPivots, type PivotsPlan } from './pivots';
 import { hasPineGraphics, planStudyRender, studyPriceFormat, type StudyRender } from './studies';
 import { isIntraday, parseInterval, TimeIndex, timeZoneOffset } from './time';
 
@@ -23,6 +25,8 @@ export interface NotShownItem {
 export interface PlannedStudy {
   study: ParsedStudy;
   render: StudyRender;
+  /** Pivot points levels or labels, drawn from the study's non-series output. */
+  pivots: PivotsPlan | null;
   priceFormat: PriceFormatSpec;
   /** Price scale for the study's series: "right" shares the pane's scale, anything else is a separate overlay scale. */
   priceScaleId: string;
@@ -114,8 +118,9 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
         continue;
       }
       const render = planStudyRender(study, values.rows, barTimes, times);
+      const pivots = planPivots(study, values.graphics, bars, obj(chart.chartProperties.scalesProperties));
       const isMainPane = pane === mainSource;
-      const hostable = render.series.length > 0 || (isMainPane && render.fills.length > 0);
+      const hostable = render.series.length > 0 || (isMainPane && render.fills.length > 0) || (isMainPane && pivots !== null);
       if (!hostable) {
         add('indicator', study.id, name, render.unsupported.length ? { code: 'unsupported-plots', count: render.unsupported.length } : { code: 'nothing-to-draw' });
         continue;
@@ -123,12 +128,13 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
       paneFor(pane).studies.push({
         study,
         render,
+        pivots,
         priceFormat: studyPriceFormat(study, priceFormat),
         priceScaleId: isMainPane && !study.isPriceStudy ? `overlay-${study.id}` : 'right',
       });
       renderedStudies.push(study.id);
       if (render.unsupported.length) add('indicator', study.id, name, { code: 'unsupported-plots', count: render.unsupported.length }, true);
-      if (hasPineGraphics(values.graphics)) add('indicator', study.id, name, { code: 'pine-graphics' }, true);
+      if (!pivots && hasPineGraphics(values.graphics)) add('indicator', study.id, name, { code: 'pine-graphics' }, true);
     }
   }
 

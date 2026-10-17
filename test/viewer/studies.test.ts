@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ParsedStudy, PlotDef } from '../../src/core/layout';
-import { alignRows, hasPineGraphics, planStudyRender } from '../../src/renderer/viewer/studies';
+import { alignRows, hasPineGraphics, legendInputs, planStudyRender } from '../../src/renderer/viewer/studies';
 
 function study(over: { plots: PlotDef[]; styles?: Record<string, Record<string, unknown>>; state?: Record<string, unknown>; meta?: Record<string, unknown> }): ParsedStudy {
   const state = { styles: over.styles ?? {}, ...over.state };
@@ -159,5 +159,45 @@ describe('hasPineGraphics', () => {
   it('detects labels, boxes and tables', () => {
     expect(hasPineGraphics({ d: JSON.stringify({ graphicsCmds: { create: { labels: [{ id: 1 }] } } }), indexes: [] })).toBe(true);
     expect(hasPineGraphics({ dwglabels: { 1: { t: 'x' } } })).toBe(true);
+  });
+});
+
+describe('legendInputs', () => {
+  const withInputs = (metaInfoId: string, inputs: Record<string, unknown>, metaInputs: Record<string, unknown>[], styles: Record<string, Record<string, unknown>> = {}): ParsedStudy => ({
+    ...study({ plots: [], styles, meta: { inputs: metaInputs } }),
+    metaInfoId,
+    inputs,
+  });
+
+  it('lists inputs in the order of the indicator definition, as TradingView does ("Stoch RSI 3 3 14 14 close")', () => {
+    const s = withInputs('StochasticRSI@tv-basicstudies-280', { D: 3, K: 3, 'RSI Length': 14, 'RSI Source': 'close', 'Stochastic Length': 14 }, [
+      { id: 'K', display: 15 },
+      { id: 'D', display: 15 },
+      { id: 'RSI Length', display: 15 },
+      { id: 'Stochastic Length', display: 15 },
+      { id: 'RSI Source', display: 15 },
+    ]);
+    expect(legendInputs(s)).toEqual(['3', '3', '14', '14', 'close']);
+  });
+
+  it('skips inputs hidden from the legend and shows option titles ("Pivots Traditional Auto 15")', () => {
+    const s = withInputs('PivotPointsStandard@tv-basicstudies-280', { kind: 'Traditional', lookBack: 15, pivTimeFrame: 'Auto', showHistoricalPivots: true }, [
+      { id: 'kind', display: 15, optionsTitles: { DeMark: 'DM' } },
+      { id: 'showHistoricalPivots', display: 0 },
+      { id: 'pivTimeFrame', display: 15 },
+      { id: 'lookBack', display: 15 },
+    ]);
+    expect(legendInputs(s)).toEqual(['Traditional', 'Auto', '15']);
+    expect(legendInputs({ ...s, inputs: { ...s.inputs, kind: 'DeMark' } })[0]).toBe('DM');
+  });
+
+  it("shows Volume's MA length only while the MA is drawn", () => {
+    const meta = [
+      { id: 'length', display: 15 },
+      { id: 'col_prev_close', display: 0 },
+    ];
+    const inputs = { col_prev_close: false, length: 20 };
+    expect(legendInputs(withInputs('Volume@tv-basicstudies-280', inputs, meta, { vol_ma: { display: 0, visible: false } }))).toEqual([]);
+    expect(legendInputs(withInputs('Volume@tv-basicstudies-280', inputs, meta, { vol_ma: { display: 15, visible: true } }))).toEqual(['20']);
   });
 });
