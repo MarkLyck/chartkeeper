@@ -17,6 +17,7 @@
     "typecheck": "tsc --noEmit -p .",
     "test": "vitest run",
     "test:live": "vitest run --config vitest.live.config.mts",
+    "test:compat": "vitest run --config vitest.compat.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts",
     "viewer:compare": "tsx scripts/viewer-compare.ts",
     "screenshots": "tsx scripts/readme-screenshots.ts",
