@@ -226,6 +226,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
   await fs.writeFile(path.join(out, 'viewer-base.png'), base.png);
   await fs.writeFile(path.join(out, 'overlay.png'), fromDataUrl(result.full.overlay));
   await fs.writeFile(path.join(out, 'overlay-base.png'), fromDataUrl(result.base.overlay));
+  await fs.writeFile(path.join(out, 'side-by-side.png'), fromDataUrl(result.sideBySide));
 
   const typeOf = new Map(layout.charts.flatMap((c) => c.panes.flatMap((p) => p.drawings.map((d) => [d.id, d.type] as const))));
   const notShownIds = new Set(full.info.notShown.filter((n) => !n.partial).map((n) => n.id));

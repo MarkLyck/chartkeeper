@@ -74,6 +74,7 @@ export interface AnalyzeResult {
   panes: MaskScore[];
   full: MaskScore & { overlay: string };
   base: { overlay: string };
+  sideBySide: string;
 }
 
 let current: { input: SceneInput; rendered: RenderedLayout | null } | null = null;
@@ -135,9 +136,7 @@ async function decode(url: string): Promise<Img> {
   return { width: bmp.width, height: bmp.height, data: ctx.getImageData(0, 0, bmp.width, bmp.height).data };
 }
 
-async function encode(img: Img): Promise<string> {
-  const canvas = new OffscreenCanvas(img.width, img.height);
-  canvas.getContext('2d')!.putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
+async function canvasUrl(canvas: OffscreenCanvas): Promise<string> {
   const blob = await canvas.convertToBlob({ type: 'image/png' });
   const bytes = new Uint8Array(await blob.arrayBuffer());
   let s = '';
@@ -145,6 +144,30 @@ async function encode(img: Img): Promise<string> {
   return `data:image/png;base64,${btoa(s)}`;
 }
 
+async function encode(img: Img): Promise<string> {
+  const canvas = new OffscreenCanvas(img.width, img.height);
+  canvas.getContext('2d')!.putImageData(new ImageData(new Uint8ClampedArray(img.data), img.width, img.height), 0, 0);
+  return canvasUrl(canvas);
+}
+
+/** TradingView left, the viewer right, each under a caption. */
+async function sideBySide(tvUrl: string, viewerUrl: string): Promise<string> {
+  const [tv, viewer] = await Promise.all([tvUrl, viewerUrl].map(async (u) => createImageBitmap(await (await fetch(u)).blob())));
+  const gap = 12;
+  const caption = 34;
+  const canvas = new OffscreenCanvas(tv!.width + viewer!.width + gap * 3, Math.max(tv!.height, viewer!.height) + caption + gap);
+  const ctx = canvas.getContext('2d')!;
+  ctx.fillStyle = '#f0f3fa';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#131722';
+  ctx.font = `600 17px -apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.fillText('TradingView', gap, caption / 2 + 2);
+  ctx.fillText('ChartKeeper (offline viewer)', tv!.width + gap * 2, caption / 2 + 2);
+  ctx.drawImage(tv!, gap, caption);
+  ctx.drawImage(viewer!, tv!.width + gap * 2, caption);
+  return canvasUrl(canvas);
+}
 
 async function analyze(input: AnalyzeInput): Promise<AnalyzeResult> {
   let job = input;
@@ -194,6 +217,7 @@ async function analyze(input: AnalyzeInput): Promise<AnalyzeResult> {
     panes,
     full: { ...overlap(tvFull, tvAll, viewerFull, viewerAll, job.tolerance, job.maxColor), overlay: await encode(overlayImage(tvFull, tvAll, viewerAll)) },
     base: { overlay: await encode(overlayImage(tvBase, tvBaseMask, viewerBaseMask)) },
+    sideBySide: await sideBySide(job.tv.full, job.viewer.full),
   };
 }
 
