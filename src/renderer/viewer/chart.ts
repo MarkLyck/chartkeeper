@@ -20,7 +20,9 @@ import type { DrawingPoint } from '../../core/layout';
 import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
-import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
+import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec, type StyleSeriesSpec } from './series';
+import { StyleSeriesView } from './styles/view';
+import { priceAxisTexts, tvPriceAxisWidth } from './axis';
 import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
@@ -28,8 +30,12 @@ import { isIntraday, timeZoneOffset } from './time';
 import { num, obj, str, type Props } from '../../core/props';
 
 
-/** TradingView's dotted grid is sparser than lightweight-charts' dotted style. */
-const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 4 : tvStyle);
+/**
+ * TradingView's dotted grid is a one-pixel dot every four pixels in the full grid colour. lightweight-charts
+ * starts its grid lines half a pixel off the pixel grid, so its dotted styles smear into faint two-pixel dots;
+ * its dashed style lands one full-colour pixel every four pixels, with faint neighbours.
+ */
+const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 2 : tvStyle);
 
 export interface ChartTheme {
   background: string;
@@ -91,7 +97,12 @@ const SERIES_DEFINITIONS = {
   Histogram: HistogramSeries,
 } satisfies { [K in SeriesKind]: SeriesDefinition<K> };
 
-function addSeries(chart: IChartApi, spec: SeriesSpec, pane: number, extra: DeepPartial<SeriesOptionsCommon>): ISeriesApi<SeriesType> {
+function addSeries(chart: IChartApi, spec: SeriesSpec | StyleSeriesSpec, pane: number, extra: DeepPartial<SeriesOptionsCommon>): ISeriesApi<SeriesType> {
+  if (spec.kind === 'Custom') {
+    const s = chart.addCustomSeries(new StyleSeriesView(spec.style), { ...spec.options, ...extra }, pane);
+    s.setData(spec.data);
+    return s;
+  }
   // lightweight-charts' generics can't follow spec.kind across the union, so the definition is widened once here.
   const s = chart.addSeries(SERIES_DEFINITIONS[spec.kind] as SeriesDefinition<SeriesType>, { ...spec.options, ...extra }, pane);
   s.setData(spec.data);
@@ -148,27 +159,42 @@ function span(text: string, color?: string, bold = false): HTMLSpanElement {
   return s;
 }
 
+/** "+1.46 (+0.43%)", with TradingView's minus sign for falls. */
+function changeText(close: number, prevClose: number, format: PriceFormatSpec): string {
+  const diff = close - prevClose;
+  const sign = diff < 0 ? '−' : '+';
+  return `${sign}${formatValue(Math.abs(diff), format)} (${sign}${Math.abs((diff / prevClose) * 100).toFixed(2)}%)`;
+}
+
+/** "AAPL · 1D · NASDAQ · Line Break [3]", then the bar's values as TradingView's legend lists them for the chart style. */
 function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
+  const main = plan.main!;
   const el = legendBox(theme);
-  const title = document.createElement('div');
+  el.style.left = '10px';
+  el.style.top = '4px';
+  el.style.lineHeight = '24px';
   const exchange = plan.chart.symbol.includes(':') ? plan.chart.symbol.split(':')[0]! : '';
-  title.append(span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange].filter(Boolean).join(' · '), undefined, true));
-  const ohlc = document.createElement('span');
-  title.append(ohlc);
-  el.append(title);
+  const title = span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
+  title.style.fontSize = '16px';
+  title.style.marginRight = '12px';
+  const values = document.createElement('span');
+  el.append(title, values);
   const fmt = plan.priceFormat;
-  const style = obj(plan.chart.seriesState.candleStyle);
+  const pair = (label: string, value: string, color: string) => {
+    const name = span(label);
+    name.style.marginRight = '0';
+    return [name, span(value, color)];
+  };
   return {
     el,
     update(i) {
-      const b = plan.bars[i];
+      const b = main.ohlc[i];
       if (!b) return;
-      const prev = plan.bars[i - 1];
-      const up = b[4] >= (prev && style.barColorsOnPrevClose === true ? prev[4] : b[1]);
-      const color = str(up ? style.upColor : style.downColor, up ? '#089981' : '#F23645');
-      ohlc.replaceChildren(
-        ...(['O', 'H', 'L', 'C'] as const).flatMap((k, j) => [span(k), span(formatValue(b[j + 1], fmt), color)]),
-        ...(prev ? [span(`${b[4] - prev[4] >= 0 ? '+' : ''}${formatValue(b[4] - prev[4], fmt)} (${(((b[4] - prev[4]) / prev[4]) * 100).toFixed(2)}%)`, color)] : []),
+      const prev = main.ohlc[i - 1];
+      const change = main.legend.change;
+      values.replaceChildren(
+        ...main.legend.fields.flatMap((f) => pair(f.label, formatValue(f.value(b), fmt), f.color(i))),
+        ...(prev && change ? [span(changeText(b.close, prev.close, fmt), change(i))] : []),
       );
     },
   };
@@ -332,8 +358,27 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
   };
   chart.timeScale().subscribeSizeChange(onSize);
 
+  // lightweight-charts pads its price axis more than TradingView does. Widening the chart by the difference
+  // and letting the cell clip it puts the plot area and the axis where TradingView has them.
+  let axisFrame = 0;
+  const matchAxisWidth = (tries: number) => {
+    const ctx = document.createElement('canvas').getContext('2d');
+    const lwcWidth = chart.priceScale('right').width();
+    if (!ctx || lwcWidth === 0) {
+      if (tries > 0) axisFrame = requestAnimationFrame(() => matchAxisWidth(tries - 1));
+      return;
+    }
+    const { fontSize, fontFamily } = chart.options().layout;
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    const width = tvPriceAxisWidth(priceAxisTexts(chart), (t) => ctx.measureText(t).width);
+    holder.style.right = `${Math.min(0, width - lwcWidth)}px`;
+    if (width > lwcWidth) chart.applyOptions({ rightPriceScale: { minimumWidth: width } });
+  };
+  axisFrame = requestAnimationFrame(() => matchAxisWidth(60));
+
   return {
     destroy() {
+      cancelAnimationFrame(axisFrame);
       cancelAnimationFrame(frame);
       chart.remove();
       cell.replaceChildren();

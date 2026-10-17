@@ -82,8 +82,8 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
   const intraday = isIntraday(parseInterval(chart.interval));
   const times = intraday ? barTimes.map((t) => t + timeZoneOffset(t, chart.timezone)) : barTimes;
   const timeIndex = new TimeIndex(barTimes, chart.interval);
-  const main = hasPrices ? mainSeriesSpec(chart, bars, times) : null;
-  const priceFormat: PriceFormatSpec = { type: 'price', ...guessPriceFormat(bars) };
+  const main = hasPrices ? mainSeriesSpec(chart, bars, times, data?.computedStyle) : null;
+  const priceFormat: PriceFormatSpec = { type: 'price', ...guessPriceFormat(bars, chart.style === data?.computedStyle ? data.computedStyle : undefined) };
   if (main?.fallbackFrom != null) add('chart', chart.chartId, chart.symbol, { code: 'chart-style', style: main.fallbackFrom }, true);
 
   const mainSource = chart.panes.find((p) => p.containsMainSeries) ?? chart.panes[0] ?? null;
