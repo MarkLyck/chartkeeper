@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ChartKeeper",
+    "version": "gallery"
+  },
+  "createdAt": "2026-10-17T21:19:37.000Z",
+  "account": {
+    "username": "gallery",
+    "plan": null
+  },
+  "layouts": [
+    {
+      "uid": "drawings-fibs",
+      "name": "drawings-fibs",
+      "dir": "layouts/drawings-fibs",
+      "symbols": [
+        "NASDAQ:AAPL"
+      ],
+      "charts": 1,
+      "drawings": 4,
+      "studies": 0,
+      "lastModified": 1792271977,
+      "priceData": true
+    }
+  ],
+  "extras": {
+    "studyTemplates": 0,
+    "drawingTemplates": 0,
+    "themes": 0,
+    "scripts": 0,
+    "userDrawings": 0
+  },
+  "warnings": [],
+  "formatVersion": 1,
+  "status": "complete",
+  "files": {
+    "layouts/drawings-fibs/layout.json": {
+      "sha256": "7ff2ac10fad68fe9ceffda90e3fddc81a6dc5da18aeb6c1be2d27e5b25a371d0",
+      "bytes": 59283
+    },
+    "layouts/drawings-fibs/drawings.json": {
+      "sha256": "6f480a3067c479c2eb4ff7eb317139d1c896a9ba3a25d73c2c68f81a2062341b",
+      "bytes": 45
+    },
+    "layouts/drawings-fibs/data/chart-1.json": {
+      "sha256": "080610556bcb2f25c524b6cd08a3e63700a59ea8a933deed1cc2d720ae9f5aef",
+      "bytes": 61230
+    }
+  }
+}

@@ -1,0 +1,2961 @@
+{
+  "generatedBy": "scripts/capture-gallery.ts",
+  "scenes": [
+    {
+      "name": "advanced",
+      "dir": "advanced",
+      "uid": "advanced",
+      "description": "Dense trader chart: custom candle and background colors, Moving Average 50 and RSI, 21 drawings anchored to real swings (trend lines, fib retracement and extension, channel, pitchfork, zones, positions, notes, arrows, levels).",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:27:00.800Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Moving Average",
+            "Relative strength index"
+          ]
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolFibRetracement",
+          "requestedType": "LineToolFibRetracement",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolTrendBasedFibExtension",
+          "requestedType": "LineToolTrendBasedFibExtension",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolParallelChannel",
+          "requestedType": "LineToolParallelChannel",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolPitchfork",
+          "requestedType": "LineToolPitchfork",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolRectangle",
+          "requestedType": "LineToolRectangle",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolRectangle",
+          "requestedType": "LineToolRectangle",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolRiskRewardLong",
+          "requestedType": "LineToolRiskRewardLong",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolRiskRewardShort",
+          "requestedType": "LineToolRiskRewardShort",
+          "image": "isolated/c1d10.png"
+        },
+        {
+          "id": "c1d11",
+          "type": "LineToolTextNote",
+          "requestedType": "LineToolTextNote",
+          "image": "isolated/c1d11.png"
+        },
+        {
+          "id": "c1d12",
+          "type": "LineToolCallout",
+          "requestedType": "LineToolCallout",
+          "image": "isolated/c1d12.png"
+        },
+        {
+          "id": "c1d13",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d13.png"
+        },
+        {
+          "id": "c1d14",
+          "type": "LineToolPriceLabel",
+          "requestedType": "LineToolPriceLabel",
+          "image": "isolated/c1d14.png"
+        },
+        {
+          "id": "c1d15",
+          "type": "LineToolArrowMarkUp",
+          "requestedType": "LineToolArrowMarkUp",
+          "image": "isolated/c1d15.png"
+        },
+        {
+          "id": "c1d16",
+          "type": "LineToolArrowMarkDown",
+          "requestedType": "LineToolArrowMarkDown",
+          "image": "isolated/c1d16.png"
+        },
+        {
+          "id": "c1d17",
+          "type": "LineToolArrow",
+          "requestedType": "LineToolArrow",
+          "image": "isolated/c1d17.png"
+        },
+        {
+          "id": "c1d18",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d18.png"
+        },
+        {
+          "id": "c1d19",
+          "type": "LineToolHorzRay",
+          "requestedType": "LineToolHorzRay",
+          "image": "isolated/c1d19.png"
+        },
+        {
+          "id": "c1d20",
+          "type": "LineToolPriceNote",
+          "requestedType": "LineToolPriceNote",
+          "image": "isolated/c1d20.png"
+        },
+        {
+          "id": "c1d21",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d21.png"
+        }
+      ]
+    },
+    {
+      "name": "advanced-dark",
+      "dir": "advanced-dark",
+      "uid": "advanced-dark",
+      "description": "Dark theme on hourly bars: Volume and Commodity Channel Index, 20 drawings using tools the light scene does not (Elliott, ABCD, regression, fib channel, ranges, forecast, highlighter, emoji, ...).",
+      "theme": "dark",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:18:43.636Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:TSLA",
+          "interval": "60",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Volume",
+            "Commodity channel index"
+          ]
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolABCD",
+          "requestedType": "LineToolABCD",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolRegressionTrend",
+          "requestedType": "LineToolRegressionTrend",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolFibChannel",
+          "requestedType": "LineToolFibChannel",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolInfoLine",
+          "requestedType": "LineToolInfoLine",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolRay",
+          "requestedType": "LineToolRay",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolExtended",
+          "requestedType": "LineToolExtended",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolCrossLine",
+          "requestedType": "LineToolCrossLine",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolFlagMark",
+          "requestedType": "LineToolFlagMark",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolFlagMark",
+          "requestedType": "LineToolFlagMark",
+          "image": "isolated/c1d10.png"
+        },
+        {
+          "id": "c1d11",
+          "type": "LineToolBalloon",
+          "requestedType": "LineToolBalloon",
+          "image": "isolated/c1d11.png"
+        },
+        {
+          "id": "c1d12",
+          "type": "LineToolSignpost",
+          "requestedType": "LineToolSignpost",
+          "image": "isolated/c1d12.png"
+        },
+        {
+          "id": "c1d13",
+          "type": "LineToolPriceRange",
+          "requestedType": "LineToolPriceRange",
+          "image": "isolated/c1d13.png"
+        },
+        {
+          "id": "c1d14",
+          "type": "LineToolDateRange",
+          "requestedType": "LineToolDateRange",
+          "image": "isolated/c1d14.png"
+        },
+        {
+          "id": "c1d15",
+          "type": "LineToolEllipse",
+          "requestedType": "LineToolEllipse",
+          "image": "isolated/c1d15.png"
+        },
+        {
+          "id": "c1d16",
+          "type": "LineToolTriangle",
+          "requestedType": "LineToolTriangle",
+          "image": "isolated/c1d16.png"
+        },
+        {
+          "id": "c1d17",
+          "type": "LineToolHighlighter",
+          "requestedType": "LineToolHighlighter",
+          "image": "isolated/c1d17.png"
+        },
+        {
+          "id": "c1d18",
+          "type": "LineToolEmoji",
+          "requestedType": "LineToolEmoji",
+          "image": "isolated/c1d18.png"
+        },
+        {
+          "id": "c1d19",
+          "type": "LineToolNoteAbsolute",
+          "requestedType": "LineToolNoteAbsolute",
+          "image": "isolated/c1d19.png"
+        },
+        {
+          "id": "c1d20",
+          "type": "LineToolPrediction",
+          "requestedType": "LineToolPrediction",
+          "image": "isolated/c1d20.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-lines",
+      "dir": "drawings-lines",
+      "uid": "drawings-lines",
+      "description": "Straight line tools: trend line, ray, info line, extended line, trend angle, arrow, horizontal line and ray, vertical line, cross line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:19:05.700Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolRay",
+          "requestedType": "LineToolRay",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolInfoLine",
+          "requestedType": "LineToolInfoLine",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolExtended",
+          "requestedType": "LineToolExtended",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolTrendAngle",
+          "requestedType": "LineToolTrendAngle",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolArrow",
+          "requestedType": "LineToolArrow",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolHorzRay",
+          "requestedType": "LineToolHorzRay",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolCrossLine",
+          "requestedType": "LineToolCrossLine",
+          "image": "isolated/c1d10.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-channels",
+      "dir": "drawings-channels",
+      "uid": "drawings-channels",
+      "description": "Channels and pitchforks: parallel channel, regression trend, flat top/bottom, disjoint channel, pitchfork, Schiff and modified Schiff, inside pitchfork, pitchfan.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:19:21.912Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolParallelChannel",
+          "requestedType": "LineToolParallelChannel",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolRegressionTrend",
+          "requestedType": "LineToolRegressionTrend",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolFlatBottom",
+          "requestedType": "LineToolFlatBottom",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolDisjointAngle",
+          "requestedType": "LineToolDisjointAngle",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolPitchfork",
+          "requestedType": "LineToolPitchfork",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolSchiffPitchfork",
+          "requestedType": "LineToolSchiffPitchfork",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolSchiffPitchfork2",
+          "requestedType": "LineToolSchiffPitchfork2",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolInsidePitchfork",
+          "requestedType": "LineToolInsidePitchfork",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolPitchfan",
+          "requestedType": "LineToolPitchfan",
+          "image": "isolated/c1d09.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-fibs",
+      "dir": "drawings-fibs",
+      "uid": "drawings-fibs",
+      "description": "Fibonacci price tools: retracement, trend-based extension, channel, speed resistance fan.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:19:37.632Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolFibRetracement",
+          "requestedType": "LineToolFibRetracement",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolTrendBasedFibExtension",
+          "requestedType": "LineToolTrendBasedFibExtension",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolFibChannel",
+          "requestedType": "LineToolFibChannel",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolFibSpeedResistanceFan",
+          "requestedType": "LineToolFibSpeedResistanceFan",
+          "image": "isolated/c1d04.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-fibs-time",
+      "dir": "drawings-fibs-time",
+      "uid": "drawings-fibs-time",
+      "description": "Fibonacci time and circle tools: trend-based fib time, fib circles, fib spiral, speed resistance arcs, fib time zone.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:19:51.230Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:MSFT",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendBasedFibTime",
+          "requestedType": "LineToolTrendBasedFibTime",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolFibCircles",
+          "requestedType": "LineToolFibCircles",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolFibSpiral",
+          "requestedType": "LineToolFibSpiral",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolFibSpeedResistanceArcs",
+          "requestedType": "LineToolFibSpeedResistanceArcs",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolFibTimeZone",
+          "requestedType": "LineToolFibTimeZone",
+          "image": "isolated/c1d05.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-gann",
+      "dir": "drawings-gann",
+      "uid": "drawings-gann",
+      "description": "Gann tools: Gann box, Gann square (saved by TradingView as Gann square fixed), Gann square fixed, Gann fan.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:20:05.530Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolGannSquare",
+          "requestedType": "LineToolGannSquare",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolGannFixed",
+          "requestedType": "LineToolGannComplex",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolGannFixed",
+          "requestedType": "LineToolGannFixed",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolGannFan",
+          "requestedType": "LineToolGannFan",
+          "image": "isolated/c1d04.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-patterns",
+      "dir": "drawings-patterns",
+      "uid": "drawings-patterns",
+      "description": "Chart patterns: XABCD, cypher, ABCD, triangle pattern, head and shoulders.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:20:19.098Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:NVDA",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineTool5PointsPattern",
+          "requestedType": "LineTool5PointsPattern",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolCypherPattern",
+          "requestedType": "LineToolCypherPattern",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolABCD",
+          "requestedType": "LineToolABCD",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolTrianglePattern",
+          "requestedType": "LineToolTrianglePattern",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolHeadAndShoulders",
+          "requestedType": "LineToolHeadAndShoulders",
+          "image": "isolated/c1d05.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-elliott",
+      "dir": "drawings-elliott",
+      "uid": "drawings-elliott",
+      "description": "Elliott waves: impulse, triangle, triple combo, correction, double combo.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:20:33.399Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:NVDA",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolElliottTriangle",
+          "requestedType": "LineToolElliottTriangle",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolElliottTripleCombo",
+          "requestedType": "LineToolElliottTripleCombo",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolElliottDoubleCombo",
+          "requestedType": "LineToolElliottDoubleCombo",
+          "image": "isolated/c1d05.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-shapes",
+      "dir": "drawings-shapes",
+      "uid": "drawings-shapes",
+      "description": "Geometric shapes: rectangle, rotated rectangle, circle, ellipse, triangle, arc, curve, double curve.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:20:43.387Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolRectangle",
+          "requestedType": "LineToolRectangle",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolRotatedRectangle",
+          "requestedType": "LineToolRotatedRectangle",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolCircle",
+          "requestedType": "LineToolCircle",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolEllipse",
+          "requestedType": "LineToolEllipse",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolTriangle",
+          "requestedType": "LineToolTriangle",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolArc",
+          "requestedType": "LineToolArc",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolBezierQuadro",
+          "requestedType": "LineToolBezierQuadro",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolBezierCubic",
+          "requestedType": "LineToolBezierCubic",
+          "image": "isolated/c1d08.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-freehand",
+      "dir": "drawings-freehand",
+      "uid": "drawings-freehand",
+      "description": "Freehand and multi-point tools: brush, highlighter, polyline, path.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:20:58.691Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolBrush",
+          "requestedType": "LineToolBrush",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHighlighter",
+          "requestedType": "LineToolHighlighter",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolPolyline",
+          "requestedType": "LineToolPolyline",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolPath",
+          "requestedType": "LineToolPath",
+          "image": "isolated/c1d04.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-text",
+      "dir": "drawings-text",
+      "uid": "drawings-text",
+      "description": "Text and notes: text, anchored text, note, anchored note, text note, callout.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:21:12.229Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolTextAbsolute",
+          "requestedType": "LineToolTextAbsolute",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolNote",
+          "requestedType": "LineToolNote",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolNoteAbsolute",
+          "requestedType": "LineToolNoteAbsolute",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolTextNote",
+          "requestedType": "LineToolTextNote",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolCallout",
+          "requestedType": "LineToolCallout",
+          "image": "isolated/c1d06.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-labels",
+      "dir": "drawings-labels",
+      "uid": "drawings-labels",
+      "description": "Labels: balloon, signpost, price label, price note, comment, table.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:21:32.550Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolBalloon",
+          "requestedType": "LineToolBalloon",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolSignpost",
+          "requestedType": "LineToolSignpost",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolPriceLabel",
+          "requestedType": "LineToolPriceLabel",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolPriceNote",
+          "requestedType": "LineToolPriceNote",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolComment",
+          "requestedType": "LineToolComment",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolTable",
+          "requestedType": "LineToolTable",
+          "image": "isolated/c1d06.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-marks",
+      "dir": "drawings-marks",
+      "uid": "drawings-marks",
+      "description": "Arrows, marks and icons: arrow up/down/left/right, arrow marker, flag, icon, emoji, sticker.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:21:47.034Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolArrowMarkUp",
+          "requestedType": "LineToolArrowMarkUp",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolArrowMarkDown",
+          "requestedType": "LineToolArrowMarkDown",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolArrowMarkLeft",
+          "requestedType": "LineToolArrowMarkLeft",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolArrowMarkRight",
+          "requestedType": "LineToolArrowMarkRight",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolArrowMarker",
+          "requestedType": "LineToolArrowMarker",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolFlagMark",
+          "requestedType": "LineToolFlagMark",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolIcon",
+          "requestedType": "LineToolIcon",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolEmoji",
+          "requestedType": "LineToolEmoji",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolSticker",
+          "requestedType": "LineToolSticker",
+          "image": "isolated/c1d09.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-positions",
+      "dir": "drawings-positions",
+      "uid": "drawings-positions",
+      "description": "Positions, forecasting and volume tools: long position, short position, forecast, projection, anchored VWAP, fixed range volume profile.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:22:03.041Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolRiskRewardLong",
+          "requestedType": "LineToolRiskRewardLong",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolRiskRewardShort",
+          "requestedType": "LineToolRiskRewardShort",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolPrediction",
+          "requestedType": "LineToolPrediction",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolProjection",
+          "requestedType": "LineToolProjection",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolAnchoredVWAP",
+          "requestedType": "LineToolAnchoredVWAP",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolFixedRangeVolumeProfile",
+          "requestedType": "LineToolFixedRangeVolumeProfile",
+          "image": "isolated/c1d06.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-measures",
+      "dir": "drawings-measures",
+      "uid": "drawings-measures",
+      "description": "Measuring tools: date range, price range, date and price range, bars pattern, ghost feed.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:22:17.747Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolDateRange",
+          "requestedType": "LineToolDateRange",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolPriceRange",
+          "requestedType": "LineToolPriceRange",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolDateAndPriceRange",
+          "requestedType": "LineToolDateAndPriceRange",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolBarsPattern",
+          "requestedType": "LineToolBarsPattern",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolGhostFeed",
+          "requestedType": "LineToolGhostFeed",
+          "image": "isolated/c1d05.png"
+        }
+      ]
+    },
+    {
+      "name": "drawings-cycles",
+      "dir": "drawings-cycles",
+      "uid": "drawings-cycles",
+      "description": "Cycle tools: cyclic lines, time cycles, sine line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:22:32.009Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolCircleLines",
+          "requestedType": "LineToolCircleLines",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolTimeCycles",
+          "requestedType": "LineToolTimeCycles",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolSineLine",
+          "requestedType": "LineToolSineLine",
+          "image": "isolated/c1d03.png"
+        }
+      ]
+    },
+    {
+      "name": "style-bars",
+      "dir": "style-bars",
+      "uid": "style-bars",
+      "description": "Bars chart (style 0), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:22:45.333Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 0,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-candles",
+      "dir": "style-candles",
+      "uid": "style-candles",
+      "description": "Candles chart (style 1), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:22:58.199Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-line",
+      "dir": "style-line",
+      "uid": "style-line",
+      "description": "Line chart (style 2), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:23:06.820Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 2,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-area",
+      "dir": "style-area",
+      "uid": "style-area",
+      "description": "Area chart (style 3), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:23:15.452Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 3,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-renko",
+      "dir": "style-renko",
+      "uid": "style-renko",
+      "description": "Renko chart (style 4), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:27:23.233Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 4,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-kagi",
+      "dir": "style-kagi",
+      "uid": "style-kagi",
+      "description": "Kagi chart (style 5), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:23:35.379Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 5,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-point-figure",
+      "dir": "style-point-figure",
+      "uid": "style-point-figure",
+      "description": "Point & Figure chart (style 6), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:23:46.727Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 6,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-line-break",
+      "dir": "style-line-break",
+      "uid": "style-line-break",
+      "description": "Line Break chart (style 7), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:23:58.091Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 7,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-heikin-ashi",
+      "dir": "style-heikin-ashi",
+      "uid": "style-heikin-ashi",
+      "description": "Heikin Ashi chart (style 8), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:24:09.443Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 8,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-hollow-candles",
+      "dir": "style-hollow-candles",
+      "uid": "style-hollow-candles",
+      "description": "Hollow Candles chart (style 9), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:24:20.827Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 9,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-baseline",
+      "dir": "style-baseline",
+      "uid": "style-baseline",
+      "description": "Baseline chart (style 10), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:24:29.414Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 10,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-range",
+      "dir": "style-range",
+      "uid": "style-range",
+      "description": "Range chart (style 11), bars computed by TradingView, with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:24:48.004Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 11,
+          "barsSource": "tradingview",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-high-low",
+      "dir": "style-high-low",
+      "uid": "style-high-low",
+      "description": "High-Low chart (style 12), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:03.429Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 12,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-columns",
+      "dir": "style-columns",
+      "uid": "style-columns",
+      "description": "Columns chart (style 13), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:12.027Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 13,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-line-with-markers",
+      "dir": "style-line-with-markers",
+      "uid": "style-line-with-markers",
+      "description": "Line with Markers chart (style 14), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:20.595Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 14,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-step-line",
+      "dir": "style-step-line",
+      "uid": "style-step-line",
+      "description": "Step Line chart (style 15), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:29.218Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 15,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-hlc-area",
+      "dir": "style-hlc-area",
+      "uid": "style-hlc-area",
+      "description": "HLC Area chart (style 16), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:38.121Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 16,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "style-hlc-bars",
+      "dir": "style-hlc-bars",
+      "uid": "style-hlc-bars",
+      "description": "HLC Bars chart (style 21), with a trend line and a horizontal line.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:27:34.612Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AAPL",
+          "interval": "D",
+          "style": 21,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d02.png"
+        }
+      ]
+    },
+    {
+      "name": "indicators-1",
+      "dir": "indicators-1",
+      "uid": "indicators-1",
+      "description": "Volume and Moving Average on AMEX:SPY.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:25:55.445Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "AMEX:SPY",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Moving Average",
+            "Volume"
+          ]
+        }
+      ],
+      "drawings": []
+    },
+    {
+      "name": "indicators-2",
+      "dir": "indicators-2",
+      "uid": "indicators-2",
+      "description": "Relative Strength Index and Stochastic RSI on NASDAQ:MSFT.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:26:04.400Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:MSFT",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Relative strength index",
+            "Stochastic RSI"
+          ]
+        }
+      ],
+      "drawings": []
+    },
+    {
+      "name": "indicators-3",
+      "dir": "indicators-3",
+      "uid": "indicators-3",
+      "description": "Commodity Channel Index and Rate Of Change on NASDAQ:NVDA.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:26:13.175Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:NVDA",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Commodity channel index",
+            "Rate of change"
+          ]
+        }
+      ],
+      "drawings": []
+    },
+    {
+      "name": "indicators-4",
+      "dir": "indicators-4",
+      "uid": "indicators-4",
+      "description": "Pivot Points Standard and Pivot Points High Low on NYSE:JPM.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:26:21.869Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NYSE:JPM",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Pivot points high low",
+            "Pivot points standard"
+          ]
+        }
+      ],
+      "drawings": []
+    },
+    {
+      "name": "indicators-5",
+      "dir": "indicators-5",
+      "uid": "indicators-5",
+      "description": "Chaikin Money Flow and Moving Average on NASDAQ:AMZN.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-17T21:26:31.023Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "NASDAQ:AMZN",
+          "interval": "D",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": [
+            "Moving Average",
+            "Chaikin money flow"
+          ]
+        }
+      ],
+      "drawings": []
+    }
+  ],
+  "coverage": {
+    "drawingTools": [
+      {
+        "type": "LineToolBrush",
+        "ui": "brush",
+        "scenes": [
+          "drawings-freehand"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolHighlighter",
+        "ui": "highlighter",
+        "scenes": [
+          "advanced-dark",
+          "drawings-freehand"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolText",
+        "ui": "text",
+        "scenes": [
+          "advanced",
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTextAbsolute",
+        "ui": "anchored_text",
+        "scenes": [
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolNote",
+        "ui": "note",
+        "scenes": [
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTextNote",
+        "ui": "text_note",
+        "scenes": [
+          "advanced",
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolNoteAbsolute",
+        "ui": "anchored_note",
+        "scenes": [
+          "advanced-dark",
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolSignpost",
+        "ui": "signpost",
+        "scenes": [
+          "advanced-dark",
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolCallout",
+        "ui": "callout",
+        "scenes": [
+          "advanced",
+          "drawings-text"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolBalloon",
+        "ui": "balloon",
+        "scenes": [
+          "advanced-dark",
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolComment",
+        "ui": "comment",
+        "scenes": [
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrowMarkUp",
+        "ui": "arrow_up",
+        "scenes": [
+          "advanced",
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrowMarkDown",
+        "ui": "arrow_down",
+        "scenes": [
+          "advanced",
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrowMarkLeft",
+        "ui": "arrow_left",
+        "scenes": [
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrowMarkRight",
+        "ui": "arrow_right",
+        "scenes": [
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPriceLabel",
+        "ui": "price_label",
+        "scenes": [
+          "advanced",
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPriceNote",
+        "ui": "price_note",
+        "scenes": [
+          "advanced",
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrowMarker",
+        "ui": "arrow_marker",
+        "scenes": [
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFlagMark",
+        "ui": "flag",
+        "scenes": [
+          "advanced-dark",
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolImage",
+        "ui": "image",
+        "scenes": [],
+        "savedAs": null,
+        "notCapturable": "Needs an image uploaded to TradingView, which requires an account. The loader drops it without one."
+      },
+      {
+        "type": "LineToolTable",
+        "ui": "table",
+        "scenes": [
+          "drawings-labels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolVertLine",
+        "ui": "vertical_line",
+        "scenes": [
+          "advanced",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolHorzLine",
+        "ui": "horizontal_line",
+        "scenes": [
+          "advanced",
+          "drawings-lines",
+          "style-bars",
+          "style-candles",
+          "style-line",
+          "style-area",
+          "style-renko",
+          "style-kagi",
+          "style-point-figure",
+          "style-line-break",
+          "style-heikin-ashi",
+          "style-hollow-candles",
+          "style-baseline",
+          "style-range",
+          "style-high-low",
+          "style-columns",
+          "style-line-with-markers",
+          "style-step-line",
+          "style-hlc-area",
+          "style-hlc-bars"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolCrossLine",
+        "ui": "cross_line",
+        "scenes": [
+          "advanced-dark",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolHorzRay",
+        "ui": "horizontal_ray",
+        "scenes": [
+          "advanced",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTrendLine",
+        "ui": "trend_line",
+        "scenes": [
+          "advanced",
+          "drawings-lines",
+          "style-bars",
+          "style-candles",
+          "style-line",
+          "style-area",
+          "style-renko",
+          "style-kagi",
+          "style-point-figure",
+          "style-line-break",
+          "style-heikin-ashi",
+          "style-hollow-candles",
+          "style-baseline",
+          "style-range",
+          "style-high-low",
+          "style-columns",
+          "style-line-with-markers",
+          "style-step-line",
+          "style-hlc-area",
+          "style-hlc-bars"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolInfoLine",
+        "ui": "info_line",
+        "scenes": [
+          "advanced-dark",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTrendAngle",
+        "ui": "trend_angle",
+        "scenes": [
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArrow",
+        "ui": "arrow",
+        "scenes": [
+          "advanced",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRay",
+        "ui": "ray",
+        "scenes": [
+          "advanced-dark",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolExtended",
+        "ui": "extended",
+        "scenes": [
+          "advanced-dark",
+          "drawings-lines"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolParallelChannel",
+        "ui": "parallel_channel",
+        "scenes": [
+          "advanced",
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolDisjointAngle",
+        "ui": "disjoint_angle",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFlatBottom",
+        "ui": "flat_bottom",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolAnchoredVWAP",
+        "ui": "anchored_vwap",
+        "scenes": [
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPitchfork",
+        "ui": "pitchfork",
+        "scenes": [
+          "advanced",
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolSchiffPitchfork",
+        "ui": "schiff_pitchfork_modified",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolSchiffPitchfork2",
+        "ui": "schiff_pitchfork",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolInsidePitchfork",
+        "ui": "inside_pitchfork",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPitchfan",
+        "ui": "pitchfan",
+        "scenes": [
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolGannSquare",
+        "ui": "gannbox",
+        "scenes": [
+          "drawings-gann"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolGannComplex",
+        "ui": "gannbox_square",
+        "scenes": [
+          "drawings-gann"
+        ],
+        "savedAs": "LineToolGannFixed",
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolGannFixed",
+        "ui": "gannbox_fixed",
+        "scenes": [
+          "drawings-gann"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolGannFan",
+        "ui": "gannbox_fan",
+        "scenes": [
+          "drawings-gann"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibRetracement",
+        "ui": "fib_retracement",
+        "scenes": [
+          "advanced",
+          "drawings-fibs"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTrendBasedFibExtension",
+        "ui": "fib_trend_ext",
+        "scenes": [
+          "advanced",
+          "drawings-fibs"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibSpeedResistanceFan",
+        "ui": "fib_speed_resist_fan",
+        "scenes": [
+          "drawings-fibs"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibTimeZone",
+        "ui": "fib_timezone",
+        "scenes": [
+          "drawings-fibs-time"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTrendBasedFibTime",
+        "ui": "fib_trend_time",
+        "scenes": [
+          "drawings-fibs-time"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibCircles",
+        "ui": "fib_circles",
+        "scenes": [
+          "drawings-fibs-time"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibSpiral",
+        "ui": "fib_spiral",
+        "scenes": [
+          "drawings-fibs-time"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibSpeedResistanceArcs",
+        "ui": "fib_speed_resist_arcs",
+        "scenes": [
+          "drawings-fibs-time"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFibChannel",
+        "ui": "fib_channel",
+        "scenes": [
+          "advanced-dark",
+          "drawings-fibs"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineTool5PointsPattern",
+        "ui": "xabcd_pattern",
+        "scenes": [
+          "drawings-patterns"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolCypherPattern",
+        "ui": "cypher_pattern",
+        "scenes": [
+          "drawings-patterns"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolABCD",
+        "ui": "abcd_pattern",
+        "scenes": [
+          "advanced-dark",
+          "drawings-patterns"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTrianglePattern",
+        "ui": "triangle_pattern",
+        "scenes": [
+          "drawings-patterns"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolHeadAndShoulders",
+        "ui": "head_and_shoulders",
+        "scenes": [
+          "drawings-patterns"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolElliottImpulse",
+        "ui": "elliott_impulse_wave",
+        "scenes": [
+          "advanced-dark",
+          "drawings-elliott"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolElliottTriangle",
+        "ui": "elliott_triangle_wave",
+        "scenes": [
+          "drawings-elliott"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolElliottTripleCombo",
+        "ui": "elliott_triple_combo",
+        "scenes": [
+          "drawings-elliott"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolElliottCorrection",
+        "ui": "elliott_correction",
+        "scenes": [
+          "drawings-elliott"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolElliottDoubleCombo",
+        "ui": "elliott_double_combo",
+        "scenes": [
+          "drawings-elliott"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolCircleLines",
+        "ui": "cyclic_lines",
+        "scenes": [
+          "drawings-cycles"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTimeCycles",
+        "ui": "time_cycles",
+        "scenes": [
+          "drawings-cycles"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolSineLine",
+        "ui": "sine_line",
+        "scenes": [
+          "drawings-cycles"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRiskRewardLong",
+        "ui": "long_position",
+        "scenes": [
+          "advanced",
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRiskRewardShort",
+        "ui": "short_position",
+        "scenes": [
+          "advanced",
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPrediction",
+        "ui": "forecast",
+        "scenes": [
+          "advanced-dark",
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolDateRange",
+        "ui": "date_range",
+        "scenes": [
+          "advanced-dark",
+          "drawings-measures"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPriceRange",
+        "ui": "price_range",
+        "scenes": [
+          "advanced-dark",
+          "drawings-measures"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolDateAndPriceRange",
+        "ui": "date_and_price_range",
+        "scenes": [
+          "drawings-measures"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolBarsPattern",
+        "ui": "bars_pattern",
+        "scenes": [
+          "drawings-measures"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolGhostFeed",
+        "ui": "ghost_feed",
+        "scenes": [
+          "drawings-measures"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolProjection",
+        "ui": "projection",
+        "scenes": [
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRectangle",
+        "ui": "rectangle",
+        "scenes": [
+          "advanced",
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRotatedRectangle",
+        "ui": "rotated_rectangle",
+        "scenes": [
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolCircle",
+        "ui": "circle",
+        "scenes": [
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolEllipse",
+        "ui": "ellipse",
+        "scenes": [
+          "advanced-dark",
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolTriangle",
+        "ui": "triangle",
+        "scenes": [
+          "advanced-dark",
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPolyline",
+        "ui": "polyline",
+        "scenes": [
+          "drawings-freehand"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolPath",
+        "ui": "path",
+        "scenes": [
+          "drawings-freehand"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolBezierQuadro",
+        "ui": "curve",
+        "scenes": [
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolBezierCubic",
+        "ui": "double_curve",
+        "scenes": [
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolArc",
+        "ui": "arc",
+        "scenes": [
+          "drawings-shapes"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolIcon",
+        "ui": "icon",
+        "scenes": [
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolEmoji",
+        "ui": "emoji",
+        "scenes": [
+          "advanced-dark",
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolSticker",
+        "ui": "sticker",
+        "scenes": [
+          "drawings-marks"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolRegressionTrend",
+        "ui": "regression_trend",
+        "scenes": [
+          "advanced-dark",
+          "drawings-channels"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      },
+      {
+        "type": "LineToolFixedRangeVolumeProfile",
+        "ui": "fixed_range_volume_profile",
+        "scenes": [
+          "drawings-positions"
+        ],
+        "savedAs": null,
+        "notCapturable": null
+      }
+    ],
+    "chartStyles": [
+      {
+        "id": 0,
+        "name": "Bars",
+        "computed": false,
+        "scenes": [
+          "style-bars"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 1,
+        "name": "Candles",
+        "computed": false,
+        "scenes": [
+          "advanced",
+          "advanced-dark",
+          "drawings-lines",
+          "drawings-channels",
+          "drawings-fibs",
+          "drawings-fibs-time",
+          "drawings-gann",
+          "drawings-patterns",
+          "drawings-elliott",
+          "drawings-shapes",
+          "drawings-freehand",
+          "drawings-text",
+          "drawings-labels",
+          "drawings-marks",
+          "drawings-positions",
+          "drawings-measures",
+          "drawings-cycles",
+          "style-candles",
+          "indicators-1",
+          "indicators-2",
+          "indicators-3",
+          "indicators-4",
+          "indicators-5"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 2,
+        "name": "Line",
+        "computed": false,
+        "scenes": [
+          "style-line"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 3,
+        "name": "Area",
+        "computed": false,
+        "scenes": [
+          "style-area"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 4,
+        "name": "Renko",
+        "computed": true,
+        "scenes": [
+          "style-renko"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 5,
+        "name": "Kagi",
+        "computed": true,
+        "scenes": [
+          "style-kagi"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 6,
+        "name": "Point & Figure",
+        "computed": true,
+        "scenes": [
+          "style-point-figure"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 7,
+        "name": "Line Break",
+        "computed": true,
+        "scenes": [
+          "style-line-break"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 8,
+        "name": "Heikin Ashi",
+        "computed": true,
+        "scenes": [
+          "style-heikin-ashi"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 9,
+        "name": "Hollow Candles",
+        "computed": false,
+        "scenes": [
+          "style-hollow-candles"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 10,
+        "name": "Baseline",
+        "computed": false,
+        "scenes": [
+          "style-baseline"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 11,
+        "name": "Range",
+        "computed": true,
+        "scenes": [
+          "style-range"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 12,
+        "name": "High-Low",
+        "computed": false,
+        "scenes": [
+          "style-high-low"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 13,
+        "name": "Columns",
+        "computed": false,
+        "scenes": [
+          "style-columns"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 14,
+        "name": "Line with Markers",
+        "computed": false,
+        "scenes": [
+          "style-line-with-markers"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 15,
+        "name": "Step Line",
+        "computed": false,
+        "scenes": [
+          "style-step-line"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 16,
+        "name": "HLC Area",
+        "computed": false,
+        "scenes": [
+          "style-hlc-area"
+        ],
+        "notCapturable": null
+      },
+      {
+        "id": 17,
+        "name": "Volume Footprint",
+        "computed": true,
+        "scenes": [],
+        "notCapturable": "Needs a paid plan. On a signed-out chart setChartType() leaves the previous style in place."
+      },
+      {
+        "id": 18,
+        "name": "Time Price Opportunity",
+        "computed": true,
+        "scenes": [],
+        "notCapturable": "Needs a paid plan. On a signed-out chart setChartType() leaves the previous style in place."
+      },
+      {
+        "id": 19,
+        "name": "Volume Candles",
+        "computed": true,
+        "scenes": [],
+        "notCapturable": "Needs a paid plan. On a signed-out chart setChartType() leaves the previous style in place."
+      },
+      {
+        "id": 20,
+        "name": "Session Volume Profile",
+        "computed": true,
+        "scenes": [],
+        "notCapturable": "Needs a paid plan. On a signed-out chart setChartType() leaves the previous style in place."
+      },
+      {
+        "id": 21,
+        "name": "HLC Bars",
+        "computed": false,
+        "scenes": [
+          "style-hlc-bars"
+        ],
+        "notCapturable": null
+      }
+    ],
+    "multiChartLayouts": {
+      "scenes": [],
+      "notCapturable": "Signed out, TradingView allows one chart per tab: setLayout(\"2h\") opens the \"Several charts per tab\" upgrade dialog and loadLayoutState of a \"2h\" layout creates only the first chart."
+    }
+  }
+}

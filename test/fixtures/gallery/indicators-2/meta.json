@@ -1,0 +1,51 @@
+{
+  "scene": "indicators-2",
+  "description": "Relative Strength Index and Stochastic RSI on NASDAQ:MSFT.",
+  "uid": "indicators-2",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:26:04.400Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:MSFT",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 329.41289213579716,
+        "to": 575.8838848302535
+      },
+      "tradingView": {
+        "drawings": 0,
+        "shapes": 0,
+        "studies": [
+          "Relative strength index",
+          "Stochastic RSI"
+        ]
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": []
+}

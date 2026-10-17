@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ChartKeeper",
+    "version": "gallery"
+  },
+  "createdAt": "2026-10-17T21:23:35.000Z",
+  "account": {
+    "username": "gallery",
+    "plan": null
+  },
+  "layouts": [
+    {
+      "uid": "style-kagi",
+      "name": "style-kagi",
+      "dir": "layouts/style-kagi",
+      "symbols": [
+        "NASDAQ:AAPL"
+      ],
+      "charts": 1,
+      "drawings": 2,
+      "studies": 0,
+      "lastModified": 1792272215,
+      "priceData": true
+    }
+  ],
+  "extras": {
+    "studyTemplates": 0,
+    "drawingTemplates": 0,
+    "themes": 0,
+    "scripts": 0,
+    "userDrawings": 0
+  },
+  "warnings": [],
+  "formatVersion": 1,
+  "status": "complete",
+  "files": {
+    "layouts/style-kagi/layout.json": {
+      "sha256": "5e6650dd90cd818b7f4ffa98e2348f55711bf37056fdb9f38f0ff97beaef7f32",
+      "bytes": 40656
+    },
+    "layouts/style-kagi/drawings.json": {
+      "sha256": "6f480a3067c479c2eb4ff7eb317139d1c896a9ba3a25d73c2c68f81a2062341b",
+      "bytes": 45
+    },
+    "layouts/style-kagi/data/chart-1.json": {
+      "sha256": "4b272b2faedf26f7484b5cc01612dc6fe8a6e680c0f78e91a635cf461f2863da",
+      "bytes": 12371
+    }
+  }
+}

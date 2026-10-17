@@ -1,0 +1,63 @@
+{
+  "scene": "style-kagi",
+  "description": "Kagi chart (style 5), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-kagi",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:23:35.379Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 5,
+        "name": "Kagi"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{\"atrLength\":14,\"percentageLTP\":1,\"reversalAmount\":1,\"style\":\"ATR\"},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetKagi@tv-prostudies-73!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 345427200,
+        "to": 1792972800
+      },
+      "priceRange": {
+        "from": -33.43898897017348,
+        "to": 385.4191712127169
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

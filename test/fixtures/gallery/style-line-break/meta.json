@@ -1,0 +1,63 @@
+{
+  "scene": "style-line-break",
+  "description": "Line Break chart (style 7), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-line-break",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:23:58.091Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 7,
+        "name": "Line Break"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{\"lb\":3},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetPriceBreak@tv-prostudies-34!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1746144000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 180.7815494402188,
+        "to": 361.5705631997265
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

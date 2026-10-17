@@ -1,0 +1,63 @@
+{
+  "scene": "style-heikin-ashi",
+  "description": "Heikin Ashi chart (style 8), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-heikin-ashi",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:24:09.443Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 8,
+        "name": "Heikin Ashi"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetHeikenAshi@tv-basicstudies-60!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1777248000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 256.94732624562005,
+        "to": 358.30324219297495
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

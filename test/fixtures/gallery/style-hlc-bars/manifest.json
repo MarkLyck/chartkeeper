@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ChartKeeper",
+    "version": "gallery"
+  },
+  "createdAt": "2026-10-17T21:27:34.000Z",
+  "account": {
+    "username": "gallery",
+    "plan": null
+  },
+  "layouts": [
+    {
+      "uid": "style-hlc-bars",
+      "name": "style-hlc-bars",
+      "dir": "layouts/style-hlc-bars",
+      "symbols": [
+        "NASDAQ:AAPL"
+      ],
+      "charts": 1,
+      "drawings": 2,
+      "studies": 0,
+      "lastModified": 1792272454,
+      "priceData": true
+    }
+  ],
+  "extras": {
+    "studyTemplates": 0,
+    "drawingTemplates": 0,
+    "themes": 0,
+    "scripts": 0,
+    "userDrawings": 0
+  },
+  "warnings": [],
+  "formatVersion": 1,
+  "status": "complete",
+  "files": {
+    "layouts/style-hlc-bars/layout.json": {
+      "sha256": "8eb4679339fed899f90d14c5cdfd80bb204266d51171f2c95dc59a5656a65d3a",
+      "bytes": 40661
+    },
+    "layouts/style-hlc-bars/drawings.json": {
+      "sha256": "6f480a3067c479c2eb4ff7eb317139d1c896a9ba3a25d73c2c68f81a2062341b",
+      "bytes": 45
+    },
+    "layouts/style-hlc-bars/data/chart-1.json": {
+      "sha256": "c8c2702b2e384b6f3965987ef2822cf32f580bc3c6565dc95d434e665675309f",
+      "bytes": 61230
+    }
+  }
+}

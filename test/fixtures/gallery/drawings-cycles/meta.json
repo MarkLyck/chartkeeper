@@ -1,0 +1,70 @@
+{
+  "scene": "drawings-cycles",
+  "description": "Cycle tools: cyclic lines, time cycles, sine line.",
+  "uid": "drawings-cycles",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:22:32.009Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 235.47495636270403,
+        "to": 360.69370454662
+      },
+      "tradingView": {
+        "drawings": 3,
+        "shapes": 3,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolCircleLines",
+      "type": "LineToolCircleLines",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolTimeCycles",
+      "type": "LineToolTimeCycles",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolSineLine",
+      "type": "LineToolSineLine",
+      "image": "isolated/c1d03.png"
+    }
+  ]
+}

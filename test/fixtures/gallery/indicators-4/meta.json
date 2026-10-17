@@ -1,0 +1,51 @@
+{
+  "scene": "indicators-4",
+  "description": "Pivot Points Standard and Pivot Points High Low on NYSE:JPM.",
+  "uid": "indicators-4",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:26:21.869Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NYSE:JPM",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 168.76573292826805,
+        "to": 497.8003169393677
+      },
+      "tradingView": {
+        "drawings": 0,
+        "shapes": 0,
+        "studies": [
+          "Pivot points high low",
+          "Pivot points standard"
+        ]
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": []
+}
