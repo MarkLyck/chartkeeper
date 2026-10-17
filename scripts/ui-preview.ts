@@ -231,7 +231,7 @@ async function main() {
   await page.waitForSelector('.result-warning');
   expect((await page.$$('.verify .cell-warn')).length === 2, 'a mismatch does not mark the saved and shown drawings');
   const replaceReq = (await calls(page)).filter((c) => c.method === 'restore').at(-1)?.args[0] as { mode: string; confirmedName?: string } | undefined;
-  expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'microsoft - daily', 'replace request did not carry the name he typed');
+  expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'microsoft - daily', 'replace request did not carry the typed name');
   await shot(page, 'restore-mismatch');
   await page.close();
 

@@ -177,10 +177,10 @@ export class ElectronPageTransport implements PageTransport {
 }
 
 /**
- * Opens a layout the way Thomas would and counts what TradingView itself shows.
+ * Opens a layout the way the user would and counts what TradingView itself shows.
  * This is the final check after a restore. ChartKeeper changes nothing here;
  * TradingView may move the drawings from the layout content into its drawing
- * storage while the layout is open, exactly as when Thomas opens it.
+ * storage while the layout is open, exactly as when the user opens it.
  */
 export async function countOnChartPage(uid: string, timeoutMs = 60_000): Promise<{ drawings: number; studies: number } | null> {
   tvSession();

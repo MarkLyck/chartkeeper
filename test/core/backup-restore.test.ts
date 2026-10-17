@@ -93,24 +93,24 @@ describe('backup', () => {
     const r = await backup();
     expect(r).toEqual({ ok: true, dir: expect.any(String), layouts: 1, drawings: 11, warnings: [] });
     const [snap] = await listSnapshots(root);
-    expect(snap!.manifest).toMatchObject({ status: 'complete', account: { username: 'thomas' }, extras: { studyTemplates: 1, drawingTemplates: 1, themes: 1, scripts: 1, userDrawings: 1 } });
+    expect(snap!.manifest).toMatchObject({ status: 'complete', account: { username: 'demo_user' }, extras: { studyTemplates: 1, drawingTemplates: 1, themes: 1, scripts: 1, userDrawings: 1 } });
     expect(snap!.manifest!.layouts[0]).toMatchObject({ uid: 'AbCd1234', name: 'Min AAPL', drawings: 11, studies: 2, priceData: true, symbols: ['NASDAQ:AAPL'] });
     const reader = await SnapshotReader.open(snap!.dir);
     expect(await reader.verify()).toEqual([]);
     const data = await reader.chartData('AbCd1234', '1');
     expect(data!.bars).toHaveLength(50);
     expect(Object.values(data!.studies).every((s) => s.status === 'ok')).toBe(true);
-    expect(await fs.readFile(path.join(snap!.dir, 'scripts/Thomas Trend.pine'), 'utf8')).toContain('indicator("Thomas Trend")');
+    expect(await fs.readFile(path.join(snap!.dir, 'scripts/My Trend.pine'), 'utf8')).toContain('indicator("My Trend")');
   });
 
   it('keeps two Pine scripts whose names differ only in case as two files', async () => {
-    tv.scripts.push({ scriptIdPart: 'USER;def456', scriptName: 'thomas trend', version: '1.0', source: '//@version=6\nindicator("lower")' });
+    tv.scripts.push({ scriptIdPart: 'USER;def456', scriptName: 'my trend', version: '1.0', source: '//@version=6\nindicator("lower")' });
     const r = await backup();
     expect(r.ok).toBe(true);
     const dir = (await listSnapshots(root))[0]!.dir;
     const files = (await fs.readdir(path.join(dir, 'scripts'))).filter((f) => f.endsWith('.pine')).sort();
-    expect(files).toEqual(['Thomas Trend.pine', 'thomas trend (2).pine']);
-    expect(await fs.readFile(path.join(dir, 'scripts', 'thomas trend (2).pine'), 'utf8')).toContain('lower');
+    expect(files).toEqual(['My Trend.pine', 'my trend (2).pine']);
+    expect(await fs.readFile(path.join(dir, 'scripts', 'my trend (2).pine'), 'utf8')).toContain('lower');
   });
 
   it('only reads: it sends no POST or PUT to TradingView', async () => {
@@ -327,7 +327,7 @@ describe('restore', () => {
     const r = await restoreTemplates(client(), snap);
     expect(r).toEqual({
       added: [{ kind: 'drawing-template', name: 'Thick orange' }],
-      skipped: [{ kind: 'study-template', name: 'My RSI setup' }, { kind: 'theme', name: 'Thomas dark' }],
+      skipped: [{ kind: 'study-template', name: 'My RSI setup' }, { kind: 'theme', name: 'My dark' }],
       missing: [],
     });
     expect(tv.drawingTemplates.LineToolTrendLine).toEqual({ 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } });

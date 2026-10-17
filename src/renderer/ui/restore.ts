@@ -196,7 +196,7 @@ export function restoreScreen(ctx: Ctx): Screen {
     return els;
   }
 
-  /** `typedName` is what he typed to confirm a replace; the app process checks it against the layout's name again. */
+  /** `typedName` is what the user typed to confirm a replace; the app process checks it against the layout's name again. */
   async function begin(c: Extract<Step, { k: 'how' }>, target: { uid: string; name: string } | null, typedName: string) {
     const base = { snapshotDir: c.source.snapshot.dir, uid: c.source.layout.uid };
     let req: RestoreRequest;

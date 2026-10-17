@@ -113,7 +113,7 @@ async function realApp() {
   }
   await caption(window, 'Everything in this layout could be drawn. Anything that can\'t is listed under "Not shown", never hidden.', 3000);
   await click(window, '#nav-home', 1000);
-  await caption(window, 'Signing in: ChartKeeper opens TradingView\'s real sign-in page. Thomas signs in himself (Google and 2FA work).', 2500);
+  await caption(window, 'Signing in: ChartKeeper opens TradingView\'s real sign-in page. The user signs in on that page (Google and 2FA work).', 2500);
   const popupP = app.waitForEvent('window', { timeout: 30000 });
   await click(window, '#signin', 500);
   const popup = await popupP;

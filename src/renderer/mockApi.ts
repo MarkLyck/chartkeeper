@@ -33,7 +33,7 @@ export interface MockControl {
   calls: { method: string; args: unknown[] }[];
 }
 
-const FOLDER = '/Users/thomas/Documents/ChartKeeper';
+const FOLDER = '/Users/demo/Documents/ChartKeeper';
 const fail = (kind: AppError['kind'], message: string, params: AppError['params'] = {}): { ok: false; error: AppError } => ({ ok: false, error: { kind, message, params } });
 
 function stamp(d: Date): string {
@@ -66,7 +66,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
       createdAt: at.toISOString(),
       status,
       ...(error ? { error } : {}),
-      account: { username: 'thomas_k', plan: 'Essential' },
+      account: { username: 'demo_user', plan: 'Essential' },
       layouts,
       warnings: [],
     };
@@ -84,7 +84,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     platform: 'darwin',
     settings: { backupFolder: FOLDER, dailyBackup: true, dailyHour: 18, includePrices: true },
     signedIn: init.signedIn ?? true,
-    username: init.signedIn === false ? null : 'thomas_k',
+    username: init.signedIn === false ? null : 'demo_user',
     browserName: 'Google Chrome',
     lastBackup: { at: snapshots[2]!.manifest!.createdAt, ok: true, dir: snapshots[2]!.dir },
     busy: null,
@@ -215,7 +215,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
         setState({ busy: null });
         return fail('browser', 'Could not start Google Chrome: spawn ENOENT');
       }
-      return { ok: true, value: setState({ busy: null, signedIn: true, username: 'thomas_k' }) };
+      return { ok: true, value: setState({ busy: null, signedIn: true, username: 'demo_user' }) };
     },
     async signOut() {
       record('signOut');

@@ -8,7 +8,7 @@ export interface Browser {
 
 /**
  * Where Chromium-based browsers install themselves, in order of preference.
- * Thomas uses Chrome, so it comes first; Edge ships with every Windows PC.
+ * Chrome is the most common, so it comes first; Edge ships with every Windows PC.
  */
 export function browserCandidates(platform: NodeJS.Platform, env: NodeJS.ProcessEnv, home: string): Browser[] {
   if (platform === 'win32') {

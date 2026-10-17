@@ -19,15 +19,15 @@ export interface FakeLayout {
 export class FakeTradingView implements PageTransport {
   layouts = new Map<string, FakeLayout>();
   requests: HttpRequest[] = [];
-  account: PageUser | null = { id: 42, username: 'thomas', authToken: 'auth-token', plan: 'pro_premium' };
+  account: PageUser | null = { id: 42, username: 'demo_user', authToken: 'auth-token', plan: 'pro_premium' };
   layoutLimit: number | null = null;
   /** Simulates the storage answering without cookies: empty success. */
   storageIgnoresCookies = false;
   failOn: ((req: HttpRequest) => HttpResponse | null) | null = null;
   drawingTemplates: Record<string, Record<string, unknown>> = { LineToolTrendLine: { 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } } };
   studyTemplates = [{ id: 7, name: 'My RSI setup', content: { panes: [] }, meta_info: { indicators: [{ id: 'RSI', description: 'RSI' }] } }];
-  themes: Record<string, unknown> = { 'Thomas dark': { content: { 'paneProperties.background': '#000' } } };
-  scripts = [{ scriptIdPart: 'USER;abc123', scriptName: 'Thomas Trend', version: '3.0', source: '//@version=6\nindicator("Thomas Trend")\nplot(close)' }];
+  themes: Record<string, unknown> = { 'My dark': { content: { 'paneProperties.background': '#000' } } };
+  scripts = [{ scriptIdPart: 'USER;abc123', scriptName: 'My Trend', version: '3.0', source: '//@version=6\nindicator("My Trend")\nplot(close)' }];
   private nextId = 1000;
 
   user(): Promise<PageUser | null> {
@@ -58,7 +58,7 @@ export class FakeTradingView implements PageTransport {
       if (lj) {
         const l = this.layouts.get(decodeURIComponent(lj[1]!));
         if (!l) return json(404, { code: 'not_found', detail: 'Not found' });
-        return json(200, { content: JSON.stringify(l.content), content_study_meta: JSON.stringify(l.studyMeta), name: l.name, uid: l.uid, id: l.id, description: '', last_modified: 1792000000, username: 'thomas', is_private: true });
+        return json(200, { content: JSON.stringify(l.content), content_study_meta: JSON.stringify(l.studyMeta), name: l.name, uid: l.uid, id: l.id, description: '', last_modified: 1792000000, username: 'demo_user', is_private: true });
       }
       if (p === '/chart-token/') {
         const uid = u.searchParams.get('image_url')!;

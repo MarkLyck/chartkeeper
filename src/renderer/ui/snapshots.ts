@@ -42,5 +42,5 @@ export function layoutFacts(l: ManifestLayout): string {
   return [l.symbols.map(shortSymbol).join(', '), tn('count.drawings', l.drawings), tn('count.indicators', l.studies)].filter(Boolean).join(' · ');
 }
 
-/** "NASDAQ:AAPL" -> "AAPL"; the exchange prefix means little to Thomas. */
+/** "NASDAQ:AAPL" -> "AAPL"; the exchange prefix means little to a non-technical user. */
 export const shortSymbol = (s: string) => s.split(':').pop() ?? s;

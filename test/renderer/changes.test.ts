@@ -22,7 +22,7 @@ const EVERY: Record<Change['what'], Change> = {
   'study-template': { kind: 'added', what: 'study-template', name: 'My MA' },
   'drawing-template': { kind: 'changed', what: 'drawing-template', name: 'Thick', toolType: 'LineToolTrendLine' },
   theme: { kind: 'removed', what: 'theme', name: 'Dark' },
-  script: { kind: 'changed', what: 'script', name: 'Thomas Trend' },
+  script: { kind: 'changed', what: 'script', name: 'My Trend' },
 };
 
 afterEach(() => {

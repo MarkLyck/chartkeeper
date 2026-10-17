@@ -66,7 +66,7 @@ describe('comparing two snapshots', () => {
     expect(r.other).toEqual([
       { kind: 'removed', what: 'study-template', name: 'My RSI setup' },
       { kind: 'added', what: 'theme', name: 'Lys' },
-      { kind: 'changed', what: 'script', name: 'Thomas Trend' },
+      { kind: 'changed', what: 'script', name: 'My Trend' },
     ]);
   });
 
@@ -82,6 +82,6 @@ describe('comparing two snapshots', () => {
     await fs.rm(path.join(older.dir, SNAPSHOT_FILES.themes));
     const newer = await snapshot(2);
     const r = await compareSnapshots(older, newer);
-    expect(r.other).toEqual([{ kind: 'added', what: 'theme', name: 'Thomas dark' }]);
+    expect(r.other).toEqual([{ kind: 'added', what: 'theme', name: 'My dark' }]);
   });
 });

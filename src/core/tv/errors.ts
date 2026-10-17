@@ -1,5 +1,5 @@
 /**
- * Failures the user can act on. `message` is plain language for Thomas;
+ * Failures the user can act on. `message` is plain language for a non-technical user;
  * `detail` is for the log file and bug reports.
  */
 export type TvErrorKind =

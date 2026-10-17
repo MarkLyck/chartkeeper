@@ -246,7 +246,7 @@ can't be checked, the result says so.
 
 Free: 1 layout. Essential: 5. Plus: 10. Premium and Ultimate: unlimited.
 Before a restore, ChartKeeper reads `/api/v1/charts/count/` and the plan from
-`window.user`. If no slot is free, it stops and explains that he must delete or
+`window.user`. If no slot is free, it stops and explains that the user must delete or
 "Replace" a layout, or upgrade. If the server still refuses the save with the
 limit error, the same message appears.
 

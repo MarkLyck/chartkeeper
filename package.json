@@ -5,7 +5,7 @@
   "description": "Back up, view offline, and restore your TradingView chart layouts.",
   "author": {
     "name": "MarkLyck",
-    "email": "mark.lyck@gmail.com"
+    "email": "MarkLyck@users.noreply.github.com"
   },
   "license": "MIT",
   "private": true,
@@ -105,7 +105,7 @@
       ],
       "category": "Finance",
       "icon": "build/icon.png",
-      "maintainer": "MarkLyck <mark.lyck@gmail.com>",
+      "maintainer": "MarkLyck <MarkLyck@users.noreply.github.com>",
       "synopsis": "Back up and view your TradingView charts"
     }
   }
