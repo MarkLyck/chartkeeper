@@ -22,6 +22,7 @@ export const TEXT = {
   'signin.button': 'Sign in to TradingView',
   'signin.explain': 'A browser window opens where you sign in to TradingView yourself, the way you usually do. Google sign-in and two-step codes work there. ChartKeeper never sees or stores your password.',
   'signin.browser': 'The window opens in {browser}.',
+  'signin.noBrowser': 'No Chrome, Edge, Brave or similar browser was found on this computer, so a ChartKeeper window opens instead. Google and Apple sign-in do not work there: sign in with your TradingView email and password, or install Google Chrome and try again.',
   'signin.waitingTitle': 'Waiting for you to sign in…',
   'signin.waitingBody': 'Sign in in the browser window that just opened. This window updates by itself when you are done.',
 

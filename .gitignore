@@ -5,3 +5,4 @@ out/
 .test-output/
 *.log
 .DS_Store
+.claude/
