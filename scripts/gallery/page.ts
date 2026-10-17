@@ -115,6 +115,7 @@ async function render(only: string[] | null): Promise<RenderInfo> {
   const root = document.getElementById('root')!;
   const layout = withOnly(current.input.layout, only);
   current.rendered = renderLayout(root, layout, current.input.data, current.input.options);
+  await document.fonts.ready;
   for (let i = 0; i < 4; i++) await frame();
   await new Promise((r) => setTimeout(r, 80));
   await frame();

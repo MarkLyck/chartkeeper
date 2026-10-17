@@ -1,6 +1,7 @@
 import type { DrawingPoint } from '../../../core/layout';
 import type { Props } from '../../../core/props';
 import { fillPolygon, FONT_FAMILY, pnum, pstr, setStroke, strokeLine, type DrawContext, type Pt } from './canvas';
+import { ICON_FONT_FAMILY } from '../iconFont';
 import { kind, type DrawingKind } from './kind';
 import { fillBlockText, measureBlock, type FontSpec } from './text';
 
@@ -106,37 +107,10 @@ export function drawFlag(dc: DrawContext, p: Props, points: DrawingPoint[]): voi
 
 const EMOJI_FONT = `'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', ${FONT_FAMILY}`;
 
-/** TradingView icon codes (Font Awesome code points) to the closest Unicode symbol, drawn as text in the icon colour. */
-export const ICON_SYMBOLS: Readonly<Record<number, string>> = {
-  0xf004: '♥', // heart
-  0xf005: '★', // star
-  0xf00c: '✔', // check
-  0xf00d: '✖', // times
-  0xf011: '⏻', // power-off
-  0xf06a: '!', // exclamation-circle
-  0xf071: '⚠', // warning
-  0xf087: '\u{1f44d}', // thumbs-o-up
-  0xf088: '\u{1f44e}', // thumbs-o-down
-  0xf0e7: '⚡', // bolt
-  0xf118: '☺', // smile-o
-  0xf119: '☹', // frown-o
-  0xf128: '?', // question
-  0xf135: '\u{1f680}', // rocket
-  0xf164: '\u{1f44d}', // thumbs-up
-  0xf165: '\u{1f44e}', // thumbs-down
-  0xf1e2: '\u{1f4a3}', // bomb
-};
-
-/** The Unicode stand-in for a TradingView icon code; unknown codes fall back to a bullet. */
-export const iconSymbol = (code: number): string => ICON_SYMBOLS[code] ?? '●';
-
 /** Stickers are pictures; known ones are drawn as a glyph, optionally on a disc, in the picture's main colours. */
 export const STICKERS: Readonly<Record<string, { glyph: string; color: string; disc?: string }>> = {
   bitcoin: { glyph: '₿', color: '#FBC516', disc: '#2962FF' },
 };
-
-/** Variation selector that asks for the plain-text (not emoji) form of a symbol. */
-const TEXT_STYLE = '︎';
 
 /**
  * Draws a glyph centred on the point, `drop` pixels lower to centre its ink.
@@ -156,10 +130,10 @@ function drawGlyph(dc: DrawContext, p: Props, points: DrawingPoint[], glyph: str
   ctx.restore();
 }
 
-/** Font Awesome glyphs fill more of their em box than the Unicode stand-ins, hence the larger font. */
+/** `icon` is a Font Awesome 4.7 code point, the font TradingView draws icons with. */
 export function drawIcon(dc: DrawContext, p: Props, points: DrawingPoint[]): void {
   const size = pnum(p, 'size', 40);
-  drawGlyph(dc, p, points, iconSymbol(pnum(p, 'icon', 0)) + TEXT_STYLE, `${size * 1.15}px ${FONT_FAMILY}`, pstr(p, 'color', '#2962FF'), size * 0.05);
+  drawGlyph(dc, p, points, String.fromCodePoint(pnum(p, 'icon', 0xf118)), `${size}px '${ICON_FONT_FAMILY}'`, pstr(p, 'color', '#2962FF'));
 }
 
 export function drawEmoji(dc: DrawContext, p: Props, points: DrawingPoint[]): void {
@@ -195,7 +169,7 @@ export const MARK_KINDS: Readonly<Record<string, DrawingKind>> = {
   LineToolArrowMarkRight: kind(1, arrowMarkDrawer('right')),
   LineToolArrowMarker: kind(2, drawArrowMarker),
   LineToolFlagMark: kind(1, drawFlag),
-  LineToolIcon: kind(1, drawIcon, undefined, approximate),
+  LineToolIcon: kind(1, drawIcon),
   LineToolEmoji: kind(1, drawEmoji, undefined, approximate),
   LineToolSticker: kind(1, drawSticker, undefined, approximate),
 };

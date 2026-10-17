@@ -18,6 +18,7 @@ import type { Bar, StudyValues } from '../../core/model';
 import { FONT_FAMILY, type DrawContext } from './drawings/canvas';
 import { DRAWING_KINDS, type AxisLabel } from './drawings/registry';
 import { dashPattern, luminance } from './colors';
+import { iconFontReady } from './iconFont';
 import { visiblePeriods, type HighLowPivots, type PivotPeriod, type PivotsPlan, type StandardPivots } from './pivots';
 import type { Band, Column, FillPlan } from './studies';
 import type { TimeIndex } from './time';
@@ -100,6 +101,12 @@ export class DrawingsPrimitive extends BasePrimitive {
     for (const d of drawings) {
       for (const label of DRAWING_KINDS[d.type]?.axisLabels?.(d.props, d.points, denv, d) ?? []) this.addAxisView(label);
     }
+  }
+
+  attached(param: SeriesAttachedParameter<Time>): void {
+    super.attached(param);
+    // Icon drawings use a web font that loads asynchronously; repaint once it is ready.
+    void iconFontReady().then(() => this.env?.requestUpdate());
   }
 
   /** A pane primitive for the drawings under the series; lightweight-charts paints pane primitives after the grid and before every series. */
@@ -339,11 +346,11 @@ function drawStandardPivots(ctx: CanvasRenderingContext2D, plan: StandardPivots,
   }
 }
 
-const CALLOUT = { gap: 3, pointer: 4, halfPointer: 5, padX: 4, padY: 1 };
+const CALLOUT = { gap: 2, pointer: 4, halfPointer: 5, padX: 3, padY: 0.5, font: -1 };
 
 /** A price box pointing at the pivot bar's high (box above) or low (box below), for pivots on bars in view. */
 function drawHighLowPivots(ctx: CanvasRenderingContext2D, plan: HighLowPivots, x: (i: number) => number, y: (p: number) => number, width: number, formatPrice: (p: number) => string): void {
-  ctx.font = `${plan.fontSize}px ${FONT_FAMILY}`;
+  ctx.font = `${plan.fontSize + CALLOUT.font}px ${FONT_FAMILY}`;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
   ctx.lineWidth = 1;

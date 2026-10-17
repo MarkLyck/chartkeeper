@@ -121,6 +121,7 @@ async function main() {
     format: 'iife',
     platform: 'browser',
     target: 'chrome120',
+    loader: { '.woff2': 'dataurl' },
     write: false,
     logLevel: 'silent',
   });

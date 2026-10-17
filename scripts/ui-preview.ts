@@ -27,7 +27,7 @@ export async function buildSite(fixture: PreviewFixture, out = OUT): Promise<str
   const SITE = path.join(out, 'site');
   await fs.rm(out, { recursive: true, force: true });
   await fs.mkdir(SITE, { recursive: true });
-  const common = { bundle: true, format: 'iife', platform: 'browser', target: 'es2023', logLevel: 'warning' } as const;
+  const common = { bundle: true, format: 'iife', platform: 'browser', target: 'es2023', logLevel: 'warning', loader: { '.woff2': 'dataurl' } } as const;
   await build({ ...common, entryPoints: [path.join(ROOT, 'src/renderer/app.ts')], outfile: path.join(SITE, 'app.js') });
   await build({
     ...common,

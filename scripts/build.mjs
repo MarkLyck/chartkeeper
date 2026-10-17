@@ -6,7 +6,7 @@ import { cpSync, mkdirSync, rmSync } from 'node:fs';
 rmSync('dist', { recursive: true, force: true });
 rmSync('dist-test', { recursive: true, force: true });
 mkdirSync('dist/renderer', { recursive: true });
-const common = { bundle: true, sourcemap: true, logLevel: 'warning', target: 'es2023' };
+const common = { bundle: true, sourcemap: true, logLevel: 'warning', target: 'es2023', loader: { '.woff2': 'dataurl' } };
 await Promise.all([
   build({ ...common, entryPoints: ['src/main/main.ts'], outfile: 'dist/main.js', platform: 'node', format: 'cjs', external: ['electron'] }),
   build({ ...common, entryPoints: ['src/preload/preload.ts'], outfile: 'dist/preload.js', platform: 'node', format: 'cjs', external: ['electron'] }),
@@ -18,3 +18,4 @@ await Promise.all([
 cpSync('src/renderer/index.html', 'dist/renderer/index.html');
 cpSync('src/renderer/styles.css', 'dist/renderer/styles.css');
 cpSync('build/icon.png', 'dist/icon.png');
+cpSync('licenses', 'dist/licenses', { recursive: true });

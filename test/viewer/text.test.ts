@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tableGrid } from '../../src/renderer/viewer/drawings/labels';
-import { iconSymbol, STICKERS } from '../../src/renderer/viewer/drawings/marks';
+import { STICKERS } from '../../src/renderer/viewer/drawings/marks';
 import { fixedPoint, textBlock } from '../../src/renderer/viewer/drawings/text';
 
 /** 7 px per character, like a 14 px font's average advance. */
@@ -64,12 +64,6 @@ describe('tables', () => {
 });
 
 describe('icons and stickers', () => {
-  it('map Font Awesome codes to Unicode symbols', () => {
-    expect(iconSymbol(0xf118)).toBe('☺');
-    expect(iconSymbol(0xf005)).toBe('★');
-    expect(iconSymbol(1)).toBe('●');
-  });
-
   it('draw the bitcoin sticker as a bitcoin sign on a disc', () => {
     expect(STICKERS.bitcoin).toEqual({ glyph: '₿', color: '#FBC516', disc: '#2962FF' });
   });
