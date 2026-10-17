@@ -270,6 +270,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     dark: theme.dark,
     background: theme.background,
     drawingStudies: plan.drawingStudies,
+    timeZone: plan.chart.timezone,
     formatPrice: (p: number) => formatValue(p, plan.priceFormat),
     formatTime: timeFormatter(plan),
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,

@@ -34,6 +34,8 @@ export interface DrawContext {
   background: string;
   /** TradingView's own values for a study-backed drawing (Anchored VWAP, Fixed Range Volume Profile), when the backup has them. */
   drawingStudy(drawingId: string): StudyValues | undefined;
+  /** The chart's time zone (IANA name), for dates and times shown in labels. */
+  timeZone: string;
 }
 
 export const FONT_FAMILY = `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;

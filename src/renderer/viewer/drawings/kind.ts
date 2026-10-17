@@ -21,6 +21,8 @@ export interface DrawingKind {
   axisLabels?(props: Props, points: DrawingPoint[], env: AxisEnv, drawing: ParsedDrawing): AxisLabel[];
   /** Set when the viewer draws the tool but can't match TradingView exactly; listed as partly shown with this reason. */
   caveat?: NotShownReason;
+  /** TradingView draws the tool above the series whatever its saved z-order (study-backed tools such as the volume profile). */
+  aboveSeries?: boolean;
 }
 
 export const kind = (minPoints: number, draw: DrawingKind['draw'], axisLabels?: DrawingKind['axisLabels'], caveat?: NotShownReason): DrawingKind => ({

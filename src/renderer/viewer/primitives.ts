@@ -75,6 +75,7 @@ export interface DrawingsEnv {
   drawingStudies: Readonly<Record<string, StudyValues>>;
   /** z-order of the series the drawings are attached to: TradingView draws lower drawings under it. */
   seriesZorder: number;
+  timeZone: string;
 }
 
 /** Axis labels keep white text like TradingView's, except on very light colours. */
@@ -96,8 +97,9 @@ export class DrawingsPrimitive extends BasePrimitive {
     private readonly denv: DrawingsEnv,
   ) {
     super('top');
-    this.above = drawings.filter((d) => d.zorder >= denv.seriesZorder);
-    this.below = drawings.filter((d) => d.zorder < denv.seriesZorder);
+    const isAbove = (d: ParsedDrawing) => d.zorder >= denv.seriesZorder || DRAWING_KINDS[d.type]?.aboveSeries === true;
+    this.above = drawings.filter(isAbove);
+    this.below = drawings.filter((d) => !isAbove(d));
     for (const d of drawings) {
       for (const label of DRAWING_KINDS[d.type]?.axisLabels?.(d.props, d.points, denv, d) ?? []) this.addAxisView(label);
     }
@@ -170,6 +172,7 @@ export class DrawingsPrimitive extends BasePrimitive {
         dark: this.denv.dark,
         background: this.denv.background,
         drawingStudy: (id) => this.denv.drawingStudies[id],
+        timeZone: this.denv.timeZone,
       };
       for (const d of drawings) {
         const kind = DRAWING_KINDS[d.type];
