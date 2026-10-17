@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { count, diffMask, dilate, dominantColor, findEventsButton, findLegendHighlight, foregroundMask, overlap, parseColor, shape, type Img } from './pixels';
+import { count, diffMask, dilate, dominantColor, findEventsButton, findLegendHighlight, plotWidthFromAxisText, foregroundMask, overlap, parseColor, shape, type Img } from './pixels';
 
 function image(w: number, h: number, paint: (x: number, y: number) => [number, number, number] = () => [255, 255, 255]): Img {
   const data = new Uint8ClampedArray(w * h * 4);
@@ -78,5 +78,12 @@ describe('pixel measures', () => {
     expect(findLegendHighlight(button, w)).toEqual({ x: 213, y: 6, w: 22, h: 20 });
     const line = maskOf(w, 40, (x) => x >= 100 && x < 104);
     expect(findLegendHighlight(line, w)).toBeNull();
+  });
+
+  it('reads the plot width from where the price-axis labels start', () => {
+    // Dark label text from x = 950 in 20 rows, a coloured last-price box further left, on a white chart.
+    const img = image(1000, 300, (x, y) => (x >= 950 && x < 980 && y % 12 === 0 && y < 240 ? [19, 23, 34] : x >= 930 && y >= 250 && y < 262 ? [242, 54, 69] : [255, 255, 255]));
+    expect(plotWidthFromAxisText(img, [255, 255, 255])).toBe(940);
+    expect(plotWidthFromAxisText(image(1000, 300), [255, 255, 255])).toBeNull();
   });
 });

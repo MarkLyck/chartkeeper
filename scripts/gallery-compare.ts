@@ -3,7 +3,9 @@
  * scene in test/fixtures/gallery, in headless Chromium, without network.
  *
  * For each scene it renders the snapshot at the captured pixel size and main
- * price range (the time scale comes from the layout, as in TradingView), then scores:
+ * price range and price-axis width (the time scale comes from the layout, as in
+ * TradingView; the axis width is measured from TradingView's capture so other
+ * fonts don't move the plot), then scores:
  *   - each drawing: the pixels it adds over the drawing-free chart, TradingView vs viewer;
  *   - each pane of the drawing-free chart (series and indicators): foreground pixels;
  *   - the full chart, for the report.
@@ -180,10 +182,19 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
   });
   await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;padding:0;background:#fff}#root{width:${width}px;height:${height}px}</style></head><body><div id="root"></div></body></html>`);
   await page.addScriptTag({ content: script });
+  const tvPng = (f: string) => fs.readFile(path.join(sceneDir, f));
+  const background = parseColor(str(obj(obj(layout.charts[0]!.chartProperties).paneProperties).background, '#ffffff'));
+  const tvBaseUrl = dataUrl(await tvPng('isolated/_base.png'));
+  const plotWidth: number | null = await page.evaluate(([u, bg]) => (window as any).ck.plotWidth(u, bg), [tvBaseUrl, background] as const);
+  if (plotWidth === null) problems.push('could not find the plot width in the TradingView capture');
   const input: SceneInput = {
     layout,
     data,
-    options: { ...(chartMeta.priceRange ? { priceRange: chartMeta.priceRange } : {}), notShownPanel: false },
+    options: {
+      ...(chartMeta.priceRange ? { priceRange: chartMeta.priceRange } : {}),
+      ...(plotWidth !== null ? { priceAxisWidth: width - plotWidth } : {}),
+      notShownPanel: false,
+    },
   };
   await page.evaluate((i) => (window as any).ck.load(i), JSON.parse(json(input)));
   const shoot = async (only: string[] | null) => {
@@ -202,12 +213,10 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
   const missing = [...counts.drawingIds, ...counts.studyIds].filter((id) => !drawn.has(id) && !listed.has(id));
   if (missing.length) problems.push(`neither drawn nor listed as not shown: ${missing.join(', ')}`);
 
-  const tvPng = (f: string) => fs.readFile(path.join(sceneDir, f));
-  const background = parseColor(str(obj(obj(layout.charts[0]!.chartProperties).paneProperties).background, '#ffffff'));
   const job: AnalyzeInput = {
     tv: {
       full: dataUrl(await tvPng('tradingview.png')),
-      base: dataUrl(await tvPng('isolated/_base.png')),
+      base: tvBaseUrl,
       drawings: Object.fromEntries(await Promise.all(meta.drawings.map(async (d) => [d.id, dataUrl(await tvPng(d.image))] as const))),
     },
     viewer: { full: dataUrl(full.png), base: dataUrl(base.png), drawings: Object.fromEntries(Object.entries(drawingPngs).map(([id, b]) => [id, dataUrl(b)])) },

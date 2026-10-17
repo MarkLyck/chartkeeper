@@ -12,6 +12,7 @@ import {
   foregroundMask,
   overlap,
   overlayImage,
+  plotWidthFromAxisText,
   shape,
   type Img,
   type Rect,
@@ -226,7 +227,13 @@ async function analyze(input: AnalyzeInput): Promise<AnalyzeResult> {
   };
 }
 
+/** TradingView's plot width in its drawing-free capture, so the viewer can use the same axis width whatever fonts this machine has. */
+async function plotWidth(url: string, background: Rgb): Promise<number | null> {
+  return plotWidthFromAxisText(await decode(url), background);
+}
+
 (window as unknown as { ck: unknown }).ck = {
+  plotWidth,
   load(input: SceneInput) {
     current?.rendered?.destroy();
     current = { input, rendered: null };

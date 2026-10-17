@@ -287,3 +287,32 @@ export function findLegendHighlight(changed: Mask, w: number, top = 6, bottom = 
   }
   return null;
 }
+
+/** TradingView's price-axis labels start this many pixels right of the plot area. */
+const AXIS_TEXT_INSET = 10;
+
+/**
+ * Width of TradingView's plot area in a capture: its price-axis labels are
+ * left-aligned AXIS_TEXT_INSET px right of the plot, so the first column of
+ * label text (grey/black or white pixels far from the background, in at
+ * least `minRows` rows of the rightmost 100 px) marks the edge.
+ */
+export function plotWidthFromAxisText(img: Img, background: Rgb, minRows = 15): number | null {
+  const { width: w, height: h, data: d } = img;
+  const firstText = new Int32Array(w);
+  for (let y = 0; y < h - 30; y++) {
+    for (let x = w - 100; x < w - 6; x++) {
+      const i = (y * w + x) * 4;
+      const r = d[i]!;
+      const g = d[i + 1]!;
+      const b = d[i + 2]!;
+      const far = Math.abs(r - background[0]) + Math.abs(g - background[1]) + Math.abs(b - background[2]) > 200;
+      if (far && Math.max(r, g, b) - Math.min(r, g, b) < 40) {
+        firstText[x]!++;
+        break;
+      }
+    }
+  }
+  const x = firstText.findIndex((n) => n >= minRows);
+  return x < 0 ? null : x - AXIS_TEXT_INSET;
+}

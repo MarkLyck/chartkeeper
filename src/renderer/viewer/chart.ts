@@ -252,7 +252,7 @@ export interface RenderedChart {
   destroy(): void;
 }
 
-export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleRange?: { from: number; to: number }; priceRange?: { from: number; to: number } }): RenderedChart {
+export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleRange?: { from: number; to: number }; priceRange?: { from: number; to: number }; priceAxisWidth?: number }): RenderedChart {
   const { visibleRange, priceRange } = view;
   const theme = chartTheme(plan.chart.chartProperties);
   cell.style.position = 'relative';
@@ -387,7 +387,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     }
     const { fontSize, fontFamily } = chart.options().layout;
     ctx.font = `${fontSize}px ${fontFamily}`;
-    const width = tvPriceAxisWidth(priceAxisTexts(chart), (t) => ctx.measureText(t).width);
+    const width = view.priceAxisWidth ?? tvPriceAxisWidth(priceAxisTexts(chart), (t) => ctx.measureText(t).width);
     holder.style.right = `${Math.min(0, width - lwcWidth)}px`;
     if (width > lwcWidth) chart.applyOptions({ rightPriceScale: { minimumWidth: width } });
   };

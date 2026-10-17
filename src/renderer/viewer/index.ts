@@ -14,6 +14,8 @@ export interface RenderOptions {
   visibleRange?: { from: number; to: number };
   /** Price range of each chart's main pane, instead of fitting the visible bars. */
   priceRange?: { from: number; to: number };
+  /** Price axis width in pixels, instead of sizing it for its labels as TradingView does (labels measure differently with other fonts). */
+  priceAxisWidth?: number;
   /** Show the "Not shown" panel under the charts. Defaults to true. */
   notShownPanel?: boolean;
 }
