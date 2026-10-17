@@ -23,6 +23,15 @@ export default defineConfig({
         'src/renderer/mockApi.ts',
         'src/renderer/**/*.{html,css}',
       ],
+      // Just below the measured values, so coverage can't drop unnoticed. Raise them when coverage rises.
+      // The global numbers include test/main/browserSignIn.test.ts, which needs Playwright's Chromium.
+      thresholds: {
+        lines: 54,
+        branches: 47,
+        functions: 55,
+        statements: 55,
+        'src/core/**': { lines: 98, branches: 89, functions: 95, statements: 97 },
+      },
     },
   },
 });
