@@ -49,13 +49,17 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
   const child = spawn(
     opts.browserPath,
     [`--user-data-dir=${opts.profileDir}`, '--remote-debugging-pipe', '--no-first-run', '--no-default-browser-check', '--new-window', ...(opts.extraArgs ?? []), opts.startUrl],
-    { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] },
+    { stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe'] },
   );
   opts.onSpawn?.(child);
+  let browserLog = '';
+  const keepTail = (chunk: Buffer) => (browserLog = (browserLog + chunk.toString('utf8')).slice(-2000));
+  child.stdout?.on('data', keepTail);
+  child.stderr?.on('data', keepTail);
   const cdp = new PipeCdp(child);
   try {
     return await new Promise<CdpCookie[]>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error('Signing in took too long. Please try again.')), opts.timeoutMs ?? 15 * 60_000);
+      const timer = setTimeout(() => reject(Object.assign(new Error('Signing in took too long. Please try again.'), { browserLog })), opts.timeoutMs ?? 15 * 60_000);
       child.once('exit', () => reject(new SignInCancelled()));
       child.once('error', (e) => reject(e));
       const poll = async () => {

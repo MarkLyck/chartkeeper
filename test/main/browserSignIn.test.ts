@@ -9,6 +9,8 @@ import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn
 
 const exe = chromium.executablePath();
 const haveBrowser = existsSync(exe);
+// CI runners can't use Chromium's sandbox; a desktop install of Chrome can.
+const headless = ['--headless=new', ...(process.platform === 'linux' && process.env.CI ? ['--no-sandbox'] : [])];
 
 /** A page that "signs in" two seconds after it loads by setting a sessionid cookie. */
 function fakeSignInServer() {
@@ -36,9 +38,11 @@ describe.skipIf(!haveBrowser)('signing in through a real browser window', () => 
         startUrl: srv.url,
         isSignedIn: (c) => c.some((x) => x.name === 'sessionid'),
         keep: (c) => c.name === 'sessionid',
-        extraArgs: ['--headless=new'],
+        extraArgs: headless,
         timeoutMs: 30000,
         pollMs: 300,
+      }).catch((e) => {
+        throw new Error(`${e.message}\nbrowser output: ${e.browserLog ?? ''}`);
       });
       expect(cookies.map((c) => [c.name, c.value, c.httpOnly])).toEqual([['sessionid', 's3cret', true]]);
       expect(existsSync(profileDir)).toBe(false);
@@ -49,7 +53,7 @@ describe.skipIf(!haveBrowser)('signing in through a real browser window', () => 
 
   it('reports a closed window as cancelled', async () => {
     const profileDir = path.join(await fs.mkdtemp(path.join(os.tmpdir(), 'ck-signin-')), 'profile');
-    const run = signInWithBrowser({ browserPath: exe, profileDir, startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, extraArgs: ['--headless=new'], pollMs: 200, onSpawn: (child) => setTimeout(() => child.kill(), 2500) });
+    const run = signInWithBrowser({ browserPath: exe, profileDir, startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, extraArgs: headless, pollMs: 200, onSpawn: (child) => setTimeout(() => child.kill(), 2500) });
     await expect(run).rejects.toBeInstanceOf(SignInCancelled);
   }, 60000);
 });
