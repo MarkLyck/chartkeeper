@@ -41,6 +41,12 @@ jobs:
         run: npm run viewer:compare
       - name: Build installer
         run: npx electron-builder --publish never
+      - name: Packaged app smoke test
+        if: runner.os != 'Linux'
+        run: npx tsx scripts/packaged-smoke.ts
+      - name: Packaged app smoke test (virtual display)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npx tsx scripts/packaged-smoke.ts
       - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ runner.os }}

@@ -33,7 +33,10 @@ your PC", click **More info**, then **Run anyway**. Follow the steps and click
 **Mac.** Double-click the `.dmg` file and drag **ChartKeeper** to the
 **Applications** folder. The first time, open the Applications folder,
 **right-click** ChartKeeper and choose **Open**, then click **Open** again.
-After that you can open it normally.
+After that you can open it normally. After you install a new version, your
+Mac may ask whether ChartKeeper may use "ChartKeeper Safe Storage". Type your
+Mac password and click **Always Allow**. That is where ChartKeeper keeps your
+TradingView sign-in locked.
 
 **Linux.** Right-click the `.AppImage` file, choose **Properties**, tick
 **Allow executing file as program**, then double-click it. Or install the
@@ -50,7 +53,7 @@ paid developer certificate. The warnings only appear the first time.
 2. A Chrome window opens on the TradingView sign-in page. Sign in the way you
    always do: with Google, email, or another option. Two-step codes work.
 3. When you are signed in, the window closes by itself and ChartKeeper shows
-   "Signed in as ...".
+   "Signed in to TradingView as ...".
 
 ChartKeeper never sees or saves your password. It keeps only the "you are
 signed in" cookie, in a private folder on your computer, and it only ever
@@ -105,7 +108,7 @@ and indicators were added, removed or moved between two backups.
 
 ![Restore result](docs/screenshots/en-restore-done.png)
 
-**Replace a layout.** You can also replace one of your existing layouts. To
+**Replace one of my layouts.** You can also replace one of your existing layouts. To
 do that, you must type the layout's name to confirm. ChartKeeper first saves
 a safety copy of the layout it replaces, in the folder `safety-copies`.
 
@@ -124,7 +127,7 @@ can't draw labels and boxes made by Pine scripts, or a few rare drawing tools.
 TradingView's terms allow market data for your own personal viewing.
 ChartKeeper saves prices only so you can view your own charts offline. Keep
 the backups to yourself. To save only layouts and drawings, switch off **Also
-save prices** in the settings.
+save prices so charts can be viewed offline** in the settings.
 
 ---
 
@@ -149,7 +152,10 @@ skrivebordet og i Start-menuen.
 **Mac.** Dobbeltklik på `.dmg`-filen, og træk **ChartKeeper** over i mappen
 **Programmer**. Første gang skal du åbne mappen Programmer, **højreklikke** på
 ChartKeeper, vælge **Åbn** og klikke **Åbn** igen. Derefter kan du åbne den
-helt normalt.
+helt normalt. Når du har installeret en ny version, spørger din Mac måske, om
+ChartKeeper må bruge "ChartKeeper Safe Storage". Skriv din Mac-adgangskode, og
+klik på **Tillad altid**. Det er der, ChartKeeper holder dit TradingView-login
+låst.
 
 **Linux.** Højreklik på `.AppImage`-filen, vælg **Egenskaber**, sæt flueben
 ved **Tillad at køre filen som et program**, og dobbeltklik på den. Du kan også
@@ -166,7 +172,7 @@ betalt udviklercertifikat. Advarslerne kommer kun første gang.
 2. Et Chrome-vindue åbner TradingViews login-side. Log ind, som du plejer: med
    Google, e-mail eller en anden mulighed. Koder fra totrinsbekræftelse virker.
 3. Når du er logget ind, lukker vinduet af sig selv, og ChartKeeper viser
-   "Logget ind som ...".
+   "Logget ind på TradingView som ...".
 
 ChartKeeper ser aldrig din adgangskode og gemmer den ikke. Den gemmer kun den
 cookie, der viser, at du er logget ind, i en privat mappe på din computer.
@@ -185,7 +191,7 @@ Backupperne ligger i den mappe, der står under **Indstillinger**. Klik på
 Dropbox. Hver backup er sin egen mappe med dato og klokkeslæt, så ældre
 backupper bliver aldrig overskrevet.
 
-**Daglig backup.** Slå **Tag backup automatisk hver dag** til. Så starter
+**Daglig backup.** Slå **Tag automatisk backup hver dag** til. Så starter
 ChartKeeper sammen med computeren, ligger i systembakken (ikonerne ved uret)
 og tager én backup om dagen efter det klokkeslæt, du vælger. Hvis computeren
 var slukket, tager den backuppen, næste gang computeren er tændt.
@@ -222,7 +228,7 @@ backupper.
 
 ![Gendannet](docs/screenshots/da-restore-done.png)
 
-**Erstat et layout.** Du kan også erstatte et af dine eksisterende layouts.
+**Erstat et af mine layouts.** Du kan også erstatte et af dine eksisterende layouts.
 For at gøre det skal du skrive layoutets navn for at bekræfte. ChartKeeper
 gemmer først en sikkerhedskopi af det layout, der bliver erstattet, i mappen
 `safety-copies`.
@@ -243,7 +249,7 @@ tegneværktøjer. [docs/LIMITATIONS.md](docs/LIMITATIONS.md) har hele listen og
 TradingViews vilkår tillader markedsdata til dit eget personlige brug.
 ChartKeeper gemmer kun kurser, så du kan se dine egne grafer uden internet.
 Behold backupperne for dig selv. Vil du kun gemme layouts og tegninger, så slå
-**Gem også kurser** fra i indstillingerne.
+**Gem også kurser, så graferne kan ses uden internet** fra i indstillingerne.
 
 ---
 
@@ -252,6 +258,9 @@ Behold backupperne for dig selv. Vil du kun gemme layouts og tegninger, så slå
 - [docs/INVESTIGATION.md](docs/INVESTIGATION.md) records how tradingview.com
   stores layouts and the endpoints ChartKeeper uses.
 - [docs/decisions.tsv](docs/decisions.tsv) is the decision log.
+- `npm run viewer:compare` writes the viewer and TradingView's own rendering
+  of the same layout side by side:
+  ![Viewer next to TradingView](docs/screenshots/viewer-vs-tradingview.png)
 - `src/core/` holds the TradingView client, backup, restore, diff and snapshot
   format, with no Electron code. `src/core/tv/` is the only folder that knows
   TradingView URLs and response shapes.

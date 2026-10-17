@@ -19,7 +19,7 @@
     "test:live": "vitest run --config vitest.live.config.mts",
     "test:e2e": "npm run build && vitest run --config vitest.e2e.config.mts",
     "viewer:compare": "tsx scripts/viewer-compare.ts",
-    "screenshots": "npm run build && tsx scripts/readme-screenshots.ts",
+    "screenshots": "tsx scripts/readme-screenshots.ts",
     "dist": "npm run build && electron-builder --publish never"
   },
   "devDependencies": {
@@ -73,7 +73,8 @@
       ],
       "category": "public.app-category.finance",
       "icon": "build/icon.png",
-      "identity": null
+      "identity": "-",
+      "hardenedRuntime": false
     },
     "dmg": {
       "title": "ChartKeeper"
