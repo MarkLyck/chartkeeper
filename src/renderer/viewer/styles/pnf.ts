@@ -31,7 +31,7 @@ export function pnfStyle(colors: UpDown, boxSize: number): StyleView<StyleBar> {
   const painter: Painter<StyleBar> = (f) => {
     const { ctx } = f;
     const boxHeight = Math.abs(f.y(0) - f.y(boxSize));
-    ctx.lineWidth = 1.5 * f.hpr;
+    ctx.lineWidth = 1.2 * f.hpr;
     for (const { x, bar } of f.bars) {
       const up = bar.close >= bar.open;
       ctx.beginPath();

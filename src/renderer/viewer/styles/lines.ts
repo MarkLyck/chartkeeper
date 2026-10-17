@@ -52,7 +52,7 @@ export function lineStyle(look: LineLook, shape: 'line' | 'markers' | 'step'): S
   const painter: Painter<StyleBar> = (f) => {
     if (shape === 'step') {
       const pts = stepPoints(f.bars.map(({ x, bar }) => ({ x, y: f.y(bar.close) })), f.barSpacing);
-      stroke(f, look, () => pts.forEach((p, i) => (i === 0 ? f.ctx.moveTo(p.x, p.y) : f.ctx.lineTo(p.x, p.y))));
+      stroke(f, look, () => pts.forEach((p, i) => (i === 0 ? f.ctx.moveTo(Math.round(p.x), p.y) : f.ctx.lineTo(Math.round(p.x), p.y))));
       return;
     }
     stroke(f, look, polyline(f, close));

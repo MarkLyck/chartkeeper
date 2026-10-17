@@ -15,6 +15,8 @@ import {
   type SeriesOptionsCommon,
   type SeriesType,
   type TimeChartOptions,
+  TickMarkType,
+  type Time,
 } from 'lightweight-charts';
 import type { DrawingPoint } from '../../core/layout';
 import { isDark, lwcLineStyle, withTransparency } from './colors';
@@ -22,6 +24,7 @@ import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec, type StyleSeriesSpec } from './series';
 import { StyleSeriesView } from './styles/view';
+import { PriceLinePrimitive } from './styles/priceLine';
 import { priceAxisTexts, tvPriceAxisWidth } from './axis';
 import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
@@ -83,10 +86,14 @@ export function chartTheme(chartProperties: Props): ChartTheme {
         borderColor: lineColor,
         scaleMargins: { top: num(pane.topMargin, 10) / 100, bottom: num(pane.bottomMargin, 8) / 100 },
       },
-      timeScale: { borderColor: lineColor },
+      timeScale: { borderColor: lineColor, tickMarkFormatter: monthTick },
     },
   };
 }
+
+const MONTH = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' });
+/** TradingView names months "Sep" on the time axis, where the viewer's en-GB dates would say "Sept". */
+const monthTick = (time: Time, type: TickMarkType): string | null => (type === TickMarkType.Month && typeof time === 'number' ? MONTH.format(time * 1000) : null);
 
 const SERIES_DEFINITIONS = {
   Candlestick: CandlestickSeries,
@@ -283,6 +290,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     let host: ISeriesApi<SeriesType> | null = null;
     if (pane.main) {
       host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
+      if (plan.main!.priceLine) host.attachPrimitive(new PriceLinePrimitive(plan.main!.priceLine));
       mainSeries = host;
       legends.push({ pane: index, legend: mainLegend(plan, theme) });
     }

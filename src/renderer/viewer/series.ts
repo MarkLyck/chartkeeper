@@ -56,6 +56,8 @@ export interface MainSeriesSpec {
   legend: MainLegend;
   /** Set when the layout's chart type has no offline equivalent and candles are drawn instead. */
   fallbackFrom: number | null;
+  /** TradingView's dotted last-price line; an empty colour takes the last bar's. Null when the layout hides it. */
+  priceLine: { color: string; width: number } | null;
 }
 
 export const ts = (t: number) => t as UTCTimestamp;
@@ -123,7 +125,7 @@ interface Ctx {
   changeColors: { up: string; down: string };
 }
 
-type Built = Omit<MainSeriesSpec, 'fallbackFrom' | 'ohlc'>;
+type Built = Omit<MainSeriesSpec, 'fallbackFrom' | 'ohlc' | 'priceLine'>;
 
 const OHLC: { label: string; value: (b: Ohlc) => number }[] = [
   { label: 'O', value: (b) => b.open },
@@ -380,10 +382,7 @@ export function mainSeriesSpec(chart: ParsedChart, bars: readonly Bar[], times: 
     t: (i) => ts(times[i]!),
     common: {
       priceFormat: { type: 'price', ...guessPriceFormat(bars, computed ? computedStyle : undefined) },
-      priceLineVisible: st.showPriceLine !== false,
-      priceLineColor: str(st.priceLineColor, ''),
-      priceLineWidth: lineWidth(st.priceLineWidth, 1),
-      priceLineStyle: lwcLineStyle(1),
+      priceLineVisible: false,
       lastValueVisible: true,
     },
     up: (i, onPrevClose) => {
@@ -392,5 +391,6 @@ export function mainSeriesSpec(chart: ParsedChart, bars: readonly Bar[], times: 
     },
     changeColors: { up: str(legendProps.barChangeUpColor, UP), down: str(legendProps.barChangeDownColor, DOWN) },
   };
-  return { ...STYLES[style]!(c), ohlc, fallbackFrom: fallback ? chart.style : null };
+  const priceLine = st.showPriceLine === false ? null : { color: str(st.priceLineColor, ''), width: lineWidth(st.priceLineWidth, 1) };
+  return { ...STYLES[style]!(c), ohlc, fallbackFrom: fallback ? chart.style : null, priceLine };
 }

@@ -35,12 +35,12 @@ export interface BrickLook {
 /** Renko and Line Break (styles 4 and 7): boxes from open to close that fill their whole bar slot, so neighbours touch. */
 export function brickStyle(look: BrickLook): StyleView<StyleBar> {
   const painter: Painter<StyleBar> = (f) => {
-    const half = f.barSpacing / 2;
+    const width = Math.max(1, Math.round(f.barSpacing));
     const line = Math.max(1, Math.floor(f.hpr));
     for (const { x, bar } of f.bars) {
       const up = isUp(bar);
-      const left = Math.round(x - half);
-      const right = Math.round(x + half);
+      const left = Math.round(x) - Math.floor(width / 2);
+      const right = left + width;
       if (look.wick) {
         const wx = Math.round(x) - Math.floor(line / 2);
         const color = up ? look.wick.up : look.wick.down;
@@ -50,7 +50,7 @@ export function brickStyle(look: BrickLook): StyleView<StyleBar> {
         if (bar.low < Math.min(bar.open, bar.close)) fillRect(f, wx, wx + line, bottom, f.y(bar.low), color);
       }
       const top = Math.round(f.y(Math.max(bar.open, bar.close)));
-      const bottom = Math.round(f.y(Math.min(bar.open, bar.close)));
+      const bottom = Math.round(f.y(Math.min(bar.open, bar.close))) + line;
       const border = up ? look.border.up : look.border.down;
       const body = up ? look.body.up : look.body.down;
       fillRect(f, left, right, top, bottom, border);
