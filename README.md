@@ -279,7 +279,12 @@ npm run test:e2e         # starts the real app window
 npm run viewer:compare   # viewer next to TradingView's own rendering
 npm run test:live        # round trip on a real TradingView account (asks you to sign in)
 npm run dist             # installer for this computer, in release/
+npx tsx scripts/packaged-smoke.ts   # starts the packaged app from release/ and opens a backup
+npx tsx scripts/record-demos.ts     # demo videos in docs/demos (needs an unlocked screen)
 ```
+
+Set `CHARTKEEPER_BROWSER` to a browser's path to sign in with that browser, or
+to `none` to use ChartKeeper's own sign-in window.
 
 `npx tsx scripts/capture-reference.ts` rebuilds the reference backup and the
 TradingView screenshot from a signed-out TradingView chart.

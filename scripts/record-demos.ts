@@ -68,7 +68,8 @@ const H264 = ['-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '23', '-movflags
 function toMp4(webm: string, mp4: string, pip?: { file: string; at: number }) {
   if (!pip) return execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', webm, ...H264, mp4]);
   // The sign-in window is recorded on its own; show it over the app while it was open.
-  const filter = `[1:v]setpts=PTS-STARTPTS+${pip.at.toFixed(2)}/TB,scale=560:-2,pad=iw+8:ih+8:4:4:color=0x1e4fd8[p];[0:v][p]overlay=x=W-w-24:y=24:eof_action=pass[v]`;
+  // The sign-in window is 520×760; its recording is the full video size, with the window top-left.
+  const filter = `[1:v]crop=520:760:0:0,setpts=PTS-STARTPTS+${pip.at.toFixed(2)}/TB,scale=-2:560,pad=iw+8:ih+8:4:4:color=0x1e4fd8[p];[0:v][p]overlay=x=W-w-24:y=24:eof_action=pass[v]`;
   execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', webm, '-i', pip.file, '-filter_complex', filter, '-map', '[v]', ...H264, mp4]);
 }
 
