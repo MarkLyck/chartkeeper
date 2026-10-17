@@ -115,7 +115,8 @@ account. It never changes existing ones.
 ## What is not backed up
 
 Alerts, watchlists, and other people's scripts are not backed up. The viewer
-can't draw labels and boxes made by Pine scripts, or a few rare drawing tools.
+draws every drawing tool, chart style and built-in indicator, but not the
+labels and boxes that Pine scripts draw, or image drawings.
 [docs/LIMITATIONS.md](docs/LIMITATIONS.md) has the full list and the reasons.
 
 ## Your data and TradingView's rules
@@ -132,21 +133,34 @@ save prices so charts can be viewed offline** in the settings.
 - [docs/INVESTIGATION.md](docs/INVESTIGATION.md) records how tradingview.com
   stores layouts and the endpoints ChartKeeper uses.
 - [docs/decisions.tsv](docs/decisions.tsv) is the decision log.
-- `npm run viewer:compare` writes the viewer and TradingView's own rendering
-  of the same layout side by side:
-  ![Viewer next to TradingView](docs/screenshots/viewer-vs-tradingview.png)
+- `npm run gallery:compare` renders each of the 40 scenes in
+  `test/fixtures/gallery` (every drawing tool, chart style and indicator a
+  signed-out TradingView chart offers, captured from TradingView itself) with
+  the viewer, scores every drawing, chart style and indicator against
+  TradingView's pixels, and fails when a score drops below
+  `test/gallery/thresholds.ts`. The report is in
+  `.test-output/gallery-compare/index.html`. TradingView on the left,
+  ChartKeeper on the right:
+  ![Viewer next to TradingView, light](docs/screenshots/advanced-vs-tradingview.png)
+  ![Viewer next to TradingView, dark](docs/screenshots/advanced-dark-vs-tradingview.png)
+- `npm run viewer:compare` checks the cases the gallery can't capture (several
+  charts in one layout, a chart without prices, unknown drawings, indicator
+  errors) and writes `.test-output/viewer-gallery.png`.
 - `src/core/` holds the TradingView client, backup, restore, diff and snapshot
   format, with no Electron code. `src/core/tv/` is the only folder that knows
   TradingView URLs and response shapes.
 - `src/main/` is the Electron app process (sign-in, private session, tray,
   daily schedule). `src/renderer/` is the window, and `src/renderer/viewer/`
-  is the offline chart viewer (Lightweight Charts, Apache 2.0).
+  is the offline chart viewer (Lightweight Charts, Apache 2.0). It draws
+  icon drawings with the Font Awesome 4.7 font (SIL OFL 1.1,
+  [licenses/font-awesome-OFL.txt](licenses/font-awesome-OFL.txt)).
 
 ```sh
 npm install
 npm test                 # unit tests: parsing, restore logic, viewer, strings
 npm run test:e2e         # starts the real app window and runs every flow against a fake TradingView
-npm run viewer:compare   # viewer next to TradingView's own rendering
+npm run gallery:compare  # every tool, style and indicator against TradingView's own rendering
+npm run viewer:compare   # multi-chart layouts and error cases in the viewer
 npm run test:compat      # restore keeps every feature, checked by tradingview.com's own loader (no account)
 npm run test:live        # round trip on a real TradingView account (asks you to sign in)
 npm run dist             # installer for this computer, in release/
