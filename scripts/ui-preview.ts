@@ -17,10 +17,9 @@ import type { Lang } from '../src/shared/api';
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, '.test-output/ui');
-const SITE = path.join(OUT, 'site');
 const SNAP = path.join(ROOT, 'test/fixtures/reference-snapshot');
 
-async function readFixture(): Promise<PreviewFixture> {
+export async function readFixture(): Promise<PreviewFixture> {
   const json = async (rel: string) => JSON.parse(await fs.readFile(path.join(SNAP, rel), 'utf8'));
   const manifest = ManifestSchema.parse(await json('manifest.json'));
   const dir = manifest.layouts[0]!.dir;
@@ -35,8 +34,9 @@ async function readFixture(): Promise<PreviewFixture> {
   return { layout, data, manifest };
 }
 
-async function buildSite(fixture: PreviewFixture) {
-  await fs.rm(OUT, { recursive: true, force: true });
+export async function buildSite(fixture: PreviewFixture, out = OUT): Promise<string> {
+  const SITE = path.join(out, 'site');
+  await fs.rm(out, { recursive: true, force: true });
   await fs.mkdir(SITE, { recursive: true });
   const common = { bundle: true, format: 'iife', platform: 'browser', target: 'es2023', logLevel: 'warning' } as const;
   await build({ ...common, entryPoints: [path.join(ROOT, 'src/renderer/app.ts')], outfile: path.join(SITE, 'app.js') });
@@ -51,6 +51,7 @@ async function buildSite(fixture: PreviewFixture) {
   const tag = '<script src="app.js"></script>';
   if (!html.includes(tag)) throw new Error(`index.html no longer loads ${tag}`);
   await fs.writeFile(path.join(SITE, 'index.html'), html.replace(tag, `<script src="fixture.js"></script><script src="mock.js"></script>${tag}`));
+  return path.join(SITE, 'index.html');
 }
 
 const problems: string[] = [];
@@ -61,7 +62,7 @@ const expect = (ok: boolean, what: string) => {
 async function main() {
   await buildSite(await readFixture());
   const browser = await chromium.launch({ executablePath: chromium.executablePath() });
-  const url = `file://${path.join(SITE, 'index.html')}`;
+  const url = `file://${path.join(OUT, 'site', 'index.html')}`;
   const shots: string[] = [];
 
   for (const lang of ['da', 'en'] as Lang[]) {
@@ -249,7 +250,8 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (require.main === module)
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
