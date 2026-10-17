@@ -124,6 +124,19 @@ describe('time index', () => {
     expect(hourly.indexOf(7200 + 5 * 3600)).toBe(7);
   });
 
+  it('counts only session bars past the last intraday bar, rounding up to the next bar', () => {
+    // Hourly bars 13:30-19:30 UTC on Thursday 17 and Friday 18 September 2026.
+    const thu = Date.UTC(2026, 8, 17) / 1000;
+    const slots = [13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5].map((h) => h * 3600);
+    const times = [thu, thu + DAY].flatMap((d) => slots.map((s) => d + s));
+    const index = new TimeIndex(times, '60');
+    const last = times.length - 1;
+    const monday = thu + 4 * DAY;
+    expect(index.indexOf(monday + 10.5 * 3600)).toBe(last + 1); // before Monday's open: Monday's first bar
+    expect(index.indexOf(monday + 14.5 * 3600)).toBe(last + 2);
+    expect(index.indexOf(monday + 15 * 3600)).toBe(last + 3); // between bars: the next one
+  });
+
   it('labels intervals like the chart header', () => {
     expect(['D', '1D', '60', '240', '15', '1W', '3M', '30S'].map(intervalLabel)).toEqual(['1D', '1D', '1h', '4h', '15m', '1W', '3M', '30s']);
   });

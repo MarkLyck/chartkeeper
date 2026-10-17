@@ -31,6 +31,8 @@ const isWeekend = (day: number) => {
 export class TimeIndex {
   readonly interval: Interval;
   private readonly tradesWeekends: boolean;
+  /** Intraday: the times of day (UTC seconds) that bars opened at in the last ten days, i.e. the session's bar slots. Empty otherwise. */
+  private readonly slots: number[];
 
   constructor(
     readonly times: readonly number[],
@@ -38,6 +40,30 @@ export class TimeIndex {
   ) {
     this.interval = parseInterval(interval);
     this.tradesWeekends = times.some((t) => isWeekend(utcDay(t)));
+    const last = times[times.length - 1] ?? 0;
+    const recent = isIntraday(this.interval) ? times.filter((t) => t > last - 10 * DAY) : [];
+    // One day of bars shows no session boundary; plain intervals are the better guess then.
+    this.slots = new Set(recent.map(utcDay)).size > 1 ? [...new Set(recent.map((t) => t - utcDay(t) * DAY))].sort((a, b) => a - b) : [];
+  }
+
+  /**
+   * Bars after the last bar up to a later intraday time, counting only the
+   * session's bar slots on trading days, so nights and weekends hold no bars.
+   * A time between two slots counts up to the next one, as TradingView does
+   * for points beyond the last bar.
+   */
+  private sessionBarsAfter(last: number, time: number): number {
+    let count = 0;
+    for (let d = utcDay(last); d <= utcDay(time) + 7; d++) {
+      if (d !== utcDay(last) && !this.tradesWeekends && isWeekend(d)) continue;
+      for (const slot of this.slots) {
+        const t = d * DAY + slot;
+        if (t <= last) continue;
+        count++;
+        if (t >= time) return count;
+      }
+    }
+    return count;
   }
 
   /** Whole bars from time `a` to a later time `b`, as the time scale would count them. */
@@ -76,7 +102,7 @@ export class TimeIndex {
     if (n === 0) return 0;
     const first = times[0]!;
     const last = times[n - 1]!;
-    if (time > last) return n - 1 + this.barsBetween(last, time);
+    if (time > last) return n - 1 + (this.slots.length > 1 ? this.sessionBarsAfter(last, time) : this.barsBetween(last, time));
     if (time < first) return -Math.max(1, this.barsBetween(time, first));
     let lo = 0;
     let hi = n - 1;
