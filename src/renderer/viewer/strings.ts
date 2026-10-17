@@ -33,9 +33,10 @@ const STYLE_NAMES: Record<number, string> = {
   11: 'Range',
   12: 'High-Low',
   16: 'HLC Area',
-  17: 'Volume Candles',
-  19: 'Volume Footprint',
-  20: 'TPO',
+  17: 'Volume Footprint',
+  18: 'Time Price Opportunity',
+  19: 'Volume Candles',
+  20: 'Session Volume Profile',
   21: 'HLC Bars',
 };
 export const chartStyleName = (style: number): string => STYLE_NAMES[style] ?? `#${style}`;
