@@ -162,7 +162,9 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
     }
     target!.drawings.push(d);
     renderedDrawings.push(d.id);
-    if (kind!.caveat) add('drawing', d.id, name, kind!.caveat, true);
+    // A backup that holds TradingView's own values for the drawing needs no "computed locally" note.
+    const storedValues = kind!.caveat?.code === 'computed-locally' && data?.drawingStudies?.[d.id] !== undefined;
+    if (kind!.caveat && !storedValues) add('drawing', d.id, name, kind!.caveat, true);
   }
   for (const p of panes) p.drawings.sort((a, b) => a.zorder - b.zorder);
 

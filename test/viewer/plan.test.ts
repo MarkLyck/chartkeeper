@@ -135,3 +135,22 @@ describe('planLayout on a layout with problems', () => {
     expect(plan.notShown.find((n) => n.id === 'nodata1')!.message).toBe('No values were saved for this indicator');
   });
 });
+
+describe('planLayout on study-backed drawings', () => {
+  function withVolumeProfile(stored: boolean) {
+    const content = clone(record.content);
+    const sources = content.charts[0]!.panes[0]!.sources;
+    const trend = sources.find((s) => s.id === 'tl0001')!;
+    sources.push({ ...clone(trend), id: 'frvp1', type: 'LineToolFixedRangeVolumeProfile' });
+    const layout = parseLayout({ ...record, content }, null);
+    const drawingStudies: ChartData['drawingStudies'] = stored ? { frvp1: { status: 'ok', metaInfoId: 'VbPFixed@tv-basicstudies-280', rows: [] } } : undefined;
+    return planLayout(layout, { 1: { ...chartData, ...(drawingStudies ? { drawingStudies } : {}) } });
+  }
+
+  it('notes that a volume profile is computed locally only when the backup lacks TradingView values', () => {
+    expect(withVolumeProfile(false).notShown.map((n) => [n.id, n.partial, n.reason.code])).toEqual([['frvp1', true, 'computed-locally']]);
+    const stored = withVolumeProfile(true);
+    expect(stored.notShown).toEqual([]);
+    expect(stored.charts[0]!.rendered.drawings).toContain('frvp1');
+  });
+});
