@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { count, diffMask, dilate, dominantColor, findEventsButton, foregroundMask, overlap, parseColor, shape, type Img } from './pixels';
+import { count, diffMask, dilate, dominantColor, findEventsButton, findLegendHighlight, foregroundMask, overlap, parseColor, shape, type Img } from './pixels';
 
 function image(w: number, h: number, paint: (x: number, y: number) => [number, number, number] = () => [255, 255, 255]): Img {
   const data = new Uint8ClampedArray(w * h * 4);
@@ -70,5 +70,13 @@ describe('pixel measures', () => {
     expect(r.x).toBeLessThanOrEqual(150);
     expect(r.x + r.w).toBeGreaterThanOrEqual(175);
     expect(findEventsButton(image(200, 60), { x: 0, y: 20, w: 200, h: 40 })).toBeNull();
+  });
+
+  it('finds an isolated legend-button highlight but not a line crossing the legend row', () => {
+    const w = 300;
+    const button = maskOf(w, 40, (x, y) => x >= 214 && x < 234 && y >= 7 && y < 25);
+    expect(findLegendHighlight(button, w)).toEqual({ x: 213, y: 6, w: 22, h: 20 });
+    const line = maskOf(w, 40, (x) => x >= 100 && x < 104);
+    expect(findLegendHighlight(line, w)).toBeNull();
   });
 });

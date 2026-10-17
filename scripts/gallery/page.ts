@@ -8,6 +8,7 @@ import {
   diffMask,
   dominantColor,
   findEventsButton,
+  findLegendHighlight,
   foregroundMask,
   overlap,
   overlayImage,
@@ -181,9 +182,12 @@ async function analyze(input: AnalyzeInput): Promise<AnalyzeResult> {
   for (const [id, tvUrl] of Object.entries(job.tv.drawings)) {
     const viewerUrl = job.viewer.drawings[id];
     const tvImg = await decode(tvUrl);
-    const tvMask = diffMask(tvImg, tvBase, job.drawingThreshold, job.ignore);
+    const raw = diffMask(tvImg, tvBase, job.drawingThreshold, job.ignore);
+    const legend = findLegendHighlight(raw, w);
+    const ignore = legend ? [...job.ignore, legend] : job.ignore;
+    const tvMask = legend ? diffMask(tvImg, tvBase, job.drawingThreshold, ignore) : raw;
     const viewerImg = viewerUrl ? await decode(viewerUrl) : viewerBase;
-    const viewerMask = diffMask(viewerImg, viewerBase, job.drawingThreshold, job.ignore);
+    const viewerMask = diffMask(viewerImg, viewerBase, job.drawingThreshold, ignore);
     const s = overlap(tvImg, tvMask, viewerImg, viewerMask, job.tolerance, job.maxColor);
     const ts = shape(tvMask, w, h);
     const vs = shape(viewerMask, w, h);

@@ -258,3 +258,32 @@ export function findEventsButton(img: Img, strip: Rect, size = 30): Rect | null 
   }
   return best >= 20 ? { x: bestX - 3, y: y1 - 50, w: size + 6, h: 50 } : null;
 }
+
+/**
+ * TradingView highlights one legend button (about 20x18 px at y 7-24, right
+ * of the title) in some captures with a drawing shown, but not in the
+ * drawing-free capture. Finds a window of changed pixels in those rows that
+ * has no changes directly above or below it (a drawing crossing the legend
+ * row would continue vertically). `changed` is a diff mask of the two images.
+ */
+export function findLegendHighlight(changed: Mask, w: number, top = 6, bottom = 25, size = 22): Rect | null {
+  const inRows = new Int32Array(w);
+  const outside = new Int32Array(w);
+  for (let y = 0; y <= bottom + 6; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!changed[y * w + x]) continue;
+      if (y >= top && y <= bottom) inRows[x]!++;
+      else outside[x]!++;
+    }
+  }
+  for (let x0 = 0; x0 + size <= w; x0++) {
+    let n = 0;
+    let out = 0;
+    for (let x = x0; x < x0 + size; x++) {
+      n += inRows[x]!;
+      out += outside[x]!;
+    }
+    if (n >= 120 && out === 0 && inRows[x0] === 0 && inRows[x0 + size - 1] === 0) return { x: x0, y: top, w: size, h: bottom - top + 1 };
+  }
+  return null;
+}
