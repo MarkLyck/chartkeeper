@@ -43,7 +43,7 @@ describe('wording a comparison', () => {
   it('names drawing tools, and plainly when there is no name for them', () => {
     expect(changeText(EVERY.drawing)).toEqual({ subject: 'Text', detail: 'Text “Sell” on the chart (2026-07-01 @ 190)' });
     expect(changeText(EVERY['drawing-template']).detail).toBe('Thick (Trend line)');
-    expect(changeText({ ...EVERY['drawing-moved'], toolType: 'LineToolGannFan' } as Change).subject).toBe('Gann Fan');
+    expect(changeText({ ...EVERY['drawing-moved'], toolType: 'LineToolMoonPhase' } as Change).subject).toBe('Moon Phase');
     expect(changeText({ ...EVERY.drawing, text: null } as Change).detail).toBe('Text on the chart (2026-07-01 @ 190)');
     expect(changeText(EVERY['drawing-moved']).detail).toBe('moved: 2026-07-01 @ 190 → 2026-07-01 @ 200');
     expect(changeText(EVERY['drawing-props']).detail).toBe('style or text: k0: – → 1; k1: – → 1; k2: – → 1; k3: – → 1; k4: – → 1; k5: – → 1 (+2 more)');
