@@ -155,9 +155,6 @@ async function waitFor(what: string, check: () => Promise<boolean> | boolean, ti
   throw new Error(`Timed out waiting for ${what}`);
 }
 
-// ---------------------------------------------------------------------------
-// Placing drawings
-
 interface SeriesWindow {
   bars: Bar[];
   /** Index of the last bar and the first visible bar. */
@@ -215,9 +212,6 @@ function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: numbe
 
 const drawingId = (chartIndex: number, i: number) => `c${chartIndex + 1}d${String(i + 1).padStart(2, '0')}`;
 
-// ---------------------------------------------------------------------------
-// Layout content
-
 function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], withDrawings = true): TvContent {
   const content = structuredClone(base) as TvContent & Json;
   const baseChart = content.charts[0]!;
@@ -256,9 +250,6 @@ function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], wi
   });
   return content;
 }
-
-// ---------------------------------------------------------------------------
-// The TradingView page
 
 interface Session {
   page: Page;
@@ -390,9 +381,6 @@ async function cleanShot(page: Page, clip: { x: number; y: number; width: number
   await assertClean(page);
   return page.screenshot({ clip });
 }
-
-// ---------------------------------------------------------------------------
-// One scene
 
 async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['theme'], TvContent>, scene: Scene): Promise<void> {
   const started = Date.now();
@@ -558,9 +546,6 @@ async function writeSnapshot(scene: Scene, record: LayoutRecord, datas: ChartDat
   await fs.rm(dir, { recursive: true, force: true });
   await fs.cp(final, dir, { recursive: true });
 }
-
-// ---------------------------------------------------------------------------
-// Index and coverage
 
 function validate(scenes: readonly Scene[]) {
   const names = new Set<string>();
