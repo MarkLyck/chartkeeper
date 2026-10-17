@@ -1,0 +1,868 @@
+{
+ "_about": [
+  "computedStyleFrames: the frames TradingView chart page sent (signed out, 2026-10-17, NASDAQ:AAPL, chart opened at interval D) when setChartType switched the chart to each computed style. Key = style id. Copied verbatim from the capture without the websocket length prefix.",
+  "The capture switched styles in the order 4, 5, 6, 7, 11, 8. Range moved the chart to interval \"1\", and Heikin Ashi, switched next, came back as \"1D\". Both D and 1D are the daily interval; the request carries the chart interval string as it is at that moment (inferred from the step order).",
+  "studyDrawings: an Anchored VWAP and a Fixed Range Volume Profile exactly as TradingView saved them in the drawings-positions gallery layout."
+ ],
+ "computedStyleFrames": {
+  "4": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_3\",\"={\\\"inputs\\\":{\\\"atrLength\\\":14,\\\"boxSize\\\":3,\\\"percentageLTP\\\":1,\\\"source\\\":\\\"close\\\",\\\"sources\\\":\\\"Close\\\",\\\"style\\\":\\\"ATR\\\",\\\"wicks\\\":true},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetRenko@tv-prostudies-73!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s2\",\"sds_sym_3\",\"D\",\"\"]}"
+  ],
+  "5": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_4\",\"={\\\"inputs\\\":{\\\"atrLength\\\":14,\\\"percentageLTP\\\":1,\\\"reversalAmount\\\":1,\\\"style\\\":\\\"ATR\\\"},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetKagi@tv-prostudies-73!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s3\",\"sds_sym_4\",\"D\",\"\"]}"
+  ],
+  "6": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_5\",\"={\\\"inputs\\\":{\\\"atrLength\\\":14,\\\"boxSize\\\":1,\\\"oneStepBackBuilding\\\":false,\\\"percentageLTP\\\":1,\\\"reversalAmount\\\":3,\\\"sources\\\":\\\"Close\\\",\\\"style\\\":\\\"ATR\\\"},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetPnF@tv-prostudies-73!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s4\",\"sds_sym_5\",\"D\",\"\"]}"
+  ],
+  "7": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_6\",\"={\\\"inputs\\\":{\\\"lb\\\":3},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetPriceBreak@tv-prostudies-34!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s5\",\"sds_sym_6\",\"D\",\"\"]}"
+  ],
+  "8": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_8\",\"={\\\"inputs\\\":{},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetHeikenAshi@tv-basicstudies-60!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s7\",\"sds_sym_8\",\"1D\",\"\"]}"
+  ],
+  "11": [
+   "{\"m\":\"resolve_symbol\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_sym_7\",\"={\\\"inputs\\\":{\\\"phantomBars\\\":false,\\\"range\\\":100},\\\"symbol\\\":{\\\"adjustment\\\":\\\"splits\\\",\\\"currency-id\\\":\\\"USD\\\",\\\"symbol\\\":\\\"NASDAQ:AAPL\\\"},\\\"type\\\":\\\"BarSetRange@tv-basicstudies-72!\\\"}\"]}",
+   "{\"m\":\"modify_series\",\"p\":[\"cs_4IyQI1nyaeU3\",\"sds_1\",\"s6\",\"sds_sym_7\",\"1\",\"\"]}"
+  ]
+ },
+ "studyDrawings": [
+  {
+   "type": "LineToolAnchoredVWAP",
+   "id": "c1d05",
+   "state": {
+    "areaBackground": {
+     "backgroundColor": "#4caf50",
+     "fillBackground": true,
+     "transparency": 95
+    },
+    "inputs": {
+     "Bands Calculation Mode": "Standard Deviation",
+     "bands_multiplier": 1,
+     "bands_multiplier_2": 2,
+     "bands_multiplier_3": 3,
+     "calculate_stDev": true,
+     "calculate_stDev_2": false,
+     "calculate_stDev_3": false,
+     "source": "hlc3",
+     "start_time": 0
+    },
+    "styles": {
+     "LowerBand": {
+      "color": "#4caf50",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "LowerBand_2": {
+      "color": "#808000",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "LowerBand_3": {
+      "color": "#00897b",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "UpperBand": {
+      "color": "#4caf50",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "UpperBand_2": {
+      "color": "#808000",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "UpperBand_3": {
+      "color": "#00897b",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     },
+     "VWAP": {
+      "color": "#1e88e5",
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 0,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": true
+     }
+    },
+    "showLabelsOnPriceScale": true,
+    "visible": true,
+    "precision": "default",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "adjustedToSplitTime": null,
+    "axisLabelVisible": true
+   },
+   "points": [
+    {
+     "time_t": 1782912600,
+     "offset": 0,
+     "price": 293.3883333333333,
+     "interval": "D"
+    }
+   ],
+   "zorder": -4996,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkdrawingspositions04",
+   "sharingMode": 1,
+   "metaInfo": {
+    "palettes": {},
+    "inputs": [
+     {
+      "defval": 0,
+      "group": "VWAP Settings",
+      "id": "start_time",
+      "isHidden": true,
+      "max": 253370764800,
+      "min": -253370764800,
+      "name": "Start time",
+      "type": "time",
+      "display": 0
+     },
+     {
+      "defval": "Standard Deviation",
+      "group": "Bands Settings",
+      "id": "Bands Calculation Mode",
+      "name": "Bands Calculation Mode",
+      "options": [
+       "Standard Deviation",
+       "Percentage"
+      ],
+      "tooltip": "Determines the units used to calculate the distance of the bands. When 'Percentage' is selected, a multiplier of 1 means 1%.",
+      "type": "text",
+      "display": 15
+     },
+     {
+      "defval": true,
+      "group": "Bands Settings",
+      "id": "calculate_stDev",
+      "inline": "band_1",
+      "name": " ",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": 1,
+      "group": "Bands Settings",
+      "id": "bands_multiplier",
+      "inline": "band_1",
+      "max": 1.7976931348623157e+308,
+      "min": 0,
+      "name": "Bands Multiplier #1",
+      "step": 0.5,
+      "type": "float",
+      "display": 15
+     },
+     {
+      "defval": false,
+      "group": "Bands Settings",
+      "id": "calculate_stDev_2",
+      "inline": "band_2",
+      "name": " ",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": 2,
+      "group": "Bands Settings",
+      "id": "bands_multiplier_2",
+      "inline": "band_2",
+      "max": 1.7976931348623157e+308,
+      "min": 0,
+      "name": "Bands Multiplier #2",
+      "step": 0.5,
+      "type": "float",
+      "display": 15
+     },
+     {
+      "defval": false,
+      "group": "Bands Settings",
+      "id": "calculate_stDev_3",
+      "inline": "band_3",
+      "name": " ",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": 3,
+      "group": "Bands Settings",
+      "id": "bands_multiplier_3",
+      "inline": "band_3",
+      "max": 1.7976931348623157e+308,
+      "min": 0,
+      "name": "Bands Multiplier #3",
+      "step": 0.5,
+      "type": "float",
+      "display": 15
+     },
+     {
+      "defval": "hlc3",
+      "id": "source",
+      "name": "Source",
+      "options": [
+       "open",
+       "high",
+       "low",
+       "close",
+       "hl2",
+       "hlc3",
+       "ohlc4"
+      ],
+      "type": "source",
+      "display": 15
+     }
+    ],
+    "plots": [
+     {
+      "id": "VWAP",
+      "type": "line"
+     },
+     {
+      "id": "UpperBand",
+      "type": "line"
+     },
+     {
+      "id": "LowerBand",
+      "type": "line"
+     },
+     {
+      "id": "UpperBand_2",
+      "type": "line"
+     },
+     {
+      "id": "LowerBand_2",
+      "type": "line"
+     },
+     {
+      "id": "UpperBand_3",
+      "type": "line"
+     },
+     {
+      "id": "LowerBand_3",
+      "type": "line"
+     }
+    ],
+    "graphics": {},
+    "defaults": {
+     "areaBackground": {
+      "backgroundColor": "#4caf50",
+      "fillBackground": true,
+      "transparency": 95
+     },
+     "inputs": {
+      "Bands Calculation Mode": "Standard Deviation",
+      "bands_multiplier": 1,
+      "bands_multiplier_2": 2,
+      "bands_multiplier_3": 3,
+      "calculate_stDev": true,
+      "calculate_stDev_2": false,
+      "calculate_stDev_3": false,
+      "source": "hlc3",
+      "start_time": 0
+     },
+     "styles": {
+      "LowerBand": {
+       "color": "#4caf50",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "LowerBand_2": {
+       "color": "#808000",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "LowerBand_3": {
+       "color": "#00897b",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "UpperBand": {
+       "color": "#4caf50",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "UpperBand_2": {
+       "color": "#808000",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "UpperBand_3": {
+       "color": "#00897b",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      },
+      "VWAP": {
+       "color": "#1e88e5",
+       "display": 4294967295,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 0,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": true
+      }
+     }
+    },
+    "_metainfoVersion": 55,
+    "area": [
+     {
+      "name": "UpperBand",
+      "visible": true
+     },
+     {
+      "name": "LowerBand",
+      "visible": true
+     }
+    ],
+    "description": "Anchored VWAP",
+    "format": {
+     "type": "inherit"
+    },
+    "id": "AnchoredVWAP@tv-basicstudies-280",
+    "is_hidden_study": true,
+    "is_price_study": true,
+    "shortDescription": "Anchored VWAP",
+    "styles": {
+     "LowerBand": {
+      "histogramBase": 0,
+      "title": "Lower Band"
+     },
+     "LowerBand_2": {
+      "histogramBase": 0,
+      "title": "Lower Band_2"
+     },
+     "LowerBand_3": {
+      "histogramBase": 0,
+      "title": "Lower Band_3"
+     },
+     "UpperBand": {
+      "histogramBase": 0,
+      "title": "Upper Band"
+     },
+     "UpperBand_2": {
+      "histogramBase": 0,
+      "title": "Upper Band_2"
+     },
+     "UpperBand_3": {
+      "histogramBase": 0,
+      "title": "Upper Band_3"
+     },
+     "VWAP": {
+      "histogramBase": 0,
+      "title": "VWAP"
+     }
+    },
+    "description_localized": "Anchored VWAP",
+    "shortId": "AnchoredVWAP",
+    "packageId": "tv-basicstudies",
+    "version": 280,
+    "fullId": "AnchoredVWAP@tv-basicstudies-280",
+    "productId": "tv-basicstudies",
+    "_serverMetaInfoVersion": 55
+   }
+  },
+  {
+   "type": "LineToolFixedRangeVolumeProfile",
+   "id": "c1d06",
+   "state": {
+    "graphics": {
+     "hhists": {
+      "histBars2": {
+       "colors": [
+        "rgba(38, 198, 218, 0.5)",
+        "rgba(236, 64, 122, 0.5)"
+       ],
+       "direction": "left_to_right",
+       "percentWidth": 30,
+       "showValues": false,
+       "transparencies": [
+        75,
+        75
+       ],
+       "valuesColor": "#0F0F0F",
+       "visible": true
+      },
+      "histBarsVA": {
+       "colors": [
+        "rgba(38, 198, 218, 0.75)",
+        "rgba(236, 64, 122, 0.75)"
+       ],
+       "direction": "left_to_right",
+       "percentWidth": 30,
+       "showValues": false,
+       "transparencies": [
+        30,
+        30
+       ],
+       "valuesColor": "#0F0F0F",
+       "visible": true
+      }
+     },
+     "horizlines": {
+      "pocLines": {
+       "color": "#0F0F0F",
+       "style": 0,
+       "visible": true,
+       "width": 2
+      },
+      "vahLines": {
+       "color": "#0F0F0F",
+       "style": 0,
+       "visible": false,
+       "width": 2
+      },
+      "valLines": {
+       "color": "#0F0F0F",
+       "style": 0,
+       "visible": false,
+       "width": 2
+      }
+     },
+     "polygons": {
+      "histBoxBg": {
+       "color": "#37a6ef",
+       "transparency": 94
+      }
+     }
+    },
+    "inputs": {
+     "extendToRight": false,
+     "rows": 24,
+     "rowsLayout": "Number Of Rows",
+     "vaVolume": 70,
+     "volume": "Up/Down",
+     "subscribeRealtime": true,
+     "mapRightBoundaryToBarStartTime": false,
+     "first_bar_time": 0,
+     "last_bar_time": 0
+    },
+    "styles": {
+     "developingPoc": {
+      "color": "#0F0F0F",
+      "display": 0,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 9,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": false
+     },
+     "developingVAHigh": {
+      "color": "#00bcd4",
+      "display": 0,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 9,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": false
+     },
+     "developingVALow": {
+      "color": "#00bcd4",
+      "display": 0,
+      "linestyle": 0,
+      "linewidth": 1,
+      "plottype": 9,
+      "trackPrice": false,
+      "transparency": 0,
+      "visible": false
+     }
+    },
+    "showLabelsOnPriceScale": true,
+    "visible": true,
+    "precision": "default",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1786973400,
+     "offset": 0,
+     "price": 345.41,
+     "interval": "D"
+    },
+    {
+     "time_t": 1791379800,
+     "offset": 0,
+     "price": 302.93,
+     "interval": "D"
+    }
+   ],
+   "zorder": -4995,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkdrawingspositions05",
+   "sharingMode": 1,
+   "metaInfo": {
+    "palettes": {},
+    "inputs": [
+     {
+      "defval": false,
+      "id": "mapRightBoundaryToBarStartTime",
+      "isHidden": true,
+      "name": "mapRightBoundary",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": "Number Of Rows",
+      "id": "rowsLayout",
+      "name": "Rows Layout",
+      "options": [
+       "Number Of Rows",
+       "Ticks Per Row"
+      ],
+      "type": "text",
+      "display": 15
+     },
+     {
+      "defval": 24,
+      "id": "rows",
+      "max": 1000000,
+      "min": 1,
+      "name": "Row Size",
+      "type": "integer",
+      "display": 15
+     },
+     {
+      "defval": "Up/Down",
+      "id": "volume",
+      "name": "Volume",
+      "options": [
+       "Up/Down",
+       "Total",
+       "Delta"
+      ],
+      "type": "text",
+      "display": 15
+     },
+     {
+      "defval": 0,
+      "id": "first_bar_time",
+      "isHidden": true,
+      "max": 253370764800,
+      "min": -253370764800,
+      "name": "First Bar Time",
+      "type": "time",
+      "display": 0
+     },
+     {
+      "defval": 0,
+      "id": "last_bar_time",
+      "isHidden": true,
+      "max": 253370764800,
+      "min": -253370764800,
+      "name": "Last Bar Time",
+      "type": "time",
+      "display": 0
+     },
+     {
+      "defval": 70,
+      "id": "vaVolume",
+      "max": 100,
+      "min": 0,
+      "name": "Value Area Volume",
+      "type": "integer",
+      "display": 15
+     },
+     {
+      "defval": true,
+      "id": "subscribeRealtime",
+      "isHidden": true,
+      "name": "SubscribeRealtime",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": false,
+      "id": "extendToRight",
+      "name": "Extend Right",
+      "type": "bool",
+      "display": 0
+     }
+    ],
+    "plots": [
+     {
+      "id": "developingPoc",
+      "type": "line"
+     },
+     {
+      "id": "developingVAHigh",
+      "type": "line"
+     },
+     {
+      "id": "developingVALow",
+      "type": "line"
+     }
+    ],
+    "graphics": {
+     "hhists": {
+      "histBars2": {
+       "location": "absolute",
+       "title": "Volume Profile",
+       "titles": [
+        "Up Volume",
+        "Down Volume"
+       ]
+      },
+      "histBarsVA": {
+       "location": "absolute",
+       "title": "Value Area",
+       "titles": [
+        "Value Area Up",
+        "Value Area Down"
+       ]
+      }
+     },
+     "horizlines": {
+      "pocLines": {
+       "name": "POC",
+       "showPrice": true
+      },
+      "vahLines": {
+       "name": "VAH",
+       "showPrice": true
+      },
+      "valLines": {
+       "name": "VAL",
+       "showPrice": true
+      }
+     },
+     "polygons": {
+      "histBoxBg": {
+       "mouseTouchable": false,
+       "name": "Histogram Box",
+       "showBorder": false
+      }
+     }
+    },
+    "defaults": {
+     "graphics": {
+      "hhists": {
+       "histBars2": {
+        "colors": [
+         "#2962ff",
+         "#fbc02d"
+        ],
+        "direction": "left_to_right",
+        "percentWidth": 30,
+        "showValues": false,
+        "transparencies": [
+         75,
+         75
+        ],
+        "valuesColor": "#424242",
+        "visible": true
+       },
+       "histBarsVA": {
+        "colors": [
+         "#2962ff",
+         "#fbc02d"
+        ],
+        "direction": "left_to_right",
+        "percentWidth": 30,
+        "showValues": false,
+        "transparencies": [
+         30,
+         30
+        ],
+        "valuesColor": "#424242",
+        "visible": true
+       }
+      },
+      "horizlines": {
+       "pocLines": {
+        "color": "#f44336",
+        "style": 0,
+        "visible": true,
+        "width": 2
+       },
+       "vahLines": {
+        "color": "#2962ff",
+        "style": 0,
+        "visible": false,
+        "width": 2
+       },
+       "valLines": {
+        "color": "#2962ff",
+        "style": 0,
+        "visible": false,
+        "width": 2
+       }
+      },
+      "polygons": {
+       "histBoxBg": {
+        "color": "#37a6ef",
+        "transparency": 94
+       }
+      }
+     },
+     "inputs": {
+      "extendToRight": false,
+      "first_bar_time": 0,
+      "last_bar_time": 0,
+      "mapRightBoundaryToBarStartTime": false,
+      "rows": 24,
+      "rowsLayout": "Number Of Rows",
+      "subscribeRealtime": true,
+      "vaVolume": 70,
+      "volume": "Up/Down"
+     },
+     "styles": {
+      "developingPoc": {
+       "color": "#f44336",
+       "display": 0,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 9,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": false
+      },
+      "developingVAHigh": {
+       "color": "#2962ff",
+       "display": 0,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 9,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": false
+      },
+      "developingVALow": {
+       "color": "#2962ff",
+       "display": 0,
+       "linestyle": 0,
+       "linewidth": 1,
+       "plottype": 9,
+       "trackPrice": false,
+       "transparency": 0,
+       "visible": false
+      }
+     }
+    },
+    "_metainfoVersion": 55,
+    "description": "Fixed range volume profile",
+    "format": {
+     "type": "volume"
+    },
+    "id": "VbPFixed@tv-basicstudies-280",
+    "is_hidden_study": true,
+    "is_price_study": true,
+    "shortDescription": "FRVP",
+    "styles": {
+     "developingPoc": {
+      "format": {
+       "type": "price"
+      },
+      "histogramBase": 0,
+      "title": "Developing POC"
+     },
+     "developingVAHigh": {
+      "format": {
+       "type": "price"
+      },
+      "histogramBase": 0,
+      "title": "Developing VA High"
+     },
+     "developingVALow": {
+      "format": {
+       "type": "price"
+      },
+      "histogramBase": 0,
+      "title": "Developing VA Low"
+     }
+    },
+    "description_localized": "Fixed range volume profile",
+    "shortId": "VbPFixed",
+    "packageId": "tv-basicstudies",
+    "version": 280,
+    "fullId": "VbPFixed@tv-basicstudies-280",
+    "productId": "tv-basicstudies",
+    "_serverMetaInfoVersion": 55
+   }
+  }
+ ]
+}

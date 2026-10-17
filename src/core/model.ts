@@ -82,6 +82,11 @@ export const ChartDataSchema = z.object({
   computedStyle: z.number().optional(),
   /** Keyed by the study's source id in the layout. */
   studies: z.record(z.string(), StudyValuesSchema),
+  /**
+   * Values TradingView computed for study-backed drawings (Anchored VWAP, Fixed Range
+   * Volume Profile), keyed by the drawing's id. The volume profile arrives as `graphics`.
+   */
+  drawingStudies: z.record(z.string(), StudyValuesSchema).optional(),
 });
 export type ChartData = z.infer<typeof ChartDataSchema>;
 
