@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { ParsedDrawing } from '../../src/core/layout';
 import type { Bar } from '../../src/core/model';
+import { placePattern, rangeLabelLines } from '../../src/renderer/viewer/drawings/measures';
+import { formatSpan, formatVolume } from '../../src/renderer/viewer/drawings/stats';
 import { anchoredVwap, storedProfile, VOLUME_KINDS, volumeProfile, vwapSettings } from '../../src/renderer/viewer/drawings/volume';
 
 const bar = (t: number, h: number, l: number, c: number, v: number): Bar => [t, c, h, l, c, v];
@@ -37,6 +39,54 @@ describe('anchored VWAP', () => {
   it("prefers TradingView's stored values over the local calculation", () => {
     const stored = { av: { status: 'ok', metaInfoId: 'AnchoredVWAP@tv-basicstudies-280', rows: [[1, 10, 11, 9, null, null, null, null], [2, 17.6, 20, 15, null, null, null, null]] } };
     expect(labels(stored)).toEqual([{ axis: 'price', price: 17.6, color: '#1e88e5' }]);
+  });
+});
+
+describe('range labels', () => {
+  const fmt = (p: number) => p.toFixed(2);
+  const m = { diff: 25.87, fromPrice: 309.5573, bars: 36, seconds: 51 * 86400, volume: 1_673_000_000 };
+
+  it('writes the price change, percent and ticks of a price range', () => {
+    expect(rangeLabelLines('price', m, {}, fmt, 0.01)).toEqual(['25.87 (8.36%) 2,587']);
+    expect(rangeLabelLines('price', { ...m, diff: -13.46, fromPrice: 369.88 }, {}, fmt, 0.01)).toEqual(['−13.46 (−3.64%) −1,346']);
+    expect(rangeLabelLines('price', m, { showPercentPriceRange: false }, fmt, 0.01)).toEqual(['25.87, 2,587']);
+  });
+
+  it('writes bars, time span and volume of a date range', () => {
+    expect(rangeLabelLines('date', m, {}, fmt, 0.01)).toEqual(['36 bars, 51d', 'Vol 1.67 B']);
+    expect(rangeLabelLines('date', { ...m, bars: 22, seconds: 435600, volume: 9_830_000 }, {}, fmt, 0.01)).toEqual(['22 bars, 5d 1h', 'Vol 9.83 M']);
+    expect(rangeLabelLines('date', { ...m, volume: null }, { showDateTimeRange: false }, fmt, 0.01)).toEqual(['36 bars']);
+  });
+
+  it('stacks both for a date and price range', () => {
+    expect(rangeLabelLines('both', { ...m, volume: 1_500_000_000 }, {}, fmt, 0.01)).toEqual(['25.87 (8.36%) 2,587', '36 bars, 51d', 'Vol 1.5 B']);
+  });
+
+  it('formats spans and volumes like TradingView', () => {
+    expect(formatSpan(90061)).toBe('1d 1h 1m 1s');
+    expect(formatSpan(-3600)).toBe('-1h');
+    expect(formatVolume(512)).toBe('512');
+    expect(formatVolume(464_230)).toBe('464.23 K');
+  });
+});
+
+describe('bars pattern', () => {
+  const pattern = [
+    [0, 10, 12, 9, 11, 0],
+    [1, 11, 15, 10, 14, 0],
+    [2, 14, 14, 8, 9, 0],
+  ];
+  const y = (price: number) => 100 - price;
+
+  it('stretches the copied bars between the two points and scales them so the first and last prices land on the points', () => {
+    const placed = placePattern(pattern, 1, { x: 0, y: 50 }, { x: 20, y: 54 }, y);
+    expect(placed.map((b) => b.x)).toEqual([1, 11, 21]);
+    expect(placed.map((b) => b.y0)).toEqual([50, 44, 54]);
+  });
+
+  it('spans high to low in bars mode', () => {
+    const [first] = placePattern(pattern, 0, { x: 0, y: 50 }, { x: 20, y: 54 }, y);
+    expect([first!.y0, first!.y1]).toEqual([50, 53]);
   });
 });
 
