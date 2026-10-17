@@ -4,8 +4,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
-import { browserCandidates, findBrowser } from '../../src/main/browsers';
+import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser } from '../../src/main/browsers';
 import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
+import { isGoogleRefusal, isSignInPopup } from '../../src/main/signIn';
 
 const exe = chromium.executablePath();
 const haveBrowser = existsSync(exe);
@@ -68,7 +69,7 @@ describe('finding a browser', () => {
 
   it('finds Chrome in the user Applications folder on macOS', () => {
     const want = '/Users/t/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === want)).toEqual({ name: 'Google Chrome', path: want });
+    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === want, null)).toEqual({ name: 'Google Chrome', path: want });
   });
 
   it('can be told which browser to use, or to use the in-app window', () => {
@@ -77,7 +78,72 @@ describe('finding a browser', () => {
   });
 
   it('finds chromium on the PATH on Linux and returns null when nothing is installed', () => {
-    expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium')).toEqual({ name: 'Chromium', path: '/usr/bin/chromium' });
-    expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false)).toBeNull();
+    expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null)).toEqual({ name: 'Chromium', path: '/usr/bin/chromium' });
+    expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false, null)).toBeNull();
+  });
+
+  it('finds Chromium-based browsers beyond Chrome, such as Dia and Arc on macOS', () => {
+    const dia = '/Applications/Dia.app/Contents/MacOS/Dia';
+    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === dia, null)).toEqual({ name: 'Dia', path: dia });
+    const arc = '/Users/t/Applications/Arc.app/Contents/MacOS/Arc';
+    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === arc, null)).toEqual({ name: 'Arc', path: arc });
+  });
+
+  it('tries the default browser first, then the others', () => {
+    const installed = new Set(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Dia.app/Contents/MacOS/Dia', '/Applications/Vivaldi.app/Contents/MacOS/Vivaldi']);
+    const names = (id: string | null) => findBrowsers('darwin', {}, '/Users/t', (p) => installed.has(p), id).map((b) => b.name);
+    expect(names('company.thebrowser.dia')).toEqual(['Dia', 'Google Chrome', 'Vivaldi']);
+    expect(names('com.apple.safari')).toEqual(['Google Chrome', 'Dia', 'Vivaldi']);
+    expect(names(null)).toEqual(['Google Chrome', 'Dia', 'Vivaldi']);
+  });
+
+  it('prefers the default browser on Windows and Linux too', () => {
+    const env = { PROGRAMFILES: 'C:\\Program Files', LOCALAPPDATA: 'C:\\Users\\T\\AppData\\Local' };
+    const win = new Set(['C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', 'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe']);
+    expect(findBrowsers('win32', env, 'C:\\Users\\T', (p) => win.has(p), 'MSEdgeHTM').map((b) => b.name)).toEqual(['Microsoft Edge', 'Google Chrome']);
+    const lin = new Set(['/usr/bin/google-chrome', '/usr/bin/brave-browser']);
+    expect(findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => lin.has(p), 'brave-browser.desktop').map((b) => b.name)).toEqual(['Brave', 'Google Chrome']);
+  });
+
+  it('reads the default browser from the macOS and Windows settings formats', () => {
+    const mac = `(
+    {
+        LSHandlerContentType = "public.html";
+        LSHandlerRoleAll = "com.apple.safari";
+    },
+    {
+        LSHandlerPreferredVersions =         {
+            LSHandlerRoleAll = "-";
+        };
+        LSHandlerRoleAll = "company.thebrowser.dia";
+        LSHandlerURLScheme = https;
+    },
+    {
+        LSHandlerRoleAll = "com.google.chrome";
+        LSHandlerURLScheme = http;
+    }
+)`;
+    expect(parseMacDefaultBrowser(mac)).toBe('company.thebrowser.dia');
+    expect(parseMacDefaultBrowser('()')).toBeNull();
+    const reg = `\r\nHKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\https\\UserChoice\r\n    ProgId    REG_SZ    BraveHTML\r\n`;
+    expect(parseWindowsDefaultBrowser(reg)).toBe('BraveHTML');
+    expect(browserForDefaultId('win32', 'BraveHTML')).toBe('Brave');
+    expect(browserForDefaultId('darwin', 'com.apple.safari')).toBeNull();
+  });
+});
+
+describe('the built-in sign-in window', () => {
+  it('lets sign-in provider popups open, and nothing else', () => {
+    expect(isSignInPopup('https://accounts.google.com/o/oauth2/v2/auth?client_id=x')).toBe(true);
+    expect(isSignInPopup('https://appleid.apple.com/auth/authorize')).toBe(true);
+    expect(isSignInPopup('https://www.tradingview.com/accounts/signin/')).toBe(true);
+    expect(isSignInPopup('http://accounts.google.com/')).toBe(false);
+    expect(isSignInPopup('https://google.com.evil.example/')).toBe(false);
+    expect(isSignInPopup('https://ads.example.com/')).toBe(false);
+  });
+
+  it('recognises the page Google shows when it refuses sign-in in an app window', () => {
+    expect(isGoogleRefusal('https://accounts.google.com/v3/signin/rejected?continue=x')).toBe(true);
+    expect(isGoogleRefusal('https://accounts.google.com/v3/signin/identifier')).toBe(false);
   });
 });
