@@ -61,15 +61,15 @@ export function lwcLineStyle(tvStyle: unknown): LineStyle {
   return (typeof tvStyle === 'number' && Number.isInteger(tvStyle) && tvStyle >= 0 && tvStyle <= 4 ? tvStyle : 0) as LineStyle;
 }
 
-/** Canvas dash pattern for a TradingView line style, measured from TradingView's own rendering. */
+/** Canvas dash pattern for a TradingView line style, as TradingView's chart code defines them. */
 export function dashPattern(tvStyle: unknown, width: number): number[] {
   switch (lwcLineStyle(tvStyle)) {
     case 1:
-      return [width, 2 * width];
+      return [width, 3 * width];
     case 2:
       return [5 * width, 6 * width];
     case 3:
-      return [8 * width, 6 * width];
+      return [6 * width, 6 * width];
     case 4:
       return [width, 4 * width];
     default:

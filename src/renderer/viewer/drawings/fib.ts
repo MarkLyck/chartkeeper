@@ -1,6 +1,6 @@
 import type { DrawingPoint, ParsedDrawing } from '../../../core/layout';
 import { num, type Props } from '../../../core/props';
-import { parseColor, rgbaCss } from '../colors';
+import { dashPattern, parseColor, rgbaCss } from '../colors';
 import { extendSegment, fillPolygon, FONT_FAMILY, pnum, pobj, pstr, type Box, type DrawContext, type Pt } from './canvas';
 import { kind, type DrawingKind } from './kind';
 
@@ -13,11 +13,6 @@ export function tvFill(color: string, transparency: unknown): string {
   return c ? rgbaCss({ ...c, a: 1 - t / 100 }) : color;
 }
 
-/** TradingView's dash patterns (dotted, dashed, large dashed, sparse dotted, small dashed) scaled by line width. */
-export function tvDash(style: number, w: number): number[] {
-  return [[], [w, 3 * w], [5 * w, 6 * w], [6 * w, 6 * w], [w, 4 * w], [2 * w, w]][style] ?? [];
-}
-
 /** A TradingView line segment: solid lines get round caps, horizontal and vertical ones snap to the pixel grid. */
 export function tvLine(ctx: CanvasRenderingContext2D, a: Pt, b: Pt, color: string, width: number, style = 0, cap?: CanvasLineCap): void {
   const w = Math.max(1, Math.floor(width));
@@ -27,7 +22,7 @@ export function tvLine(ctx: CanvasRenderingContext2D, a: Pt, b: Pt, color: strin
   else if (a.x === b.x) [p, q] = [{ x: Math.round(a.x) + half, y: a.y }, { x: Math.round(a.x) + half, y: b.y }];
   ctx.strokeStyle = color;
   ctx.lineWidth = w;
-  ctx.setLineDash(tvDash(style, w));
+  ctx.setLineDash(dashPattern(style, w));
   ctx.lineCap = cap ?? (style === 0 ? 'round' : 'butt');
   ctx.lineJoin = 'round';
   ctx.beginPath();

@@ -1,7 +1,8 @@
+import { dashPattern } from '../colors';
 import type { DrawingPoint, ParsedDrawing } from '../../../core/layout';
 import { num, type Props } from '../../../core/props';
 import { extendSegment, pnum, pobj, pstr, type DrawContext, type Pt } from './canvas';
-import { drawLabel, formatCoeff, labelBox, drawLabelIn, LEVEL_LAYOUT, parseFibLevels, tvDash, tvFill, tvFillRect, tvLine, withoutBoxes, type FibLevel, type HAlign, type VAlign } from './fib';
+import { drawLabel, formatCoeff, labelBox, drawLabelIn, LEVEL_LAYOUT, parseFibLevels, tvFill, tvFillRect, tvLine, withoutBoxes, type FibLevel, type HAlign, type VAlign } from './fib';
 import { kind, type DrawingKind } from './kind';
 
 // Fib time zones: vertical lines at bar offsets.
@@ -179,7 +180,7 @@ export function drawFibSpiral(dc: DrawContext, props: Props, points: DrawingPoin
   const { ctx } = dc;
   tvLine(ctx, a, extendSegment(a, b, false, true, dc)[1], color, width, style);
   ctx.lineWidth = width;
-  ctx.setLineDash(tvDash(style, width));
+  ctx.setLineDash(dashPattern(style, width));
   ctx.lineCap = 'round';
   ctx.beginPath();
   for (const p of fibSpiralPoints(a, b, props.counterclockwise === true)) ctx.lineTo(p.x, p.y);

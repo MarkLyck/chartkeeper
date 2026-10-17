@@ -7,7 +7,6 @@ import {
   formatCoeff,
   LEVEL_LAYOUT,
   parseFibLevels,
-  tvDash,
   tvFill,
 } from '../../src/renderer/viewer/drawings/fib';
 import { fibCircleRadii, fibSpiralPoints, fibSpiralRadius, fibTimeBars, timeZoneLevels } from '../../src/renderer/viewer/drawings/fibTime';
@@ -98,13 +97,6 @@ describe('TradingView drawing primitives', () => {
   it('replaces the colour alpha with the fill transparency', () => {
     expect(tvFill('#2962FF', 85)).toBe('rgba(41, 98, 255, 0.15)');
     expect(tvFill('rgba(21, 56, 153, 0.8)', 80)).toBe('rgba(21, 56, 153, 0.2)');
-  });
-
-  it('uses TradingView dash patterns', () => {
-    expect(tvDash(0, 2)).toEqual([]);
-    expect(tvDash(1, 2)).toEqual([2, 6]);
-    expect(tvDash(2, 2)).toEqual([10, 12]);
-    expect(tvDash(3, 1)).toEqual([6, 6]);
   });
 });
 

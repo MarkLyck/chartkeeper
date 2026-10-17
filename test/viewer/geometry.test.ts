@@ -26,7 +26,8 @@ describe('colours', () => {
     expect(lwcLineStyle(undefined)).toBe(0);
     expect(dashPattern(0, 2)).toEqual([]);
     expect(dashPattern(2, 2)).toEqual([10, 12]);
-    expect(dashPattern(1, 1)).toEqual([1, 2]);
+    expect(dashPattern(1, 1)).toEqual([1, 3]);
+    expect(dashPattern(3, 1)).toEqual([6, 6]);
   });
 });
 
