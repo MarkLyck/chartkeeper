@@ -1,4 +1,5 @@
 import type { DrawingPoint } from '../../../core/layout';
+import type { Bar } from '../../../core/model';
 import { num, obj, str, type Props } from '../../../core/props';
 import { dashPattern } from '../colors';
 
@@ -14,14 +15,24 @@ export interface DrawContext {
   height: number;
   pt(p: DrawingPoint): Pt;
   y(price: number): number;
+  /** Price at a y coordinate, the inverse of `y`. */
+  price(y: number): number;
+  /** x coordinate of a bar position (whole or fractional, may lie outside the bars). */
+  x(logical: number): number;
   barSpacing: number;
   /** Bar position of a point; differences give bar counts. */
   logical(p: DrawingPoint): number;
+  /** Bar position of a time, as `logical` places points. */
+  logicalOfTime(time: number): number;
+  /** The chart's bars, oldest first: bar `i` sits at bar position `i`. */
+  bars: readonly Bar[];
   formatPrice(price: number): string;
   /** Smallest price step of the symbol, for tools that store distances in ticks. */
   priceStep: number;
+  /** True on a dark chart background. */
+  dark: boolean;
+  background: string;
 }
-
 
 export const FONT_FAMILY = `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;
 

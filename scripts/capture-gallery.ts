@@ -474,7 +474,7 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
       const key = log.lastSeries;
       if (!key) throw new Error('No main series frames were recorded');
       computedSeries = log.seriesSpec(key);
-      data = { chartId: chart.chartId, symbol: chart.symbol, interval: chart.interval, fetchedAt: new Date().toISOString(), bars: log.seriesBars(key), studies: {} };
+      data = { chartId: chart.chartId, symbol: chart.symbol, interval: chart.interval, fetchedAt: new Date().toISOString(), bars: log.seriesBars(key), computedStyle: style.id, studies: {} };
       if (!computedSeries?.includes('BarSet')) throw new Error(`Expected a computed series for style ${style.name}, TradingView resolved ${computedSeries}`);
     } else {
       data = await fetchChartData(chart, studies, nodeSocketFactory, { authToken: null, bars: DATA_BARS });

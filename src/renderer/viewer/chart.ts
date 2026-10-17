@@ -234,6 +234,9 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
 
   const drawingsEnv = {
     timeIndex: plan.timeIndex,
+    bars: plan.bars,
+    dark: theme.dark,
+    background: theme.background,
     formatPrice: (p: number) => formatValue(p, plan.priceFormat),
     formatTime: timeFormatter(plan),
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,

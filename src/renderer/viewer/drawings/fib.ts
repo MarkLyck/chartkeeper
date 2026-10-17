@@ -2,6 +2,7 @@ import type { DrawingPoint } from '../../../core/layout';
 import { fillColor } from '../colors';
 import { FONT_FAMILY, pnum, pobj, pstr, setStroke, strokeLine, drawText, type DrawContext } from './canvas';
 import type { Props } from '../../../core/props';
+import { kind, type DrawingKind } from './kind';
 
 export interface FibLevel {
   coeff: number;
@@ -123,3 +124,8 @@ export function drawFibExtension(dc: DrawContext, props: Props, points: DrawingP
   drawLevels(dc, props, fibExtensionLevels(props, p0.price, p1.price, p2.price), pts[2]!.x, Math.max(pts[1]!.x, pts[2]!.x));
   drawTrendline(dc, props, pts);
 }
+
+export const FIB_KINDS: Readonly<Record<string, DrawingKind>> = {
+  LineToolFibRetracement: kind(2, drawFibRetracement),
+  LineToolTrendBasedFibExtension: kind(3, drawFibExtension),
+};

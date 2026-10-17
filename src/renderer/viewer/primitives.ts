@@ -13,6 +13,7 @@ import type {
   Time,
 } from 'lightweight-charts';
 import type { DrawingPoint, ParsedDrawing } from '../../core/layout';
+import type { Bar } from '../../core/model';
 import type { DrawContext } from './drawings/canvas';
 import { DRAWING_KINDS, type AxisLabel } from './drawings/registry';
 import { dashPattern, luminance } from './colors';
@@ -61,6 +62,9 @@ abstract class BasePrimitive implements ISeriesPrimitive<Time> {
 
 export interface DrawingsEnv {
   timeIndex: TimeIndex;
+  bars: readonly Bar[];
+  dark: boolean;
+  background: string;
   formatPrice(price: number): string;
   formatTime(point: DrawingPoint): string;
   priceStep: number;
@@ -115,6 +119,7 @@ export class DrawingsPrimitive extends BasePrimitive {
     if (!scale) return;
     const { timeIndex } = this.denv;
     const y = (price: number) => env.series.priceToCoordinate(price) ?? NaN;
+    const x = (logical: number) => scale.a + scale.b * logical;
     target.useMediaCoordinateSpace(({ context, mediaSize }) => {
       const dc: DrawContext = {
         ctx: context,
@@ -122,16 +127,22 @@ export class DrawingsPrimitive extends BasePrimitive {
         height: mediaSize.height,
         barSpacing: scale.b,
         logical: (p) => timeIndex.logical(p),
-        pt: (p) => ({ x: scale.a + scale.b * timeIndex.logical(p), y: y(p.price) }),
+        logicalOfTime: (t) => timeIndex.indexOf(t),
+        pt: (p) => ({ x: x(timeIndex.logical(p)), y: y(p.price) }),
+        x,
         y,
+        price: (yy) => env.series.coordinateToPrice(yy) ?? NaN,
+        bars: this.denv.bars,
         formatPrice: this.denv.formatPrice,
         priceStep: this.denv.priceStep,
+        dark: this.denv.dark,
+        background: this.denv.background,
       };
       for (const d of this.drawings) {
         const kind = DRAWING_KINDS[d.type];
         if (!kind) continue;
         context.save();
-        kind.draw(dc, d.props, d.points);
+        kind.draw(dc, d.props, d.points, d);
         context.restore();
       }
     });
