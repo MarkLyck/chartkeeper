@@ -27,7 +27,8 @@ import { DRAWING_THRESHOLDS, INDICATOR_THRESHOLDS, STYLE_THRESHOLDS, type Thresh
 
 const ROOT = path.resolve(__dirname, '..');
 const GALLERY = path.join(ROOT, 'test/fixtures/gallery');
-const OUT = path.join(ROOT, '.test-output/gallery-compare');
+/** GALLERY_OUT lets parallel runs write to separate folders. */
+const OUT = path.resolve(ROOT, process.env.GALLERY_OUT ?? '.test-output/gallery-compare');
 const BASELINE = path.join(ROOT, 'test/gallery/baseline-scores.json');
 
 const DRAWING_THRESHOLD = 6;
