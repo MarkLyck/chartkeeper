@@ -8,7 +8,7 @@
  * Each video carries a caption bar saying what is happening and whether
  * TradingView is real or simulated.
  *
- *   npm run build && npx tsx scripts/record-demos.ts
+ *   npm run build && npx tsx scripts/record-demos.ts [name filter]
  */
 import { execFileSync } from 'node:child_process';
 import { promises as fs } from 'node:fs';
@@ -188,14 +188,16 @@ async function simulated(lang: 'en' | 'da') {
 }
 
 async function main() {
-  await fs.rm(WORK, { recursive: true, force: true });
+  await fs.mkdir(WORK, { recursive: true });
   await fs.mkdir(OUT, { recursive: true });
   const jobs: [string, () => Promise<{ main: string; pip?: { file: string; at: number } }>][] = [
     ['1-real-app-viewer-and-sign-in-en', realApp],
     ['2-backup-compare-restore-simulated-en', async () => ({ main: await simulated('en') })],
     ['3-backup-compare-restore-simulated-da', async () => ({ main: await simulated('da') })],
   ];
-  for (const [name, run] of jobs) {
+  // Optional filter, e.g. `record-demos.ts simulated` to skip the real-app video.
+  const only = process.argv[2];
+  for (const [name, run] of jobs.filter(([n]) => !only || n.includes(only))) {
     const { main, pip } = await run();
     toMp4(main, path.join(OUT, `${name}.mp4`), pip);
     console.log('wrote', path.relative(ROOT, path.join(OUT, `${name}.mp4`)));

@@ -1,0 +1,27 @@
+name: Demo videos
+
+on:
+  workflow_dispatch:
+
+jobs:
+  record:
+    runs-on: macos-latest
+    env:
+      # Sign in through ChartKeeper's own window, which the recorder can film.
+      CHARTKEEPER_BROWSER: none
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright-core install chromium
+      - run: brew install ffmpeg
+      - run: npm run build
+      - run: npx tsx scripts/record-demos.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: demo-videos
+          path: docs/demos/*.mp4
+          if-no-files-found: error

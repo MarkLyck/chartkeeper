@@ -71,6 +71,11 @@ describe('finding a browser', () => {
     expect(findBrowser('darwin', {}, '/Users/t', (p) => p === want)).toEqual({ name: 'Google Chrome', path: want });
   });
 
+  it('can be told which browser to use, or to use the in-app window', () => {
+    expect(findBrowser('linux', { CHARTKEEPER_BROWSER: 'none' }, '/home/t', () => true)).toBeNull();
+    expect(findBrowser('linux', { CHARTKEEPER_BROWSER: '/opt/vivaldi/vivaldi' }, '/home/t', (p) => p === '/opt/vivaldi/vivaldi')).toEqual({ name: 'vivaldi', path: '/opt/vivaldi/vivaldi' });
+  });
+
   it('finds chromium on the PATH on Linux and returns null when nothing is installed', () => {
     expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium')).toEqual({ name: 'Chromium', path: '/usr/bin/chromium' });
     expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false)).toBeNull();

@@ -1,3 +1,4 @@
+import { mainStrings } from '../shared/mainStrings';
 // Dev and preview only. The real window gets window.chartkeeper from the preload script;
 // scripts/ui-preview.ts installs this mock in its place before app.js loads.
 import type { LayoutCounts, ParsedLayout } from '../core/layout';
@@ -280,7 +281,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
           ok: true,
           value: {
             uid,
-            name: target?.name ?? `${source.name} (restored ${new Date().toISOString().slice(0, 10)})`,
+            name: target?.name ?? `${source.name} (${mainStrings(state.settings.lang)('restoredWord')} ${new Date().toISOString().slice(0, 10)})`,
             url: urls.layoutPage(uid),
             check: checkRestore(expected, actual, control.scenario.restore === 'unchecked' ? null : { drawings: actual.drawings, studies: actual.studies }),
             safetyBackup: req.mode === 'replace' ? `${FOLDER}/safety-copies/${stamp(new Date())}_${target?.name ?? req.targetUid}` : null,

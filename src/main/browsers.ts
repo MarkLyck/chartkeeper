@@ -46,6 +46,14 @@ export function browserCandidates(platform: NodeJS.Platform, env: NodeJS.Process
   return names.flatMap(([name, bin]) => [...new Set(dirs)].map((d) => ({ name, path: path.posix.join(d, bin) })));
 }
 
+/**
+ * The browser for signing in. CHARTKEEPER_BROWSER picks one by path, or "none"
+ * for ChartKeeper's own sign-in window (support's way around a browser that
+ * won't start).
+ */
 export function findBrowser(platform = process.platform, env = process.env, home = process.env.HOME ?? process.env.USERPROFILE ?? '', exists: (p: string) => boolean = existsSync): Browser | null {
+  const chosen = env.CHARTKEEPER_BROWSER;
+  if (chosen === 'none') return null;
+  if (chosen && exists(chosen)) return { name: path.basename(chosen).replace(/\.(exe|app)$/i, ''), path: chosen };
   return browserCandidates(platform, env, home).find((b) => exists(b.path)) ?? null;
 }
