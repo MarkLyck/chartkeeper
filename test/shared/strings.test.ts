@@ -26,7 +26,8 @@ describe('notifications from the app process', () => {
   });
 
   // Bug: a free account has one layout, and its notification reads "1 layouts saved.".
-  it.fails('says "1 layout saved." after backing up a single layout', () => {
+  it('says "1 layout saved." after backing up a single layout, and "3 layouts saved." otherwise', () => {
     expect(mainString('backupDoneBody', { n: 1 })).toBe('1 layout saved.');
+    expect(mainString('backupDoneBody', { n: 3 })).toBe('3 layouts saved.');
   });
 });
