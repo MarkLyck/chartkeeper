@@ -21,7 +21,7 @@ import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
-import { legendInputs, opaque } from './studies';
+import { legendInputs, opaque, studyScaleMargins } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
@@ -242,6 +242,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,
   };
 
+  const paneMargins = { top: 0.1, bottom: 0.08, ...theme.options.rightPriceScale?.scaleMargins };
   const legends: { pane: number; legend: Legend }[] = [];
   let mainSeries: ISeriesApi<SeriesType> | null = null;
   plan.panes.forEach((pane, index) => {
@@ -257,9 +258,10 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
         const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat: ps.priceFormat });
         first ??= s;
       }
-      if (ps.priceScaleId !== 'right' && first) {
-        const volume = ps.study.metaInfoId.startsWith('Volume@');
-        first.priceScale().applyOptions({ scaleMargins: volume ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.08 } });
+      const overlay = ps.priceScaleId !== 'right';
+      // A pane's own scale follows its first indicator, like TradingView's scale follows its main source.
+      if (first && (overlay || (!pane.main && ps === pane.studies[0]))) {
+        first.priceScale().applyOptions({ scaleMargins: studyScaleMargins(ps.study, overlay, paneMargins) });
       }
       const target = first ?? host;
       if (!target) continue;

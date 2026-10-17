@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ParsedStudy, PlotDef } from '../../src/core/layout';
-import { alignRows, hasPineGraphics, legendInputs, planStudyRender } from '../../src/renderer/viewer/studies';
+import { alignRows, hasPineGraphics, legendInputs, planStudyRender, studyScaleMargins } from '../../src/renderer/viewer/studies';
 
 function study(over: { plots: PlotDef[]; styles?: Record<string, Record<string, unknown>>; state?: Record<string, unknown>; meta?: Record<string, unknown> }): ParsedStudy {
   const state = { styles: over.styles ?? {}, ...over.state };
@@ -159,6 +159,21 @@ describe('hasPineGraphics', () => {
   it('detects labels, boxes and tables', () => {
     expect(hasPineGraphics({ d: JSON.stringify({ graphicsCmds: { create: { labels: [{ id: 1 }] } } }), indexes: [] })).toBe(true);
     expect(hasPineGraphics({ dwglabels: { 1: { t: 'x' } } })).toBe(true);
+  });
+});
+
+describe('studyScaleMargins', () => {
+  const pane = { top: 0.1, bottom: 0.08 };
+  const named = (metaInfoId: string, meta: Record<string, unknown> = {}): ParsedStudy => ({ ...study({ plots: [], meta }), metaInfoId });
+
+  it('puts Volume on the bottom edge: its own pane keeps only the top margin, as an overlay it takes the lowest quarter', () => {
+    expect(studyScaleMargins(named('Volume@tv-basicstudies-280'), false, pane)).toEqual({ top: 0.1, bottom: 0 });
+    expect(studyScaleMargins(named('Volume@tv-basicstudies-280'), true, pane)).toEqual({ top: 0.75, bottom: 0 });
+  });
+
+  it("keeps the pane's margins for other indicators unless their definition sets overlay margins", () => {
+    expect(studyScaleMargins(named('RSI@tv-basicstudies-280'), false, pane)).toEqual(pane);
+    expect(studyScaleMargins(named('X@tv-basicstudies-1', { overlayScaleMargins: { top: 0.5, bottom: 0.1 } }), true, pane)).toEqual({ top: 0.5, bottom: 0.1 });
   });
 });
 

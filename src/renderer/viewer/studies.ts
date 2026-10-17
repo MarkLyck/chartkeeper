@@ -110,6 +110,24 @@ function paletteColor(study: ParsedStudy, paletteId: string, raw: number | null,
   return typeof entry.color === 'string' ? withTransparency(entry.color, transparency) : null;
 }
 
+export interface ScaleMargins {
+  top: number;
+  bottom: number;
+}
+
+/**
+ * Margins of the price scale an indicator leads: TradingView keeps Volume on
+ * the bottom edge, in the lower quarter of the main pane when it is an overlay
+ * there; other indicators keep the pane's margins unless their definition sets overlay margins.
+ */
+export function studyScaleMargins(study: ParsedStudy, overlayOnMainPane: boolean, pane: ScaleMargins): ScaleMargins {
+  const volume = study.metaInfoId.startsWith('Volume@');
+  const own = obj(study.metaInfo?.overlayScaleMargins);
+  if (overlayOnMainPane && typeof own.top === 'number' && typeof own.bottom === 'number') return { top: own.top, bottom: own.bottom };
+  if (overlayOnMainPane && volume) return { top: 0.75, bottom: 0 };
+  return volume ? { top: pane.top, bottom: 0 } : pane;
+}
+
 export function studyPriceFormat(study: ParsedStudy, main: PriceFormatSpec): PriceFormatSpec {
   const format = obj(study.metaInfo?.format);
   if (format.type === 'volume') return { type: 'volume' };
