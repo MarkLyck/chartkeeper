@@ -152,16 +152,17 @@ export function riskRewardDrawer(side: Side) {
     const pl = side === 'long' ? trade.close - lv.entry : lv.entry - trade.close;
     const entryX = trade.entryBar !== null ? Math.round(dc.x(trade.entryBar)) : edge;
     const rightX = trade.closed && trade.closeBar !== null ? Math.round(dc.x(trade.closeBar)) : edge;
-    const zones: [string, string, number, boolean][] = [
-      ['stopBackground', 'stopBackgroundTransparency', yStop, pl < 0],
-      ['profitBackground', 'profitBackgroundTransparency', yTarget, pl > 0],
+    const stopColor = pstr(p, 'stopBackground', 'rgba(242, 54, 69, 0.2)');
+    const profitColor = pstr(p, 'profitBackground', 'rgba(8, 153, 129, 0.2)');
+    const zones: [string, number, number, boolean][] = [
+      [stopColor, pnum(p, 'stopBackgroundTransparency', 80), yStop, pl < 0],
+      [profitColor, pnum(p, 'profitBackgroundTransparency', 80), yTarget, pl > 0],
     ];
-    for (const [colorKey, alphaKey, yLevel, darker] of zones) {
-      const t = pnum(p, alphaKey, 80);
-      ctx.fillStyle = tvColor(pstr(p, colorKey, colorKey === 'stopBackground' ? 'rgba(242, 54, 69, 0.2)' : 'rgba(8, 153, 129, 0.2)'), t);
+    for (const [color, t, yLevel, darker] of zones) {
+      ctx.fillStyle = tvColor(color, t);
       ctx.fillRect(Math.min(left, edge), Math.min(yEntry, yLevel), Math.abs(edge - left), Math.abs(yLevel - yEntry));
       if (darker && entryX !== rightX) {
-        ctx.fillStyle = tvColor(pstr(p, colorKey, ''), 100 - 100 * (1 - (t / 100) ** 3));
+        ctx.fillStyle = tvColor(color, 100 - 100 * (1 - (t / 100) ** 3));
         ctx.fillRect(Math.min(entryX, rightX), Math.min(yEntry, yClose), Math.abs(rightX - entryX), Math.abs(yClose - yEntry));
       }
     }
@@ -175,9 +176,9 @@ export function riskRewardDrawer(side: Side) {
     }
     setStroke(ctx, lineColor, pnum(p, 'linewidth', 1));
     strokeLine(ctx, { x: left, y: crispY(yEntry) }, { x: edge, y: crispY(yEntry) });
-    setStroke(ctx, pstr(p, 'stopBackground', 'rgba(242, 54, 69, 0.2)'), 1);
+    setStroke(ctx, stopColor, 1);
     strokeLine(ctx, { x: left, y: crispY(yStop) }, { x: edge, y: crispY(yStop) });
-    setStroke(ctx, pstr(p, 'profitBackground', 'rgba(8, 153, 129, 0.2)'), 1);
+    setStroke(ctx, profitColor, 1);
     strokeLine(ctx, { x: left, y: crispY(yTarget) }, { x: edge, y: crispY(yTarget) });
     if (p.alwaysShowStats !== true) return;
     const labels = positionLabels(side, lv, trade, p, dc.formatPrice, dc.priceStep);
@@ -185,7 +186,7 @@ export function riskRewardDrawer(side: Side) {
     const outward = (yLevel: number) => (yLevel < yEntry ? 'bottom' : 'top');
     statsBox(dc, p, labels.target, cx, yTarget, outward(yTarget), TARGET_COLOR, false);
     statsBox(dc, p, labels.stop, cx, yStop, outward(yStop), STOP_COLOR, false);
-    const middleBg = pl < 0 ? opaque(pstr(p, 'stopBackground', STOP_COLOR)) : pl > 0 ? opaque(pstr(p, 'profitBackground', TARGET_COLOR)) : lineColor;
+    const middleBg = pl < 0 ? opaque(stopColor) : pl > 0 ? opaque(profitColor) : lineColor;
     statsBox(dc, p, labels.middle, cx, yEntry, 'middle', middleBg, true);
   };
 }
