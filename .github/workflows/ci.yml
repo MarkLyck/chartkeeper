@@ -27,8 +27,8 @@ jobs:
         run: npx playwright-core install --with-deps chromium
         shell: bash
       - run: npm run typecheck
-      - name: Unit tests (parsing, restore logic, viewer, UI strings, sign-in watcher)
-        run: npm test
+      - name: Unit tests with coverage gates (parsing, restore logic, viewer, UI strings, sign-in watcher)
+        run: npm run test:coverage
       - name: Build
         run: npm run build
       - name: App smoke test (real Electron window)
