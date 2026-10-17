@@ -305,7 +305,7 @@ export function formatTime(d: Date): string {
   return new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' }).format(d);
 }
 
-/** "Friday 17 October 2026" */
+/** "Saturday, 17 October 2026" */
 export function formatDay(d: Date): string {
   const s = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
   return s.charAt(0).toUpperCase() + s.slice(1);
