@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { countLayout, parseLayout } from '../../src/core/layout';
-import { drawingSourceFromStored, LayoutParseError } from '../../src/core/tv/content';
+import { countLayout, drawingsForChart, parseLayout } from '../../src/core/layout';
+import { contentWithDrawings } from '../../src/core/restore';
+import { drawingSourceFromStored, isDrawingType, LayoutParseError } from '../../src/core/tv/content';
 import { layoutSlots, parseLayoutJson, parseListEntry } from '../../src/core/tv/client';
 import { FIXTURES, referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
@@ -68,6 +69,54 @@ describe('drawings from the drawing storage', () => {
     const counts = countLayout(parseLayout(rec, { buckets, reportedTotal: null }));
     expect(counts.drawings).toBe(11);
     expect(new Set(counts.drawingIds).size).toBe(11);
+  });
+});
+
+describe('where a stored drawing goes', () => {
+  const horz = (id: string, ownerSource: string, symbol?: string) => ({
+    id,
+    ownerSource,
+    state: { type: 'LineToolHorzLine', id, ownerSource, state: { linecolor: '#fff', ...(symbol ? { symbol } : {}) }, points: [{ time_t: 1780000000, offset: 0, price: 1 }] },
+  });
+  const bucket = (sources: Record<string, Record<string, unknown>>) => ({ sources, drawing_groups: {} });
+
+  it('goes on the indicator pane that owns it, and an orphan goes on the price pane', () => {
+    const rec = referenceRecord();
+    const drawings = { buckets: { '1': bucket({ onRsi: horz('onRsi', 'YuxZ0W'), orphan: horz('orphan', 'deleted-indicator') }) }, reportedTotal: null };
+    const layout = parseLayout(rec, drawings);
+    const ids = (pane: number) => layout.charts[0]!.panes[pane]!.drawings.map((d) => d.id);
+    expect(ids(1)).toEqual(['onRsi']);
+    expect(ids(0)).toContain('orphan');
+    const content = contentWithDrawings(rec, drawings);
+    expect(content.charts[0]!.panes[1]!.sources.map((s) => s.id)).toEqual(['YuxZ0W', 'onRsi']);
+    expect(content.charts[0]!.panes[0]!.sources.at(-1)!.id).toBe('orphan');
+  });
+
+  it('shares a drawing with the chart of the same company, also on another exchange, and nowhere else', () => {
+    const rec = referenceRecord();
+    const aapl = rec.content.charts[0]!;
+    const msft = structuredClone(aapl);
+    for (const p of msft.panes) p.sources = p.sources.filter((s) => !isDrawingType(s.type));
+    const series = msft.panes[0]!.sources.find((s) => s.type === 'MainSeries')!;
+    series.state = { ...(series.state as object), symbol: 'NASDAQ:MSFT' };
+    rec.content.charts = [msft, aapl];
+    const drawings = { buckets: { _shared: bucket({ s1: horz('s1', '_seriesId', 'BATS:AAPL'), s2: horz('s2', '_seriesId', 'NYSE:IBM') }) }, reportedTotal: null };
+
+    const layout = parseLayout(rec, drawings);
+    const shown = (chart: number) => drawingsForChart(layout, layout.charts[chart]!).map((d) => d.id);
+    expect(shown(1)).toContain('s1');
+    expect(shown(0)).not.toContain('s1');
+    expect(shown(0)).not.toContain('s2');
+
+    const content = contentWithDrawings(rec, drawings);
+    const restoredOn = (chart: number) => content.charts[chart]!.panes.flatMap((p) => p.sources.map((s) => s.id));
+    expect(restoredOn(1)).toContain('s1');
+    expect(restoredOn(0)).not.toContain('s1');
+    expect(restoredOn(0)).toContain('s2');
+  });
+
+  it('gives a stored drawing without an id of its own the id it is stored under', () => {
+    expect(drawingSourceFromStored('key1', { ownerSource: '_seriesId', state: { type: 'LineToolRay', state: {}, points: [] } })).toMatchObject({ id: 'key1', ownerSource: '_seriesId' });
   });
 });
 

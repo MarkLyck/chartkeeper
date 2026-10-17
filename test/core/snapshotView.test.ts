@@ -84,4 +84,15 @@ describe('comparing two snapshots', () => {
     const r = await compareSnapshots(older, newer);
     expect(r.other).toEqual([{ kind: 'added', what: 'theme', name: 'My dark' }]);
   });
+
+  it('treats every extras file missing from the older snapshot as empty', async () => {
+    const older = await snapshot(1);
+    for (const f of [SNAPSHOT_FILES.drawingTemplates, SNAPSHOT_FILES.studyTemplates, SNAPSHOT_FILES.scriptsIndex]) await fs.rm(path.join(older.dir, f));
+    const r = await compareSnapshots(older, await snapshot(2));
+    expect(r.other).toEqual([
+      { kind: 'added', what: 'drawing-template', name: 'Thick orange', toolType: 'LineToolTrendLine' },
+      { kind: 'added', what: 'study-template', name: 'My RSI setup' },
+      { kind: 'added', what: 'script', name: 'My Trend' },
+    ]);
+  });
 });
