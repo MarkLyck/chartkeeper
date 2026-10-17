@@ -1,7 +1,6 @@
 import type { DrawingPoint } from '../../../core/layout';
 import type { Props } from '../../../core/props';
 import { fillPolygon, FONT_FAMILY, pnum, pstr, setStroke, strokeLine, type DrawContext, type Pt } from './canvas';
-import { ICON_FONT_FAMILY } from '../iconFont';
 import { kind, type DrawingKind } from './kind';
 import { fillBlockText, measureBlock, type FontSpec } from './text';
 
@@ -129,6 +128,9 @@ function drawGlyph(dc: DrawContext, p: Props, points: DrawingPoint[], glyph: str
   ctx.fillText(glyph, 0, drop);
   ctx.restore();
 }
+
+/** Font Awesome 4.7, which ../iconFont.ts loads; TradingView stores icons as its code points. */
+export const ICON_FONT_FAMILY = 'ChartKeeper Font Awesome';
 
 /** `icon` is a Font Awesome 4.7 code point, the font TradingView draws icons with. */
 export function drawIcon(dc: DrawContext, p: Props, points: DrawingPoint[]): void {

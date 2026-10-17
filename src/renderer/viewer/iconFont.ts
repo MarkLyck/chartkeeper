@@ -1,11 +1,12 @@
 import fontUrl from 'font-awesome/fonts/fontawesome-webfont.woff2';
+import { ICON_FONT_FAMILY } from './drawings/marks';
 
 /**
  * TradingView's icon drawings store Font Awesome 4.7 code points, so the
  * viewer draws them with that font (SIL OFL 1.1, see licenses/), inlined in
- * the bundle so it works offline.
+ * the bundle so it works offline. Only the browser side imports this module;
+ * Node can't load the font file.
  */
-export const ICON_FONT_FAMILY = 'ChartKeeper Font Awesome';
 
 let ready: Promise<void> | null = null;
 
