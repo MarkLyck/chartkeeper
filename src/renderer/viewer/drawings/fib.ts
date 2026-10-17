@@ -138,7 +138,7 @@ export const LEVEL_LAYOUT = {
 export type LevelLayout = (typeof LEVEL_LAYOUT)[keyof typeof LEVEL_LAYOUT];
 
 /** One saved level as an object, whether TradingView stored it as an array (newer) or an object (older). */
-export function levelFields(raw: unknown, layout: readonly LevelField[]): Props {
+export function levelFields(raw: unknown, layout: readonly string[]): Props {
   if (Array.isArray(raw)) return Object.fromEntries(layout.map((field, i) => [field, raw[i]]));
   return typeof raw === 'object' && raw !== null ? (raw as Props) : {};
 }

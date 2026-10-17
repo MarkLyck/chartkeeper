@@ -11,6 +11,7 @@ import {
   tvFill,
 } from '../../src/renderer/viewer/drawings/fib';
 import { fibCircleRadii, fibSpiralPoints, fibSpiralRadius, fibTimeBars, timeZoneLevels } from '../../src/renderer/viewer/drawings/fibTime';
+import { gannArcRadius, gannBoxLevels, gannFanTarget, gannFixedCorner } from '../../src/renderer/viewer/drawings/gann';
 
 // Level sets as TradingView saved them in the gallery's drawings-fibs scene.
 const retracementProps = {
@@ -139,5 +140,41 @@ describe('fib time tools', () => {
     const through = fibSpiralPoints(a, b, false)[201]!;
     expect(through.x).toBeCloseTo(b.x);
     expect(through.y).toBeCloseTo(b.y);
+  });
+});
+
+describe('Gann tools', () => {
+  const p1 = { bar: 10, price: 309.5573 };
+  const p2 = { bar: 107, price: 335.4226 };
+
+  it('grids the Gann box from point 1, snapping time levels to whole bars', () => {
+    const at = gannBoxLevels({}, p1, p2);
+    expect(at.price(0)).toBe(309.5573);
+    expect(at.price(0.5).toFixed(2)).toBe('322.49');
+    expect([0, 0.25, 0.382, 0.5, 1].map(at.bar)).toEqual([10, 34, 47, 59, 107]);
+  });
+
+  it('starts the Gann box grid at point 2 when reversed', () => {
+    const at = gannBoxLevels({ reverse: true }, p1, p2);
+    expect(at.price(0)).toBe(335.4226);
+    expect(at.bar(0.25)).toBe(83);
+  });
+
+  it('makes Gann square fixed five point-distances wide toward point 2', () => {
+    expect(gannFixedCorner({ x: 100, y: 200 }, { x: 103, y: 196 })).toEqual({ x: 125, y: 175 });
+    expect(gannFixedCorner({ x: 100, y: 200 }, { x: 100, y: 210 })).toEqual({ x: 150, y: 250 });
+  });
+
+  it('sizes Gann arcs by their grid point', () => {
+    expect(gannArcRadius(-250, 1, 0)).toBe(50);
+    expect(gannArcRadius(250, 3, 4)).toBe(250);
+  });
+
+  it('aims Gann fan rays at the box edges by ratio', () => {
+    const a = { x: 0, y: 100 };
+    const b = { x: 80, y: 20 };
+    expect(gannFanTarget(a, b, 1, 1)).toEqual(b);
+    expect(gannFanTarget(a, b, 1, 8)).toEqual({ x: 10, y: 20 });
+    expect(gannFanTarget(a, b, 8, 1)).toEqual({ x: 80, y: 90 });
   });
 });
