@@ -47,6 +47,8 @@ export interface SnapshotSummary {
   name: string;
   manifest: Manifest | null;
   problem: string | null;
+  /** A copy ChartKeeper took of a layout just before replacing it. */
+  safetyCopy: boolean;
 }
 
 export interface BackupOutcome {

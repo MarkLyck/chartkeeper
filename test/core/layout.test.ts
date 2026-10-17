@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { countLayout, drawingSourceFromStored, LayoutParseError, parseLayout } from '../../src/core/layout';
-import { parseLayoutJson, parseListEntry } from '../../src/core/tv/client';
+import { layoutSlots, parseLayoutJson, parseListEntry } from '../../src/core/tv/client';
 import { FIXTURES, referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
 const tvSaved = JSON.parse(readFileSync(path.join(FIXTURES, 'tv-saved-layout.json'), 'utf8'));
@@ -67,6 +67,20 @@ describe('drawings from the drawing storage', () => {
     const counts = countLayout(parseLayout(rec, { buckets, reportedTotal: null }));
     expect(counts.drawings).toBe(11);
     expect(new Set(counts.drawingIds).size).toBe(11);
+  });
+});
+
+describe('free layout slots', () => {
+  it('knows the limits of the published plans', () => {
+    expect(layoutSlots({ count: 1 }, 1, 'free')).toMatchObject({ limit: 1, free: false });
+    expect(layoutSlots({ count: 4 }, 4, 'pro')).toMatchObject({ limit: 5, free: true });
+    expect(layoutSlots({ count: 400 }, 400, 'pro_premium')).toMatchObject({ limit: null, free: true });
+  });
+  it('does not block a restore for a plan name it has never seen', () => {
+    expect(layoutSlots({ count: 3 }, 3, 'trial')).toMatchObject({ limit: null, free: true });
+  });
+  it('prefers the limit the server reports', () => {
+    expect(layoutSlots({ count: 2, limit: 2 }, 2, 'trial')).toMatchObject({ limit: 2, free: false });
   });
 });
 

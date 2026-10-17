@@ -41,7 +41,7 @@ export interface PageTransport {
  * outside itself, because it is serialized with `toString()`.
  */
 export async function pageFetch(req: HttpRequest): Promise<HttpResponse> {
-  const init: RequestInit = { method: req.method, credentials: 'include', headers: { ...(req.headers ?? {}) } };
+  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual', headers: { ...(req.headers ?? {}) } };
   if (req.json !== undefined) {
     (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
     init.body = JSON.stringify(req.json);

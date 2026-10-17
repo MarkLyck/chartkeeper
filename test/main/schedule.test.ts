@@ -7,18 +7,24 @@ import { isBackupDue, setLinuxAutostart } from '../../src/main/schedule';
 const at = (d: number, h: number, m = 0) => new Date(2026, 9, d, h, m);
 
 describe('daily backup timing', () => {
-  it('waits until the chosen hour', () => {
-    expect(isBackupDue(at(17, 17, 59), 18, at(16, 18, 5))).toBe(false);
-    expect(isBackupDue(at(17, 18, 0), 18, at(16, 18, 5))).toBe(true);
+  it('runs once a day, after the chosen hour', () => {
+    expect(isBackupDue(at(17, 17, 59), 18, at(16, 18, 5), null)).toBe(false);
+    expect(isBackupDue(at(17, 18, 0), 18, at(16, 18, 5), null)).toBe(true);
+    expect(isBackupDue(at(17, 21), 18, at(17, 18, 2), null)).toBe(false);
   });
-  it('runs once per day', () => {
-    expect(isBackupDue(at(17, 21), 18, at(17, 18, 2))).toBe(false);
+  it('catches up the next morning when the computer was off in the evening', () => {
+    expect(isBackupDue(at(18, 9), 18, at(16, 18, 5), null)).toBe(true);
   });
-  it('catches up after the computer was off at the chosen hour', () => {
-    expect(isBackupDue(at(17, 23), 18, at(14, 18))).toBe(true);
+  it('catches up after several days off', () => {
+    expect(isBackupDue(at(17, 23), 18, at(14, 18), null)).toBe(true);
   });
   it('runs the first time', () => {
-    expect(isBackupDue(at(17, 19), 18, null)).toBe(true);
+    expect(isBackupDue(at(17, 19), 18, null, null)).toBe(true);
+  });
+  it('waits three hours after a failed attempt instead of retrying every check', () => {
+    expect(isBackupDue(at(17, 18, 45), 18, at(16, 18), at(17, 18, 0))).toBe(false);
+    expect(isBackupDue(at(17, 21, 1), 18, at(16, 18), at(17, 18, 0))).toBe(true);
+    expect(isBackupDue(at(17, 18, 45), 18, null, at(17, 18, 0))).toBe(false);
   });
 });
 

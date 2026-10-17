@@ -123,11 +123,15 @@ interface JournalEntry {
   createdUid: string;
   name: string;
   at: string;
+  /** Set once the restore was checked. Only unfinished restores are picked up again. */
+  finished: boolean;
 }
 
 /**
- * Remembers which layout a restore created, so running the same restore again
- * after a crash or a lost answer checks that layout instead of making a copy.
+ * Remembers the layout a "new" restore is creating, so running it again after
+ * a crash or a lost answer finishes that layout instead of making a copy.
+ * A finished restore is never picked up again: restoring twice on purpose
+ * makes two copies.
  */
 export class RestoreJournal {
   constructor(private readonly file: string) {}
@@ -193,8 +197,10 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
 
   // A "new" restore records its planned name before saving; if the answer to
   // the save was lost, the layout with that name is the one it created.
-  const adopted = previous ? list.find((e) => (previous.createdUid ? e.uid === previous.createdUid : mode.kind === 'new' && e.name === previous.name)) : undefined;
-  if (previous && adopted) {
+  // "replace" is never picked up: overwriting again is what the user asked for.
+  const unfinished = mode.kind === 'new' && previous && !previous.finished ? previous : null;
+  const adopted = unfinished ? list.find((e) => (unfinished.createdUid ? e.uid === unfinished.createdUid : e.name === unfinished.name)) : undefined;
+  if (unfinished && adopted) {
     uid = adopted.uid;
     name = adopted.name;
     resumed = true;
@@ -209,9 +215,9 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
       );
     name = restoredName(record.name, now, opts.restoredWord);
     say('create', name);
-    await opts.journal.put({ key, createdUid: '', name, at: now.toISOString() });
+    await opts.journal.put({ key, createdUid: '', name, at: now.toISOString(), finished: false });
     uid = (await client.saveLayout({ fields: saveForm(record, drawings, name) })).uid;
-    await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString() });
+    await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString(), finished: false });
   } else {
     const target = list.find((e) => e.uid === mode.targetUid);
     if (!target) throw new TvError('not-found', 'The layout you chose to replace no longer exists on TradingView.');
@@ -223,13 +229,13 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
     uid = target.uid;
     say('clearDrawings');
     await clearStoredDrawings(client, uid, record, opts.buildTime);
-    await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString() });
   }
 
   say('verify');
   const entry: LayoutListEntry = (await client.listLayouts()).find((e) => e.uid === uid) ?? { uid, url: uid, id: null, name, lastModified: null, raw: {} };
   const after = await captureLayout(client, entry);
   const check = compareCounts(expected, countLayout(after.layout));
+  if (mode.kind === 'new') await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString(), finished: true });
   return { uid, name, url: `https://www.tradingview.com/chart/${uid}/`, check, safetyBackup, resumed };
 }
 
@@ -270,7 +276,15 @@ export interface TemplateRestoreResult {
 export async function restoreTemplates(client: TvClient, snapshot: SnapshotReader): Promise<TemplateRestoreResult> {
   const added: string[] = [];
   const skipped: string[] = [];
-  const studies = ((await snapshot.readJson('templates/study-templates.json')) as { templates: Record<string, unknown>[] }).templates;
+  const read = async <T>(rel: string, empty: T): Promise<T> => {
+    try {
+      return (await snapshot.readJson(rel)) as T;
+    } catch {
+      skipped.push(`${rel} (not in this backup)`);
+      return empty;
+    }
+  };
+  const studies = (await read<{ templates: Record<string, unknown>[] }>('templates/study-templates.json', { templates: [] })).templates;
   const existingStudies = new Set((await client.studyTemplates()).map((t) => String(t.name)));
   for (const t of studies) {
     const n = String(t.name);
@@ -280,7 +294,7 @@ export async function restoreTemplates(client: TvClient, snapshot: SnapshotReade
       added.push(`Indicator template "${n}"`);
     }
   }
-  const tools = ((await snapshot.readJson('templates/drawing-templates.json')) as { tools: Record<string, Record<string, unknown>> }).tools;
+  const tools = (await read<{ tools: Record<string, Record<string, unknown>> }>('templates/drawing-templates.json', { tools: {} })).tools;
   for (const [tool, templates] of Object.entries(tools)) {
     const existing = new Set(await client.drawingTemplateNames(tool));
     for (const [n, content] of Object.entries(templates)) {
@@ -291,7 +305,7 @@ export async function restoreTemplates(client: TvClient, snapshot: SnapshotReade
       }
     }
   }
-  const themes = ((await snapshot.readJson('templates/themes.json')) as { themes: Record<string, unknown> }).themes;
+  const themes = (await read<{ themes: Record<string, unknown> }>('templates/themes.json', { themes: {} })).themes;
   const existingThemes = new Set(Object.keys(await client.themes()));
   for (const [n, content] of Object.entries(themes)) {
     if (existingThemes.has(n)) skipped.push(`Theme "${n}"`);

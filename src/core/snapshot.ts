@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { promises as fs } from 'node:fs';
+import { existsSync, promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { z } from 'zod';
 import {
@@ -32,12 +32,28 @@ export function layoutDir(uid: string): string {
 
 const sha256 = (data: string) => createHash('sha256').update(data).digest('hex');
 
+/**
+ * On Windows, antivirus, search indexing and OneDrive briefly lock new files,
+ * which makes a rename fail with EPERM/EBUSY/EACCES. Retry for up to ~10 s.
+ */
+export async function renameWithRetry(from: string, to: string, sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await fs.rename(from, to);
+    } catch (e) {
+      const code = (e as NodeJS.ErrnoException).code;
+      if (attempt >= 12 || !['EPERM', 'EBUSY', 'EACCES'].includes(code ?? '')) throw e;
+      await sleep(Math.min(100 * 2 ** attempt, 2000));
+    }
+  }
+}
+
 /** Writes files private to the current user (no effect on Windows, where the profile folder is private already). */
 async function writePrivate(file: string, data: string) {
   await fs.mkdir(path.dirname(file), { recursive: true, mode: 0o700 });
   const tmp = `${file}.tmp`;
   await fs.writeFile(tmp, data, { mode: 0o600 });
-  await fs.rename(tmp, file);
+  await renameWithRetry(tmp, file);
 }
 
 export type ManifestBody = Omit<Manifest, 'files' | 'status' | 'error' | 'formatVersion'>;
@@ -80,8 +96,13 @@ export class SnapshotWriter {
     return this.close({ ...body, formatVersion: 1, status: 'complete', files: this.files }, this.stamp);
   }
 
+  /** Marks the run INCOMPLETE. Never throws: it runs while reporting another error. */
   async fail(body: ManifestBody, error: string): Promise<string> {
-    return this.close({ ...body, formatVersion: 1, status: 'incomplete', error, files: this.files }, this.stamp + INCOMPLETE);
+    try {
+      return await this.close({ ...body, formatVersion: 1, status: 'incomplete', error, files: this.files }, this.stamp + INCOMPLETE);
+    } catch {
+      return this.workDir;
+    }
   }
 
   private async close(manifest: Manifest, name: string): Promise<string> {
@@ -89,7 +110,7 @@ export class SnapshotWriter {
     await writePrivate(path.join(this.workDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
     const final = path.join(this.root, SNAPSHOTS_DIR, name);
     await fs.rm(final, { recursive: true, force: true });
-    await fs.rename(this.workDir, final);
+    await renameWithRetry(this.workDir, final);
     return final;
   }
 }
@@ -126,12 +147,20 @@ export async function listSnapshots(root: string): Promise<SnapshotInfo[]> {
   return out.sort((a, b) => b.name.localeCompare(a.name));
 }
 
-/** Removes in-progress folders left by a crashed run (none are running when this is called). */
+/**
+ * Renames work folders left by a crashed run to "<stamp>-INCOMPLETE", so they
+ * are never mistaken for a good backup and never deleted (call it only when no
+ * backup is running).
+ */
 export async function cleanupInterrupted(root: string): Promise<number> {
   const base = path.join(root, SNAPSHOTS_DIR);
   const names = await fs.readdir(base).catch(() => [] as string[]);
   const stale = names.filter((n) => n.startsWith(IN_PROGRESS));
-  for (const n of stale) await fs.rm(path.join(base, n), { recursive: true, force: true });
+  for (const n of stale) {
+    const to = path.join(base, n.slice(IN_PROGRESS.length) + INCOMPLETE);
+    if (existsSync(to)) await fs.rm(path.join(base, n), { recursive: true, force: true });
+    else await renameWithRetry(path.join(base, n), to).catch(() => undefined);
+  }
   return stale.length;
 }
 

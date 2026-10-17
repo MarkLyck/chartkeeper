@@ -9,8 +9,9 @@ import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn
 
 const exe = chromium.executablePath();
 const haveBrowser = existsSync(exe);
-// CI runners can't use Chromium's sandbox; a desktop install of Chrome can.
-const headless = ['--headless=new', ...(process.platform === 'linux' && process.env.CI ? ['--no-sandbox'] : [])];
+// CI runners can't use Chromium's sandbox (Linux: no user namespaces; Windows: the
+// browser folder's permissions). A desktop install of Chrome or Edge can.
+const headless = ['--headless=new', ...(process.env.CI ? ['--no-sandbox'] : [])];
 
 /** A page that "signs in" two seconds after it loads by setting a sessionid cookie. */
 function fakeSignInServer() {

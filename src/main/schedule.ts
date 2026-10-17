@@ -2,15 +2,20 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+/** After a failed attempt, wait this long before trying again, so a lasting problem doesn't hammer TradingView. */
+export const RETRY_AFTER_MS = 3 * 60 * 60 * 1000;
+
 /**
- * Whether the daily backup is due: it runs once per calendar day, after the
- * chosen hour, and catches up if the computer was off or asleep at that time.
+ * Whether the daily backup is due: no successful backup since the most recent
+ * time the clock passed the chosen hour. So it runs once a day, and catches up
+ * as soon as the computer is on again after missing that hour.
  */
-export function isBackupDue(now: Date, dailyHour: number, lastBackupAt: Date | null): boolean {
-  if (now.getHours() < dailyHour) return false;
-  if (!lastBackupAt) return true;
-  const todayAtHour = new Date(now.getFullYear(), now.getMonth(), now.getDate(), dailyHour);
-  return lastBackupAt < todayAtHour;
+export function isBackupDue(now: Date, dailyHour: number, lastSuccess: Date | null, lastAttempt: Date | null): boolean {
+  if (lastAttempt && now.getTime() - lastAttempt.getTime() < RETRY_AFTER_MS && (!lastSuccess || lastAttempt > lastSuccess)) return false;
+  if (!lastSuccess) return true;
+  const mostRecent = new Date(now.getFullYear(), now.getMonth(), now.getDate(), dailyHour);
+  if (mostRecent > now) mostRecent.setDate(mostRecent.getDate() - 1);
+  return lastSuccess < mostRecent;
 }
 
 /** Linux has no login-item API in Electron; desktops follow the XDG autostart folder. */

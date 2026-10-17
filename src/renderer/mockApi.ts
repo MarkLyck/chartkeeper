@@ -66,7 +66,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
       layouts,
       warnings: [],
     };
-    return { dir: `${FOLDER}/snapshots/${name}`, name, manifest, problem: null };
+    return { dir: `${FOLDER}/snapshots/${name}`, name, manifest, problem: null, safetyCopy: false };
   };
 
   const snapshots: SnapshotSummary[] = [

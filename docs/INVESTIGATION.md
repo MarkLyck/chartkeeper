@@ -229,14 +229,18 @@ layout, which is the one failure ChartKeeper must never cause.
 
 **Replace an existing layout** sends the same request with `image_url` set,
 only after an explicit confirmation, and only after ChartKeeper makes a fresh
-backup of the layout it is about to replace. It then clears that layout's
-storage drawings that are not in the backup, so old drawings don't reappear on
-top of the restored ones.
+backup of the layout it is about to replace. The saved content then holds
+every backed-up drawing, so ChartKeeper removes all of that layout's drawings
+from the drawing storage; otherwise old drawings would reappear on top of the
+restored ones. A second confirmed "Replace" overwrites again with a new safety
+copy.
 
 **Verification** reloads the new layout with `GET /chart/<id>/json/` plus its
 storage buckets, and compares the drawing ids and indicator count with the
-backup. It also opens the new layout in a hidden chart page and counts what
-TradingView itself shows (`getAllShapes`, `getAllStudies`).
+backup. It then opens the new layout in a hidden chart page and counts what
+TradingView itself shows (`getAllShapes`, `getAllStudies`). The restore only
+counts as verified when TradingView shows every drawing. If the chart page
+can't be checked, the result says so.
 
 ## Saved-layout limits
 

@@ -40,7 +40,7 @@ const StorageResponseSchema = z.object({
 
 const SizesResponseSchema = z.object({
   success: z.literal(true),
-  payload: z.object({ countSourcesTotal: z.number().optional() }).passthrough().nullable(),
+  payload: z.object({ countSourcesTotal: z.number().optional(), charts: z.record(z.string(), z.unknown()).optional() }).passthrough().nullable(),
 });
 
 const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string(), last_modified: z.number().optional() });
@@ -61,7 +61,8 @@ function parseJson(res: HttpResponse, what: string): unknown {
 
 function check(res: HttpResponse, what: string): void {
   if (res.status >= 200 && res.status < 300) return;
-  if (res.status === 401 || res.status === 403 || (res.status === 302 && what === 'layout list'))
+  // status 0 is a redirect the page did not follow: TradingView sends signed-out visitors to the sign-in page.
+  if (res.status === 0 || res.status === 401 || res.status === 403)
     throw new TvError('not-signed-in', 'You are not signed in to TradingView any more. Click "Sign in" and try again.', `${what}: HTTP ${res.status} ${res.body.slice(0, 300)}`);
   if (res.status === 404) throw new TvError('not-found', `TradingView could not find ${what}.`, res.body.slice(0, 300));
   if (res.status === 429) throw new TvError('rate-limited', 'TradingView asked ChartKeeper to slow down. Please wait an hour and try again.', what);
@@ -150,7 +151,8 @@ export function layoutSlots(countBody: unknown, listLength: number, plan: string
   const c = typeof countBody === 'number' ? countBody : obj.safeParse(countBody).success ? firstNumber(countBody as Record<string, unknown>, ['count', 'charts_count', 'total']) : null;
   const serverLimit = obj.safeParse(countBody).success ? firstNumber(countBody as Record<string, unknown>, ['limit', 'max', 'charts_limit']) : null;
   const used = c ?? listLength;
-  const limit = serverLimit ?? (plan && plan in PLAN_LAYOUT_LIMITS ? PLAN_LAYOUT_LIMITS[plan]! : plan === null ? null : 1);
+  // A plan name we don't know gets no limit here; the server's refusal then explains it.
+  const limit = serverLimit ?? (plan && plan in PLAN_LAYOUT_LIMITS ? PLAN_LAYOUT_LIMITS[plan]! : null);
   return { used, limit, plan, free: limit === null || used < limit };
 }
 
@@ -196,10 +198,10 @@ export class TvClient {
     return parseBucket(await this.getJson(urls.userSources(uid, token), 'synced drawings'), 'synced drawings');
   }
 
-  /** Total drawings TradingView says this layout has, or null if it does not say. */
-  async drawingCount(uid: string, token: string): Promise<number | null> {
+  /** How many drawings TradingView says this layout has (null if it does not say), and which chart buckets hold them. */
+  async drawingSizes(uid: string, token: string): Promise<{ total: number | null; chartIds: string[] }> {
     const r = parse(SizesResponseSchema, await this.getJson(urls.layoutSizes(uid, token), 'drawing counts'), 'drawing counts');
-    return r.payload?.countSourcesTotal ?? null;
+    return { total: r.payload?.countSourcesTotal ?? null, chartIds: Object.keys(r.payload?.charts ?? {}) };
   }
 
   async studyTemplates(): Promise<Record<string, unknown>[]> {
@@ -248,7 +250,9 @@ export class TvClient {
 
   async themes(): Promise<Record<string, unknown>> {
     const v = await this.getJson(urls.themes, 'color themes');
-    const names = Array.isArray(v) ? parse(z.array(z.string()), v, 'color themes') : [];
+    // An account without themes answers {"content": ""}.
+    const empty = z.object({ content: z.literal('') }).safeParse(v).success;
+    const names = empty ? [] : parse(z.array(z.string()), v, 'color themes');
     const out: Record<string, unknown> = {};
     for (const name of names) {
       const t = parse(z.object({ content: z.string() }), await this.getJson(urls.theme(name), `theme "${name}"`), `theme "${name}"`);

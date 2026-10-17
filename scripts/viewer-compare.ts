@@ -9,7 +9,6 @@
  *   npx tsx scripts/viewer-compare.ts [--lang da]
  */
 import { promises as fs } from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { build } from 'esbuild';
 import { countLayout, parseLayout, type ParsedLayout } from '../src/core/layout';
@@ -21,7 +20,6 @@ const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, '.test-output');
 const FIXTURES = path.join(ROOT, 'test/fixtures');
 
-process.env.PLAYWRIGHT_BROWSERS_PATH ??= path.join(os.homedir(), 'Library/Caches/ms-playwright');
 
 interface Reference {
   uid: string;

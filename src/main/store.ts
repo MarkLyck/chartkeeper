@@ -14,6 +14,9 @@ const SettingsSchema = z.object({
 const StateSchema = z.object({
   settings: SettingsSchema,
   lastBackup: z.object({ at: z.string(), ok: z.boolean(), dir: z.string() }).nullable(),
+  lastSuccessAt: z.string().nullable().default(null),
+  /** Day (YYYY-MM-DD) we last told the user a scheduled backup couldn't run because they're signed out. */
+  signInNoticeDay: z.string().nullable().default(null),
 });
 export type StoredState = z.infer<typeof StateSchema>;
 
@@ -33,7 +36,7 @@ export class Store {
   ) {}
 
   static async open(file: string, defaults: Settings): Promise<Store> {
-    let state: StoredState = { settings: defaults, lastBackup: null };
+    let state: StoredState = { settings: defaults, lastBackup: null, lastSuccessAt: null, signInNoticeDay: null };
     try {
       const raw = JSON.parse(await fs.readFile(file, 'utf8'));
       const parsed = StateSchema.safeParse({ ...raw, settings: { ...defaults, ...raw.settings } });
@@ -50,8 +53,14 @@ export class Store {
   get lastBackup() {
     return this.state.lastBackup;
   }
+  get lastSuccessAt() {
+    return this.state.lastSuccessAt;
+  }
+  get signInNoticeDay() {
+    return this.state.signInNoticeDay;
+  }
 
-  async update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup'] }): Promise<void> {
+  async update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup']; lastSuccessAt?: string | null; signInNoticeDay?: string | null }): Promise<void> {
     this.state = StateSchema.parse({ ...this.state, ...patch, settings: { ...this.state.settings, ...patch.settings } });
     await fs.mkdir(path.dirname(this.file), { recursive: true, mode: 0o700 });
     const tmp = `${this.file}.tmp`;
@@ -63,9 +72,10 @@ export class Store {
 /**
  * Restricts the app's private folder (the TradingView sign-in lives there) to
  * the current user. On Windows the folder inside the user profile is already
- * private; chmod is a no-op there.
+ * private; chmod is a no-op there. Disks without Unix permissions (FAT, exFAT)
+ * refuse chmod, which is fine for a folder ChartKeeper doesn't keep secrets in.
  */
 export async function lockDown(dir: string): Promise<void> {
   await fs.mkdir(dir, { recursive: true, mode: 0o700 });
-  if (process.platform !== 'win32') await fs.chmod(dir, 0o700);
+  if (process.platform !== 'win32') await fs.chmod(dir, 0o700).catch(() => undefined);
 }

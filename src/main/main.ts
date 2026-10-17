@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { runBackup } from '../core/backup';
 import { diffNamed, diffSnapshots } from '../core/diff';
-import { parseLayout, type ParsedLayout } from '../core/layout';
+import { parseBucket, parseLayout, type ParsedLayout } from '../core/layout';
 import type { ChartData } from '../core/model';
 import { restoreLayout, RestoreJournal, restoreTemplates } from '../core/restore';
 import { cleanupInterrupted, listSnapshots, SnapshotReader } from '../core/snapshot';
@@ -30,6 +30,8 @@ let busy: AppState['busy'] = null;
 let username: string | null = null;
 let quitting = false;
 const transport = new ElectronPageTransport();
+/** One rate limiter for every request, so a backup and the restore screen can't add up to more than one request at a time. */
+const http = new PoliteHttp(transport);
 
 const logFile = () => path.join(app.getPath('userData'), 'logs', 'chartkeeper.log');
 function log(line: string) {
@@ -101,13 +103,17 @@ function progress(e: ProgressEvent) {
 /** A client for the signed-in account, or a plain "please sign in" error. */
 async function client(): Promise<TvClient> {
   if (!(await hasSessionCookie())) throw new TvError('not-signed-in', 'You are not signed in to TradingView.');
-  const user = await transport.user();
+  // A fresh page each time: the tray app may run for weeks, and the sign-in, token and build can change.
+  transport.reset();
+  const user = await transport.user().catch((e: unknown) => {
+    throw new TvError('network', 'Could not reach TradingView. Check the internet connection and try again.', String(e));
+  });
   if (!user) {
     transport.reset();
     throw new TvError('not-signed-in', 'TradingView does not recognise the saved sign-in any more. Please sign in again.');
   }
   username = user.username;
-  return new TvClient(new PoliteHttp(transport), user);
+  return new TvClient(http, user);
 }
 
 async function doSignIn(): Promise<AppState> {
@@ -115,10 +121,15 @@ async function doSignIn(): Promise<AppState> {
   const isTv = (c: { domain: string }) => c.domain === 'tradingview.com' || c.domain.endsWith('.tradingview.com');
   const isSignedIn = (cs: { name: string; domain: string }[]) => cs.some((c) => c.name === 'sessionid' && isTv(c));
   let cookies;
-  if (browser) {
+  const started = Date.now();
+  try {
+    if (!browser) throw new Error('no browser found');
     log(`sign-in with ${browser.name}`);
     cookies = await signInWithBrowser({ browserPath: browser.path, profileDir: path.join(app.getPath('userData'), 'signin-profile'), startUrl: urls.signIn, isSignedIn, keep: isTv });
-  } else {
+  } catch (e) {
+    // A browser that quits right away couldn't start (e.g. a sandboxed snap package); offer the in-app window instead.
+    if (browser && !(e instanceof SignInCancelled && Date.now() - started < 8000)) throw e;
+    log(`sign-in with app window (${(e as Error).message})`);
     cookies = await signInWithAppWindow();
   }
   await importCookies(cookies);
@@ -160,7 +171,6 @@ async function signInWithAppWindow() {
 
 async function doBackup(silent: boolean) {
   const c = await client();
-  await lockDown(store.settings.backupFolder);
   await cleanupInterrupted(store.settings.backupFolder);
   const user = await transport.user();
   log(`backup start (silent=${silent})`);
@@ -173,7 +183,8 @@ async function doBackup(silent: boolean) {
     socketFactory: nodeSocketFactory,
     onProgress: (p) => progress({ kind: 'backup', progress: p }),
   });
-  await store.update({ lastBackup: { at: new Date().toISOString(), ok: r.ok, dir: r.dir } });
+  const at = new Date().toISOString();
+  await store.update({ lastBackup: { at, ok: r.ok, dir: r.dir }, ...(r.ok ? { lastSuccessAt: at } : {}) });
   log(`backup ${r.ok ? 'ok' : 'FAILED'}: ${r.dir} ${r.error?.message ?? ''} warnings=${r.warnings.length}`);
   if (silent || !win?.isVisible()) notify(r.ok, r.ok ? `${r.layouts}` : (r.error?.message ?? ''));
   return r;
@@ -194,6 +205,14 @@ async function loadLayout(snapshotDir: string, uid: string) {
   const record = await reader.layout(uid);
   const drawings = await reader.drawings(uid);
   const layout = parseLayout(record, drawings);
+  // Drawings synced to all layouts belong on every chart of their symbol.
+  const synced = await reader.userDrawings();
+  if (synced) {
+    const seen = new Set([...layout.charts.flatMap((c) => c.panes.flatMap((p) => p.drawings.map((d) => d.id))), ...layout.sharedDrawings.map((d) => d.id)]);
+    const parsed = parseBucket(synced, 'user');
+    layout.problems.push(...parsed.problems);
+    layout.sharedDrawings.push(...parsed.drawings.filter((d) => !seen.has(d.id)));
+  }
   const data: Record<string, ChartData | null> = {};
   for (const c of layout.charts) data[c.chartId] = await reader.chartData(uid, c.chartId);
   return { layout, data };
@@ -247,8 +266,11 @@ async function doRestore(req: RestoreRequest) {
   });
   progress({ kind: 'restore', step: 'verify' });
   const onChart = await countOnChartPage(r.uid);
-  log(`restore done ${r.uid} ok=${r.check.ok} missing=${r.check.missingDrawings.length} onChart=${JSON.stringify(onChart)}`);
-  return { ...r, onChart };
+  // What TradingView itself shows is the real test; the read-back alone only proves what was stored.
+  const shownOk = onChart === null || (onChart.drawings === r.check.expected.drawings && onChart.studies >= r.check.expected.studies);
+  const check = { ...r.check, ok: r.check.ok && shownOk };
+  log(`restore done ${r.uid} ok=${check.ok} missing=${r.check.missingDrawings.length} onChart=${JSON.stringify(onChart)}`);
+  return { ...r, check, onChart };
 }
 
 async function applyAutostart(enabled: boolean) {
@@ -279,7 +301,10 @@ function registerIpc() {
     return state();
   });
   ipcMain.handle(IPC.backupNow, () => exclusive('backup', () => doBackup(false)));
-  ipcMain.handle(IPC.listSnapshots, () => listSnapshots(store.settings.backupFolder));
+  ipcMain.handle(IPC.listSnapshots, async () => [
+    ...(await listSnapshots(store.settings.backupFolder)).map((s) => ({ ...s, safetyCopy: false })),
+    ...(await listSnapshots(path.join(store.settings.backupFolder, 'safety-copies'))).map((s) => ({ ...s, safetyCopy: true })),
+  ]);
   ipcMain.handle(IPC.loadLayout, (_e, dir: string, uid: string) => guarded(() => loadLayout(dir, uid)));
   ipcMain.handle(IPC.compare, (_e, a: string, b: string) => guarded(() => compare(a, b)));
   ipcMain.handle(IPC.restoreTargets, () =>
@@ -359,10 +384,35 @@ function updateTray() {
 async function scheduledCheck() {
   const s = store.settings;
   if (!s.dailyBackup || busy) return;
-  const last = store.lastBackup?.ok ? new Date(store.lastBackup.at) : null;
-  if (!isBackupDue(new Date(), s.dailyHour, last)) return;
-  if (!(await hasSessionCookie())) return;
-  await exclusive('backup', () => doBackup(true));
+  const now = new Date();
+  const lastSuccess = store.lastSuccessAt ? new Date(store.lastSuccessAt) : null;
+  const lastAttempt = store.lastBackup ? new Date(store.lastBackup.at) : null;
+  if (!isBackupDue(now, s.dailyHour, lastSuccess, lastAttempt)) return;
+  if (!(await hasSessionCookie())) {
+    const today = now.toISOString().slice(0, 10);
+    if (store.signInNoticeDay !== today) {
+      await store.update({ signInNoticeDay: today });
+      notifySignIn();
+    }
+    return;
+  }
+  const r = await exclusive('backup', () => doBackup(true));
+  if (!r.ok) {
+    await store.update({ lastBackup: { at: now.toISOString(), ok: false, dir: '' } });
+    if (r.error.kind === 'not-signed-in') notifySignIn();
+    else notify(false, r.error.message);
+  }
+}
+
+function notifySignIn() {
+  if (!Notification.isSupported()) return;
+  const da = store.settings.lang === 'da';
+  const n = new Notification({
+    title: da ? 'ChartKeeper kan ikke tage backup' : "ChartKeeper can't take today's backup",
+    body: da ? 'Du er ikke længere logget ind på TradingView. Åbn ChartKeeper, og log ind igen.' : 'You are no longer signed in to TradingView. Open ChartKeeper and sign in again.',
+  });
+  n.on('click', showWindow);
+  n.show();
 }
 
 async function main() {

@@ -44,11 +44,21 @@ describe('backup', () => {
     expect(tv.requests.filter((r) => r.method !== 'GET')).toEqual([]);
   });
 
+  it('marks the snapshot INCOMPLETE when only some drawings arrive', async () => {
+    tv.failOn = (req) => {
+      if (!req.url.includes('/get/layout/') || !req.url.includes('chart_id=_shared')) return null;
+      return { status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, payload: { sources: {} } }) };
+    };
+    const r = await backup();
+    expect(r.ok).toBe(false);
+    expect(r.error?.message).toMatch(/has 8 drawings but sent 6/);
+  });
+
   it('marks the snapshot INCOMPLETE when drawings are reported but not sent', async () => {
     tv.storageIgnoresCookies = true;
     const r = await backup();
     expect(r.ok).toBe(false);
-    expect(r.error).toMatchObject({ kind: 'format-changed', message: expect.stringMatching(/has 8 drawings but sent none/) });
+    expect(r.error).toMatchObject({ kind: 'format-changed', message: expect.stringMatching(/has 8 drawings but sent 0/) });
     const [snap] = await listSnapshots(root);
     expect(snap!.name).toMatch(/-INCOMPLETE$/);
     expect(snap!.manifest!.status).toBe('incomplete');
@@ -59,6 +69,13 @@ describe('backup', () => {
     const r = await backup();
     expect(r.ok).toBe(false);
     expect(r.error?.message).toMatch(/does not recognise/);
+  });
+
+  it('reports an expired sign-in as "please sign in", not as a TradingView change', async () => {
+    // A signed-out session gets a redirect to the sign-in page, which the page does not follow.
+    tv.failOn = (req) => (req.url.endsWith('/my-charts/') ? { status: 0, contentType: '', body: '' } : null);
+    const r = await backup();
+    expect(r.error).toMatchObject({ kind: 'not-signed-in' });
   });
 
   it('keeps the layout backup when one symbol has no prices, and says so', async () => {
@@ -120,13 +137,30 @@ describe('restore', () => {
     expect(tv.requests.filter((r) => r.method === 'POST')).toEqual([]);
   });
 
-  it('running the same restore twice does not create a second copy', async () => {
+  it('restoring the same backup twice on purpose makes two copies', async () => {
     const snap = await snapshot();
     const opts = { root, journal: journal(), buildTime: null };
     const a = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
     const b = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
-    expect(b).toMatchObject({ uid: a.uid, resumed: true });
-    expect(tv.layouts.size).toBe(2);
+    expect(b.resumed).toBe(false);
+    expect(b.uid).not.toBe(a.uid);
+    expect(tv.layouts.size).toBe(3);
+  });
+
+  it('a second confirmed replace overwrites again, with a new safety copy', async () => {
+    const snap = await snapshot();
+    tv.add(referenceInAccount('Target01', 'Old layout'));
+    const opts = { root, journal: journal(), buildTime: null };
+    const mode = { kind: 'replace' as const, targetUid: 'Target01', confirmedByUser: true as const };
+    await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
+    const edited = tv.layouts.get('Target01')!.content as { charts: { panes: { sources: unknown[] }[] }[] };
+    edited.charts[0]!.panes[0]!.sources.push({ type: 'LineToolHorzLine', id: 'edit1', state: {}, points: [{ time_t: 1780000000, offset: 0, price: 1 }] });
+    const posts = tv.requests.filter((r) => r.method === 'POST').length;
+    const r = await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
+    expect(r).toMatchObject({ resumed: false, check: { ok: true } });
+    expect(r.safetyBackup).not.toBeNull();
+    expect(tv.requests.filter((q) => q.method === 'POST').length).toBe(posts + 1);
+    expect(JSON.stringify(tv.layouts.get('Target01')!.content)).not.toContain('edit1');
   });
 
   it('adopts the layout when the answer to the save was lost', async () => {

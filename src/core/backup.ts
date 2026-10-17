@@ -49,14 +49,20 @@ const safeFileName = (s: string) => s.replace(/[^\p{L}\p{N} _.-]/gu, '_').slice(
 export async function captureLayout(client: TvClient, entry: LayoutListEntry) {
   const record = await client.getLayout(entry);
   const token = await client.chartToken(record.uid);
+  const sizes = await client.drawingSizes(record.uid, token);
   const chartIds = (record.content.charts as Record<string, unknown>[]).map((c, i) => String(c.chartId ?? i + 1));
   const buckets: Record<string, DrawingBucket> = {};
-  for (const chartId of [...chartIds, '_shared']) buckets[chartId] = await client.drawingBucket(record.uid, chartId, token);
-  const reportedTotal = await client.drawingCount(record.uid, token);
+  for (const chartId of new Set([...chartIds, ...sizes.chartIds, '_shared'])) buckets[chartId] = await client.drawingBucket(record.uid, chartId, token);
+  const reportedTotal = sizes.total;
   const drawings: DrawingsRecord = { buckets, reportedTotal };
   const fetched = Object.values(buckets).reduce((n, b) => n + Object.keys(b.sources).length, 0);
-  if (reportedTotal !== null && reportedTotal > 0 && fetched === 0)
-    throw new TvError('format-changed', `TradingView says "${entry.name}" has ${reportedTotal} drawings but sent none. The backup was stopped so it isn't saved without them.`);
+  if (reportedTotal !== null && fetched < reportedTotal)
+    throw new TvError(
+      'format-changed',
+      `TradingView says "${entry.name}" has ${reportedTotal} drawings but sent ${fetched}. The backup was stopped so it isn't saved without them.`,
+      '',
+      { name: entry.name, reported: reportedTotal, received: fetched },
+    );
   const layout = parseLayout(record, drawings);
   if (layout.problems.length) throw new TvError('format-changed', `Some drawings in "${entry.name}" have an unknown format.`, layout.problems.join('\n'));
   return { record, drawings, layout, token };
@@ -97,9 +103,6 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
       progress(++step, steps, 'layout', entry.name);
       const { record, drawings, layout, token } = await captureLayout(client, entry);
       firstToken ??= { uid: record.uid, token };
-      const fetched = Object.values(drawings.buckets).reduce((n, b) => n + Object.keys(b.sources).length, 0);
-      if (drawings.reportedTotal !== null && fetched < drawings.reportedTotal)
-        warnings.push(`"${entry.name}": TradingView reports ${drawings.reportedTotal} drawings, ChartKeeper received ${fetched}.`);
       const counts = countLayout(layout);
       const dir = layoutDir(record.uid);
       await writer.writeJson(`${dir}/layout.json`, record);

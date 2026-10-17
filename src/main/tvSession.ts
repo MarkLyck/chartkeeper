@@ -93,7 +93,14 @@ export class ElectronPageTransport implements PageTransport {
       tvSession();
       this.win = hiddenWindow();
       const w = this.win;
-      this.ready = w.loadURL(urls.home).then(() => undefined);
+      this.ready = w.loadURL(urls.home).then(
+        () => undefined,
+        (e: unknown) => {
+          // Don't keep a failed page around: the next request starts over.
+          this.close();
+          throw e;
+        },
+      );
     }
     const w = this.win!;
     return this.ready.then(() => w);
@@ -128,7 +135,9 @@ export class ElectronPageTransport implements PageTransport {
 
 /**
  * Opens a layout the way Thomas would and counts what TradingView itself shows.
- * This is the final check after a restore. It only reads; it never saves.
+ * This is the final check after a restore. ChartKeeper changes nothing here;
+ * TradingView may move the drawings from the layout content into its drawing
+ * storage while the layout is open, exactly as when Thomas opens it.
  */
 export async function countOnChartPage(uid: string, timeoutMs = 60_000): Promise<{ drawings: number; studies: number } | null> {
   tvSession();

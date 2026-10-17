@@ -2,7 +2,7 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { cleanupInterrupted, listSnapshots, SnapshotReader, SnapshotWriter, snapshotStamp } from '../../src/core/snapshot';
+import { cleanupInterrupted, listSnapshots, renameWithRetry, SnapshotReader, SnapshotWriter, snapshotStamp } from '../../src/core/snapshot';
 
 const body = { app: { name: 'ChartKeeper', version: 't' }, createdAt: '2026-10-17T10:00:00Z', account: { username: 'u', plan: null }, layouts: [], extras: { studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 }, warnings: [] };
 
@@ -44,9 +44,30 @@ describe('snapshot folders', () => {
     expect((await fs.stat(dir)).mode & 0o777).toBe(0o700);
   });
 
-  it('cleans up the work folder of a run that crashed', async () => {
+  it('keeps the work folder of a run that crashed, marked INCOMPLETE', async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
-    await SnapshotWriter.begin(root);
+    const w = await SnapshotWriter.begin(root, new Date(2026, 0, 3));
+    await w.writeJson('layouts/x/layout.json', { a: 1 });
     expect(await cleanupInterrupted(root)).toBe(1);
+    const list = await listSnapshots(root);
+    expect(list.map((s) => [s.name, s.manifest])).toEqual([['2026-01-03_00-00-00-INCOMPLETE', null]]);
+    expect(list[0]!.problem).toMatch(/cannot be read/);
+  });
+
+  it('retries a rename that Windows briefly refuses', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    await fs.writeFile(path.join(root, 'a'), 'x');
+    let refusals = 0;
+    const realRename = fs.rename;
+    (fs as { rename: typeof fs.rename }).rename = async (a, b) => {
+      if (refusals++ < 3) throw Object.assign(new Error('busy'), { code: 'EBUSY' });
+      return realRename(a, b);
+    };
+    try {
+      await renameWithRetry(path.join(root, 'a'), path.join(root, 'b'), async () => {});
+    } finally {
+      (fs as { rename: typeof fs.rename }).rename = realRename;
+    }
+    expect(await fs.readFile(path.join(root, 'b'), 'utf8')).toBe('x');
   });
 });

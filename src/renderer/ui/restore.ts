@@ -219,24 +219,24 @@ export function restoreScreen(ctx: Ctx): Screen {
   function verifyTable(o: RestoreOutcome): HTMLElement {
     const { expected, actual } = o.check;
     const shown = o.onChart;
-    /** onChart null: TradingView's own count doesn't cover this row. */
-    const row = (label: string, want: number, got: number, onChart: number | null) =>
+    /** onChart undefined: TradingView's own count doesn't cover this row. */
+    const row = (label: string, want: number, got: number, onChart: number | undefined) =>
       h('tr', {},
         h('th', { scope: 'row' }, label),
         h('td', {}, want),
         h('td', { class: got === want ? 'cell-ok' : 'cell-warn' }, got),
-        shown ? h('td', { class: onChart === null ? '' : onChart === want ? 'cell-ok' : 'cell-warn' }, onChart ?? '') : null);
+        onChart === undefined ? h('td', {}, '') : shown === null ? h('td', { class: 'cell-warn' }, t('restore.notChecked')) : h('td', { class: onChart >= want ? 'cell-ok' : 'cell-warn' }, onChart));
     return h('table', { class: 'verify' },
       h('caption', {}, t('restore.checkTitle')),
       h('thead', {}, h('tr', {},
         h('th', { scope: 'col' }, t('restore.colWhat')),
         h('th', { scope: 'col' }, t('restore.colBackup')),
         h('th', { scope: 'col' }, t('restore.colSaved')),
-        shown ? h('th', { scope: 'col' }, t('restore.colShown')) : null)),
+        h('th', { scope: 'col' }, t('restore.colShown')))),
       h('tbody', {},
-        row(t('restore.rowCharts'), expected.charts, actual.charts, null),
-        row(t('restore.rowDrawings'), expected.drawings, actual.drawings, shown?.drawings ?? null),
-        row(t('restore.rowIndicators'), expected.studies, actual.studies, shown?.studies ?? null)));
+        row(t('restore.rowCharts'), expected.charts, actual.charts, undefined),
+        row(t('restore.rowDrawings'), expected.drawings, actual.drawings, shown?.drawings ?? -1),
+        row(t('restore.rowIndicators'), expected.studies, actual.studies, shown?.studies ?? -1)));
   }
 
   function doneStep(c: Extract<Step, { k: 'done' }>): (HTMLElement | null)[] {

@@ -32,6 +32,7 @@ the reason. Nothing is hidden silently.
 | Pine script source | Your own scripts are backed up as `.pine` files you can open in any text editor. To put one back, open TradingView's Pine Editor, paste it, and save. Layouts that use your scripts work as long as the script still exists in your account. |
 | Templates and themes | "Restore my templates and themes" adds the ones you don't have. It never changes or deletes existing ones. |
 | Alerts | See above. |
+| Drawings synced to all layouts | They are backed up (`user-drawings.json`) and shown in the viewer on every chart of their symbol. A restore doesn't add them to the restored layout, because they live in your account, not in one layout, and TradingView still has them unless you deleted them. |
 
 ## Data and terms of use
 

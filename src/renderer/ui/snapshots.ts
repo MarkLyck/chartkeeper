@@ -33,6 +33,7 @@ export function snapshotLines(s: SnapshotSummary): HTMLElement[] {
   const lines = [h('span', { class: 'snap-day' }, d ? formatDay(d) : s.name)];
   const parts = [d ? formatTime(d) : null, s.manifest ? tn('count.layouts', s.manifest.layouts.length) : null].filter(Boolean);
   lines.push(h('span', { class: 'snap-meta' }, parts.join(' · ')));
+  if (s.safetyCopy) lines.push(h('span', { class: 'badge' }, t('view.safetyCopy')));
   if (isIncomplete(s)) lines.push(h('span', { class: 'badge badge-error' }, s.manifest ? t('view.incomplete') : t('view.unreadable')));
   return lines;
 }
