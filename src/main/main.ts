@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, Notification, shell, Tray } from 'electron';
+import { app, BrowserWindow, dialog, Menu, nativeImage, Notification, shell, Tray } from 'electron';
 import { appendFileSync, mkdirSync, statSync, renameSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,9 +11,10 @@ import { nodeSocketFactory } from '../core/tv/datafeed';
 import { urls } from '../core/tv/endpoints';
 import { TvError } from '../core/tv/errors';
 import { PoliteHttp } from '../core/tv/http';
-import { IPC, type AppError, type AppState, type ProgressEvent, type RestoreRequest, type Result, type Settings } from '../shared/api';
+import type { AppError, AppState, ProgressEvent, RestoreRequest, Result } from '../shared/api';
 import { findBrowser } from './browsers';
 import { SignInCancelled, signInWithBrowser } from './browserSignIn';
+import { emit, handle } from './ipc';
 import { isBackupDue, setLinuxAutostart } from './schedule';
 import { defaultSettings, lockDown, Store } from './store';
 import { countOnChartPage, ElectronPageTransport, hasSessionCookie, importCookies, signOut, tvSession } from './tvSession';
@@ -90,12 +91,12 @@ async function state(): Promise<AppState> {
 }
 
 async function pushState() {
-  if (win && !win.isDestroyed()) win.webContents.send(IPC.state, await state());
+  emit(win, 'state', await state());
   updateTray();
 }
 
 function progress(e: ProgressEvent) {
-  if (win && !win.isDestroyed()) win.webContents.send(IPC.progress, e);
+  emit(win, 'progress', e);
 }
 
 /** A client for the signed-in account, or a plain "please sign in" error. */
@@ -183,8 +184,8 @@ async function doBackup(silent: boolean) {
   });
   const at = new Date().toISOString();
   await store.update({ lastBackup: { at, ok: r.ok, dir: r.dir }, ...(r.ok ? { lastSuccessAt: at } : {}) });
-  log(`backup ${r.ok ? 'ok' : 'FAILED'}: ${r.dir} ${r.error?.message ?? ''} warnings=${r.warnings.length}`);
-  if (silent || !win?.isVisible()) notify(r.ok, r.ok ? `${r.layouts}` : (r.error?.message ?? ''));
+  log(`backup ${r.ok ? 'ok' : 'FAILED'}: ${r.dir} ${r.ok ? '' : r.error.message} warnings=${r.warnings.length}`);
+  if (silent || !win?.isVisible()) notify(r.ok, r.ok ? `${r.layouts}` : r.error.message);
   return r;
 }
 
@@ -222,34 +223,34 @@ async function applyAutostart(enabled: boolean) {
 }
 
 function registerIpc() {
-  ipcMain.handle(IPC.getState, () => state());
-  ipcMain.handle(IPC.setSettings, async (_e, patch: Partial<Settings>) => {
+  handle('getState', () => state());
+  handle('setSettings', async (patch) => {
     const before = store.settings.dailyBackup;
     await store.update({ settings: patch });
     if (patch.dailyBackup !== undefined && patch.dailyBackup !== before) await applyAutostart(patch.dailyBackup);
     updateTray();
     return state();
   });
-  ipcMain.handle(IPC.chooseFolder, async () => {
+  handle('chooseFolder', async () => {
     const r = await dialog.showOpenDialog(win!, { properties: ['openDirectory', 'createDirectory'], defaultPath: store.settings.backupFolder });
     if (!r.canceled && r.filePaths[0]) await store.update({ settings: { backupFolder: r.filePaths[0] } });
     return state();
   });
-  ipcMain.handle(IPC.signIn, () => exclusive('signin', doSignIn));
-  ipcMain.handle(IPC.signOut, async () => {
+  handle('signIn', () => exclusive('signin', doSignIn));
+  handle('signOut', async () => {
     await signOut();
     transport.reset();
     username = null;
     return state();
   });
-  ipcMain.handle(IPC.backupNow, () => exclusive('backup', () => doBackup(false)));
-  ipcMain.handle(IPC.listSnapshots, async () => [
+  handle('backupNow', () => exclusive('backup', () => doBackup(false)));
+  handle('listSnapshots', async () => [
     ...(await listSnapshots(store.settings.backupFolder)).map((s) => ({ ...s, safetyCopy: false })),
     ...(await listSnapshots(path.join(store.settings.backupFolder, 'safety-copies'))).map((s) => ({ ...s, safetyCopy: true })),
   ]);
-  ipcMain.handle(IPC.loadLayout, (_e, dir: string, uid: string) => guarded(async () => openLayout(await SnapshotReader.open(dir), uid)));
-  ipcMain.handle(IPC.compare, (_e, a: string, b: string) => guarded(async () => compareSnapshots(await SnapshotReader.open(a), await SnapshotReader.open(b))));
-  ipcMain.handle(IPC.restoreTargets, () =>
+  handle('loadLayout', (dir, uid) => guarded(async () => openLayout(await SnapshotReader.open(dir), uid)));
+  handle('compare', (a, b) => guarded(async () => compareSnapshots(await SnapshotReader.open(a), await SnapshotReader.open(b))));
+  handle('restoreTargets', () =>
     guarded(async () => {
       const c = await client();
       const list = await c.listLayouts();
@@ -257,12 +258,12 @@ function registerIpc() {
       return { layouts: list.map((l) => ({ uid: l.uid, name: l.name })), ...slots };
     }),
   );
-  ipcMain.handle(IPC.restore, (_e, req: RestoreRequest) => exclusive('restore', () => doRestore(req)));
-  ipcMain.handle(IPC.restoreTemplates, (_e, dir: string) => exclusive('restore', async () => restoreTemplates(await client(), await SnapshotReader.open(dir))));
-  ipcMain.handle(IPC.openFolder, async (_e, dir: string) => {
+  handle('restore', (req) => exclusive('restore', () => doRestore(req)));
+  handle('restoreTemplates', (dir) => exclusive('restore', async () => restoreTemplates(await client(), await SnapshotReader.open(dir))));
+  handle('openFolder', async (dir) => {
     await shell.openPath(dir);
   });
-  ipcMain.handle(IPC.openOnTradingView, async (_e, url: string) => {
+  handle('openOnTradingView', async (url) => {
     if (new URL(url).hostname === 'www.tradingview.com') await shell.openExternal(url);
   });
 }

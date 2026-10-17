@@ -1,4 +1,4 @@
-import type { BackupProgress } from '../core/backup';
+import type { BackupProgress, BackupResult } from '../core/backup';
 import type { Manifest } from '../core/model';
 import type { RestoreResult, RestoreStep } from '../core/restore';
 import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';
@@ -51,14 +51,7 @@ export interface SnapshotSummary {
   safetyCopy: boolean;
 }
 
-export interface BackupOutcome {
-  dir: string;
-  ok: boolean;
-  layouts: number;
-  drawings: number;
-  warnings: string[];
-  error: AppError | null;
-}
+export type BackupOutcome = BackupResult;
 
 export interface TvLayoutInfo {
   uid: string;
@@ -96,11 +89,20 @@ export interface ChartKeeperApi {
   restoreTemplates(snapshotDir: string): Promise<Result<{ added: string[]; skipped: string[] }>>;
   openFolder(dir: string): Promise<void>;
   openOnTradingView(url: string): Promise<void>;
-  onProgress(cb: (e: ProgressEvent) => void): () => void;
-  onStateChanged(cb: (s: AppState) => void): () => void;
+  onProgress(cb: (e: Events['progress']) => void): () => void;
+  onStateChanged(cb: (s: Events['state']) => void): () => void;
 }
 
-export const IPC = {
+/** Calls from the window to the app process: one IPC channel each. */
+export type Invoke = Omit<ChartKeeperApi, 'onProgress' | 'onStateChanged'>;
+
+/** Pushed from the app process to the window. */
+export interface Events {
+  progress: ProgressEvent;
+  state: AppState;
+}
+
+export const INVOKE_CHANNELS = {
   getState: 'ck:getState',
   setSettings: 'ck:setSettings',
   chooseFolder: 'ck:chooseFolder',
@@ -115,6 +117,6 @@ export const IPC = {
   restoreTemplates: 'ck:restoreTemplates',
   openFolder: 'ck:openFolder',
   openOnTradingView: 'ck:openOnTradingView',
-  progress: 'ck:progress',
-  state: 'ck:state',
-} as const;
+} as const satisfies { [K in keyof Invoke]: `ck:${K}` };
+
+export const EVENT_CHANNELS = { progress: 'ck:progress', state: 'ck:state' } as const satisfies { [K in keyof Events]: `ck:${K}` };

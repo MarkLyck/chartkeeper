@@ -30,14 +30,17 @@ export interface BackupProgress {
   name?: string;
 }
 
-export interface BackupResult {
+interface BackupSummary {
   dir: string;
-  ok: boolean;
   layouts: number;
   drawings: number;
   warnings: string[];
-  error: { kind: TvErrorKind | 'unexpected'; message: string; params: Record<string, string | number> } | null;
 }
+
+/** A failed run still names its INCOMPLETE folder and what it got through. */
+export type BackupResult =
+  | (BackupSummary & { ok: true })
+  | (BackupSummary & { ok: false; error: { kind: TvErrorKind | 'unexpected'; message: string; params: Record<string, string | number> } });
 
 const safeFileName = (s: string) => s.replace(/[^\p{L}\p{N} _.-]/gu, '_').slice(0, 80) || 'script';
 
@@ -166,7 +169,7 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
 
     progress(steps, steps, 'finish');
     const dir = await writer.finish(body());
-    return { dir, ok: true, layouts: layouts.length, drawings: layouts.reduce((n, l) => n + l.drawings, 0), warnings, error: null };
+    return { dir, ok: true, layouts: layouts.length, drawings: layouts.reduce((n, l) => n + l.drawings, 0), warnings };
   } catch (e) {
     const message = e instanceof TvError ? e.message : `The backup stopped because of an unexpected error: ${(e as Error).message}`;
     const detail = e instanceof TvError && e.detail ? `\n${e.detail}` : '';

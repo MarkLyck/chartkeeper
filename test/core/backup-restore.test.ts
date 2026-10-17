@@ -90,7 +90,7 @@ describe('numeric chartIds', () => {
 describe('backup', () => {
   it('writes a complete snapshot with every drawing, indicator, template and script', async () => {
     const r = await backup();
-    expect(r).toMatchObject({ ok: true, layouts: 1, drawings: 11, error: null });
+    expect(r).toEqual({ ok: true, dir: expect.any(String), layouts: 1, drawings: 11, warnings: [] });
     const [snap] = await listSnapshots(root);
     expect(snap!.manifest).toMatchObject({ status: 'complete', account: { username: 'thomas' }, extras: { studyTemplates: 1, drawingTemplates: 1, themes: 1, scripts: 1, userDrawings: 1 } });
     expect(snap!.manifest!.layouts[0]).toMatchObject({ uid: 'AbCd1234', name: 'Min AAPL', drawings: 11, studies: 2, priceData: true, symbols: ['NASDAQ:AAPL'] });
@@ -112,16 +112,12 @@ describe('backup', () => {
       if (!req.url.includes('/get/layout/') || !req.url.includes('chart_id=_shared')) return null;
       return { status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, payload: { sources: {} } }) };
     };
-    const r = await backup();
-    expect(r.ok).toBe(false);
-    expect(r.error?.message).toMatch(/has 8 drawings but sent 6/);
+    expect(await backup()).toMatchObject({ ok: false, error: { message: expect.stringMatching(/has 8 drawings but sent 6/) } });
   });
 
   it('marks the snapshot INCOMPLETE when drawings are reported but not sent', async () => {
     tv.storageIgnoresCookies = true;
-    const r = await backup();
-    expect(r.ok).toBe(false);
-    expect(r.error).toMatchObject({ kind: 'format-changed', message: expect.stringMatching(/has 8 drawings but sent 0/) });
+    expect(await backup()).toMatchObject({ ok: false, error: { kind: 'format-changed', message: expect.stringMatching(/has 8 drawings but sent 0/) } });
     const [snap] = await listSnapshots(root);
     expect(snap!.name).toMatch(/-INCOMPLETE$/);
     expect(snap!.manifest!.status).toBe('incomplete');
@@ -129,16 +125,13 @@ describe('backup', () => {
 
   it('marks the snapshot INCOMPLETE when TradingView changes its answer format', async () => {
     tv.failOn = (req) => (req.url.endsWith('/my-charts/') ? { status: 200, contentType: 'application/json', body: '{"unexpected":true}' } : null);
-    const r = await backup();
-    expect(r.ok).toBe(false);
-    expect(r.error?.message).toMatch(/does not recognise/);
+    expect(await backup()).toMatchObject({ ok: false, error: { message: expect.stringMatching(/does not recognise/) } });
   });
 
   it('reports an expired sign-in as "please sign in", not as a TradingView change', async () => {
     // A signed-out session gets a redirect to the sign-in page, which the page does not follow.
     tv.failOn = (req) => (req.url.endsWith('/my-charts/') ? { status: 0, contentType: '', body: '' } : null);
-    const r = await backup();
-    expect(r.error).toMatchObject({ kind: 'not-signed-in' });
+    expect(await backup()).toMatchObject({ ok: false, error: { kind: 'not-signed-in' } });
   });
 
   it('keeps the layout backup when one symbol has no prices, and says so', async () => {

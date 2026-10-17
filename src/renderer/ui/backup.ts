@@ -5,10 +5,13 @@ import { button, details, errorBox, icons, progressBar, screenHeader } from './c
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
 
+type Done = Extract<BackupOutcome, { ok: true }>;
+type Incomplete = Extract<BackupOutcome, { ok: false }>;
+
 type Phase =
   | { k: 'running'; progress: BackupProgress | null }
-  | { k: 'done'; outcome: BackupOutcome }
-  | { k: 'failed'; error: AppError; outcome: BackupOutcome | null };
+  | { k: 'done'; outcome: Done }
+  | { k: 'failed'; error: AppError; outcome: Incomplete | null };
 
 export function backupScreen(ctx: Ctx): Screen {
   const el = h('main', { class: 'screen narrow' });
@@ -28,7 +31,7 @@ export function backupScreen(ctx: Ctx): Screen {
       h('p', { class: 'note' }, t('backup.runningNote')));
   }
 
-  function done(o: BackupOutcome): HTMLElement {
+  function done(o: Done): HTMLElement {
     return h('section', { class: 'result result-success' },
       icons.check(),
       h('div', { class: 'result-body' },
@@ -42,7 +45,7 @@ export function backupScreen(ctx: Ctx): Screen {
           : null));
   }
 
-  function failed(error: AppError, o: BackupOutcome | null): HTMLElement {
+  function failed(error: AppError, o: Incomplete | null): HTMLElement {
     return errorBox(ctx, error, {
       title: t('backup.failed'),
       note: o?.dir ? t('backup.failedPartial') : null,
@@ -63,7 +66,7 @@ export function backupScreen(ctx: Ctx): Screen {
     set({ k: 'running', progress: null });
     const r = await ctx.api.backupNow();
     if (!r.ok) set({ k: 'failed', error: r.error, outcome: null });
-    else if (!r.value.ok) set({ k: 'failed', error: r.value.error ?? { kind: 'unexpected', message: '', params: {} }, outcome: r.value });
+    else if (!r.value.ok) set({ k: 'failed', error: r.value.error, outcome: r.value });
     else set({ k: 'done', outcome: r.value });
   }
 

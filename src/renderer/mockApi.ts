@@ -167,7 +167,6 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
           '"C25 indeks – uge": TradingView reports 15 drawings, ChartKeeper received 14.',
           'Prices for OMXCOP:OMXC25 (1W) could not be loaded: symbol_error. The layout itself is backed up.',
         ],
-        error: null,
       },
     };
   }

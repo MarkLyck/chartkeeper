@@ -89,7 +89,7 @@ describe('live round trip on tradingview.com', () => {
 
   it('backs up the whole account, restores one layout as a new layout, and the two match', async () => {
     const backup = await runBackup(client, { root, appVersion: 'live-test', includePrices: true, bars: 300, authToken: (await transportFor(page).user())!.authToken, socketFactory: nodeSocketFactory });
-    expect(backup.error).toBeNull();
+    expect(backup).toMatchObject({ ok: true });
     const reader = await SnapshotReader.open((await listSnapshots(root))[0]!.dir);
     const wanted = process.env.TV_TEST_LAYOUT;
     const source = reader.manifest.layouts.find((l) => !wanted || l.name === wanted)!;
