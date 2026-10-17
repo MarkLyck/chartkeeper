@@ -171,6 +171,10 @@ export class TvClient {
   get plan() {
     return this.user.plan;
   }
+  /** For the price websocket. */
+  get authToken() {
+    return this.user.authToken;
+  }
 
   private async getJson(url: string, what: string): Promise<unknown> {
     const res = await this.http.send({ method: 'GET', url });

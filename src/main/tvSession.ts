@@ -1,5 +1,5 @@
-import { BrowserWindow, session, type Session } from 'electron';
-import { ALLOWED_HOSTS, urls } from '../core/tv/endpoints';
+import { BrowserWindow, session, type Cookie, type Session } from 'electron';
+import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import { pageFetch, pageUser, type HttpRequest, type HttpResponse, type PageTransport, type PageUser } from '../core/tv/http';
 import type { CdpCookie } from './browserSignIn';
 
@@ -18,7 +18,7 @@ export function isRequestAllowed(url: string): boolean {
   if (u.protocol === 'data:' || u.protocol === 'blob:' || u.protocol === 'devtools:') return true;
   if (u.protocol !== 'https:' && u.protocol !== 'wss:') return false;
   if (BLOCKED_TV_HOSTS.test(u.hostname)) return false;
-  return u.hostname === 'tradingview.com' || u.hostname.endsWith('.tradingview.com') || ALLOWED_HOSTS.includes(u.hostname);
+  return isTradingViewHost(u.hostname);
 }
 
 let configured: Session | null = null;
@@ -38,32 +38,47 @@ export function tvSession(): Session {
   return s;
 }
 
-const SAME_SITE: Record<string, 'strict' | 'lax' | 'no_restriction'> = { Strict: 'strict', Lax: 'lax', None: 'no_restriction' };
+/** A sign-in cookie in Electron's own shape, ready to copy into ChartKeeper's session. */
+export type SessionCookie = Pick<Cookie, 'name' | 'value' | 'path' | 'secure' | 'httpOnly' | 'expirationDate' | 'sameSite'> & { domain: string };
 
-/** Copies the sign-in cookies from the browser window into ChartKeeper's private session. */
-export async function importCookies(cookies: CdpCookie[]): Promise<void> {
+const SAME_SITE: Record<NonNullable<CdpCookie['sameSite']>, Cookie['sameSite']> = { Strict: 'strict', Lax: 'lax', None: 'no_restriction' };
+
+export const fromCdp = (c: CdpCookie): SessionCookie => ({
+  name: c.name,
+  value: c.value,
+  domain: c.domain,
+  path: c.path,
+  secure: c.secure,
+  httpOnly: c.httpOnly,
+  ...(c.expires > 0 ? { expirationDate: c.expires } : {}),
+  sameSite: c.sameSite ? SAME_SITE[c.sameSite] : 'lax',
+});
+
+/** Copies the sign-in cookies from the sign-in window into ChartKeeper's private session. */
+export async function importCookies(cookies: SessionCookie[]): Promise<void> {
   const s = tvSession();
   const thirtyDays = Date.now() / 1000 + 30 * 86400;
   for (const c of cookies) {
+    const path = c.path ?? '/';
     await s.cookies.set({
-      url: `https://${c.domain.replace(/^\./, '')}${c.path}`,
+      url: `https://${c.domain.replace(/^\./, '')}${path}`,
       name: c.name,
       value: c.value,
       domain: c.domain,
-      path: c.path,
-      secure: c.secure,
-      httpOnly: c.httpOnly,
+      path,
+      secure: !!c.secure,
+      httpOnly: !!c.httpOnly,
       // A cookie without expiry would vanish when ChartKeeper closes.
-      expirationDate: c.expires > 0 ? c.expires : thirtyDays,
-      sameSite: SAME_SITE[c.sameSite ?? ''] ?? 'lax',
+      expirationDate: c.expirationDate && c.expirationDate > 0 ? c.expirationDate : thirtyDays,
+      sameSite: c.sameSite === 'unspecified' ? 'lax' : c.sameSite,
     });
   }
   await s.cookies.flushStore();
 }
 
 export async function hasSessionCookie(): Promise<boolean> {
-  const cookies = await tvSession().cookies.get({ name: 'sessionid' });
-  return cookies.some((c) => c.domain?.endsWith('tradingview.com'));
+  const cookies = await tvSession().cookies.get({ name: SESSION_COOKIE });
+  return cookies.some((c) => isTradingViewHost(c.domain ?? ''));
 }
 
 export async function signOut(): Promise<void> {

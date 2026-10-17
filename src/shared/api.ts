@@ -1,6 +1,6 @@
 import type { BackupProgress, BackupResult } from '../core/backup';
 import type { Manifest } from '../core/model';
-import type { RestoreResult, RestoreStep } from '../core/restore';
+import type { RestoreResult, RestoreStep, TemplateRestoreResult } from '../core/restore';
 import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';
 export type { LoadedLayout } from '../core/snapshotView';
 import type { TvErrorKind } from '../core/tv/errors';
@@ -70,6 +70,8 @@ export type RestoreRequest = { snapshotDir: string; uid: string } & ({ mode: 'ne
 
 export type RestoreOutcome = RestoreResult;
 
+export type TemplatesOutcome = TemplateRestoreResult;
+
 export type CompareOutcome = SnapshotComparison;
 
 export type ProgressEvent = { kind: 'backup'; progress: BackupProgress } | { kind: 'restore'; step: RestoreStep; name?: string };
@@ -86,7 +88,7 @@ export interface ChartKeeperApi {
   compare(olderDir: string, newerDir: string): Promise<Result<CompareOutcome>>;
   restoreTargets(): Promise<Result<RestoreTargets>>;
   restore(req: RestoreRequest): Promise<Result<RestoreOutcome>>;
-  restoreTemplates(snapshotDir: string): Promise<Result<{ added: string[]; skipped: string[] }>>;
+  restoreTemplates(snapshotDir: string): Promise<Result<TemplatesOutcome>>;
   openFolder(dir: string): Promise<void>;
   openOnTradingView(url: string): Promise<void>;
   onProgress(cb: (e: Events['progress']) => void): () => void;

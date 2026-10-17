@@ -12,6 +12,15 @@ export const isAllowedUrl = (url: string): boolean => {
   return (u.protocol === 'https:' || u.protocol === 'wss:') && ALLOWED_HOSTS.includes(u.hostname);
 };
 
+/** The cookie that carries the TradingView sign-in. */
+export const SESSION_COOKIE = 'sessionid';
+
+/** tradingview.com or one of its subdomains. Cookie domains may start with a dot. */
+export const isTradingViewHost = (host: string): boolean => {
+  const h = host.replace(/^\./, '');
+  return h === 'tradingview.com' || h.endsWith('.tradingview.com');
+};
+
 const q = (params: Record<string, string>) => new URLSearchParams(params).toString();
 
 export const urls = {

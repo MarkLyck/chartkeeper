@@ -1,6 +1,7 @@
 import type { BackupStep } from '../core/backup';
 import type { RestoreStep } from '../core/restore';
 import type { AppError, Lang } from '../shared/api';
+import { fill, type ParamNames } from '../shared/template';
 
 const en = {
   'app.tagline': 'Keeps a safe copy of your TradingView charts on this computer.',
@@ -406,7 +407,6 @@ const da: { [K in Key]: string } = {
 
 export const DICTIONARIES: Record<Lang, { [K in Key]: string }> = { en, da };
 
-type ParamNames<S extends string> = S extends `${string}{${infer P}}${infer Rest}` ? P | ParamNames<Rest> : never;
 export type Params<K extends Key> = Record<ParamNames<(typeof en)[K]>, string | number>;
 type ParamArgs<K extends Key> = [ParamNames<(typeof en)[K]>] extends [never] ? [] : [params: Params<K>];
 
@@ -415,17 +415,6 @@ export const setLang = (lang: Lang) => {
   current = lang;
 };
 export const getLang = (): Lang => current;
-
-export function fill(template: string, params: Record<string, string | number> = {}): string {
-  return template.replace(/\{(\w+)\}/g, (_, name: string) => {
-    const value = params[name];
-    if (value === undefined) {
-      console.error(`i18n: missing param {${name}} in "${template}"`);
-      return '';
-    }
-    return String(value);
-  });
-}
 
 export function t<K extends Key>(key: K, ...args: ParamArgs<K>): string {
   return fill(DICTIONARIES[current][key], args[0]);
