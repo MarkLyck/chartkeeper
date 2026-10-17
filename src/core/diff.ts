@@ -10,7 +10,7 @@ export interface PropChange {
 export type ChangeKind = 'added' | 'removed' | 'changed';
 export type NamedKind = 'study-template' | 'drawing-template' | 'theme' | 'script';
 
-/** One change between two backups, as data. The window words it in the user's language. */
+/** One change between two backups, as data. The window puts it into words. */
 export type Change =
   | { kind: 'changed'; what: 'layout-name' | 'arrangement'; from: string; to: string }
   | { kind: 'added' | 'removed'; what: 'chart'; index: number; symbol: string; interval: string }

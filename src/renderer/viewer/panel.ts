@@ -1,12 +1,10 @@
 import type { ParsedLayout } from '../../core/layout';
 import type { NotShownItem } from './plan';
-import type { Lang } from '../../shared/api';
 import { intervalLabel, STRINGS } from './strings';
 
 /** The "Not shown" list under the charts. Returns null when everything was drawn. */
-export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayout, lang: Lang, dark: boolean): HTMLElement | null {
+export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayout, dark: boolean): HTMLElement | null {
   if (items.length === 0) return null;
-  const s = STRINGS[lang];
   const panel = document.createElement('details');
   panel.className = 'ck-not-shown';
   panel.open = true;
@@ -22,7 +20,7 @@ export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayo
   ].join(';');
 
   const summary = document.createElement('summary');
-  summary.textContent = `${s.notShown} (${items.length})`;
+  summary.textContent = `${STRINGS.notShown} (${items.length})`;
   summary.style.cssText = 'cursor:pointer;font-weight:600;';
   panel.append(summary);
 
@@ -32,7 +30,7 @@ export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayo
     if (forChart.length === 0) return;
     if (multi) {
       const h = document.createElement('div');
-      h.textContent = `${s.chart} ${index + 1} · ${chart.shortName} · ${intervalLabel(chart.interval)}`;
+      h.textContent = `${STRINGS.chart} ${index + 1} · ${chart.shortName} · ${intervalLabel(chart.interval)}`;
       h.style.cssText = 'margin-top:6px;font-weight:600;opacity:0.8;';
       panel.append(h);
     }
@@ -45,7 +43,7 @@ export function notShownPanel(items: readonly NotShownItem[], layout: ParsedLayo
       const li = document.createElement('li');
       const names = document.createElement('strong');
       names.textContent = group.map((i) => i.name).join(', ');
-      names.title = group.map((i) => `${i.kind === 'drawing' ? s.drawing : i.kind === 'indicator' ? s.indicator : s.chart} ${i.id}`.trim()).join('\n');
+      names.title = group.map((i) => `${i.kind === 'drawing' ? STRINGS.drawing : i.kind === 'indicator' ? STRINGS.indicator : STRINGS.chart} ${i.id}`.trim()).join('\n');
       li.append(names, document.createTextNode(`: ${message}`));
       list.append(li);
     }

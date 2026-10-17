@@ -1,10 +1,11 @@
 import type { BackupStep } from '../core/backup';
 import type { RestoreStep } from '../core/restore';
-import type { AppError, Lang } from '../shared/api';
-import { localeOf } from '../shared/locale';
+import type { AppError } from '../shared/api';
+import { LOCALE } from '../shared/locale';
 import { fill, type ParamNames } from '../shared/template';
 
-const en = {
+/** Every sentence the window shows, in one place. */
+export const TEXT = {
   'app.tagline': 'Keeps a safe copy of your TradingView charts on this computer.',
   'nav.home': 'Back to start',
   'common.loading': 'One moment…',
@@ -43,7 +44,6 @@ const en = {
   'settings.dailyNote': 'ChartKeeper keeps running in the background after you close the window, so the backup can happen on time. Look for its small icon next to the clock. The computer must be switched on.',
   'settings.prices': 'Also save prices so charts can be viewed offline',
   'settings.pricesNote': 'For your personal use only. The prices belong to TradingView and its data providers.',
-  'settings.language': 'Language',
 
   'count.layouts_one': '{n} layout',
   'count.layouts_other': '{n} layouts',
@@ -234,257 +234,19 @@ const en = {
   'error.browser.body': 'ChartKeeper could not open a window for signing in. Try again. If it keeps happening, restart the computer.',
 } as const;
 
-export type Key = keyof typeof en;
+export type Key = keyof typeof TEXT;
 
-const da: { [K in Key]: string } = {
-  'app.tagline': 'Gemmer en sikker kopi af dine TradingView-grafer på denne computer.',
-  'nav.home': 'Tilbage til forsiden',
-  'common.loading': 'Et øjeblik…',
-  'common.next': 'Næste',
-  'common.back': 'Tilbage',
-  'common.cancel': 'Fortryd',
-  'common.tryAgain': 'Prøv igen',
-  'common.openFolder': 'Åbn mappen',
-
-  'signin.signedInAs': 'Logget ind på TradingView som {name}',
-  'signin.signedIn': 'Logget ind på TradingView',
-  'signin.signOut': 'Log ud',
-  'signin.notSignedIn': 'Ikke logget ind på TradingView',
-  'signin.button': 'Log ind på TradingView',
-  'signin.explain': 'Der åbner et browservindue, hvor du selv logger ind på TradingView, ligesom du plejer. Du kan bruge Google-login og engangskoder. ChartKeeper ser aldrig din adgangskode og gemmer den ikke.',
-  'signin.browser': 'Vinduet åbner i {browser}.',
-  'signin.waitingTitle': 'Venter på, at du logger ind…',
-  'signin.waitingBody': 'Log ind i det browservindue, der lige er åbnet. Dette vindue opdaterer sig selv, når du er færdig.',
-
-  'home.backup': 'Tag backup nu',
-  'home.view': 'Se mine backups',
-  'home.restore': 'Gendan en graf',
-  'home.needSignIn': 'Log ind på TradingView først for at tage backup eller gendanne. Du kan godt se dine backups uden at logge ind.',
-  'home.lastBackup': 'Seneste backup: {when}, {layouts}.',
-  'home.lastBackupNoCount': 'Seneste backup: {when}.',
-  'home.lastBackupFailed': 'Den seneste backup ({when}) blev ikke færdig. Tryk på »Tag backup nu« for at prøve igen.',
-  'home.noBackupYet': 'Du har ikke taget en backup endnu.',
-  'home.busyBackup': 'Der bliver taget backup lige nu.',
-  'home.busyRestore': 'Der bliver gendannet en graf lige nu.',
-
-  'settings.title': 'Indstillinger',
-  'settings.folder': 'Dine backups gemmes i denne mappe',
-  'settings.change': 'Skift…',
-  'settings.daily': 'Tag automatisk backup hver dag',
-  'settings.dailyHour': 'Hvornår på dagen',
-  'settings.dailyNote': 'ChartKeeper bliver ved med at køre i baggrunden, når du lukker vinduet, så backuppen kan blive taget til tiden. Se efter det lille ikon ved uret. Computeren skal være tændt.',
-  'settings.prices': 'Gem også kurser, så graferne kan ses uden internet',
-  'settings.pricesNote': 'Kun til dit eget personlige brug. Kurserne tilhører TradingView og deres dataleverandører.',
-  'settings.language': 'Sprog',
-
-  'count.layouts_one': '{n} layout',
-  'count.layouts_other': '{n} layouts',
-  'count.drawings_one': '{n} tegning',
-  'count.drawings_other': '{n} tegninger',
-  'count.indicators_one': '{n} indikator',
-  'count.indicators_other': '{n} indikatorer',
-  'count.notes_one': '{n} bemærkning',
-  'count.notes_other': '{n} bemærkninger',
-
-  'backupStep.list': 'Henter listen over dine layouts fra TradingView…',
-  'backupStep.layout': 'Gemmer layoutet »{name}«…',
-  'backupStep.userDrawings': 'Gemmer de tegninger, der deles mellem dine layouts…',
-  'backupStep.studyTemplates': 'Gemmer dine indikatorskabeloner…',
-  'backupStep.drawingTemplates': 'Gemmer dine tegneskabeloner og farvetemaer…',
-  'backupStep.scripts': 'Gemmer dine Pine-scripts…',
-  'backupStep.prices': 'Gemmer kurser for »{name}«, så du kan se den uden internet…',
-  'backupStep.finish': 'Gør backuppen færdig…',
-
-  'backup.title': 'Backup',
-  'backup.running': 'Tager backup…',
-  'backup.runningNote': 'Det tager som regel et par minutter. Du kan lade vinduet stå åbent og lave noget andet imens.',
-  'backup.starting': 'Starter…',
-  'backup.done': 'Backuppen er færdig',
-  'backup.doneSummary': '{layouts} og {drawings} er gemt på denne computer.',
-  'backup.viewIt': 'Se den',
-  'backup.notesIntro': 'Tekniske bemærkninger fra backuppen. Backuppen er stadig hel.',
-  'backup.failed': 'Backuppen kunne ikke gøres færdig',
-  'backup.failedPartial': 'Det, der nåede at blive gemt, er markeret som ufuldstændigt, så du ikke forveksler det med en hel backup.',
-
-  'view.title': 'Mine backups',
-  'view.backups': 'Backups',
-  'view.empty': 'Der er ingen backups endnu. Gå tilbage, og tryk på »Tag backup nu«.',
-  'view.incomplete': 'Ufuldstændig',
-  'view.incompleteNote': 'Denne backup blev ikke færdig. Regn ikke med den.',
-  'view.unreadable': 'Denne backup kunne ikke læses.',
-  'view.safetyCopy': 'Sikkerhedskopi fra før en erstatning',
-  'view.layouts': 'Layouts i denne backup',
-  'view.noLayouts': 'Denne backup har ingen layouts.',
-  'view.noPrices': 'Uden gemte kurser',
-  'view.compareLabel': 'Sammenlign med en ældre backup',
-  'view.compareButton': 'Sammenlign',
-  'view.compareNoOlder': 'Der er ingen ældre backup at sammenligne med.',
-  'view.compareTitle': 'Ændringer fra {older} til {newer}',
-  'view.compareNone': 'Intet er ændret mellem de to backups.',
-  'view.compareUnchanged': 'Uændret: {names}',
-  'view.compareOther': 'Skabeloner, temaer og scripts',
-  'view.compareClose': 'Tilbage til grafen',
-  'view.pickLayout': 'Vælg et layout ovenfor for at se det.',
-
-  'change.added': 'Tilføjet',
-  'change.removed': 'Fjernet',
-  'change.changed': 'Ændret',
-  'change.layout': 'Layout',
-  'change.chart': 'Graf {n}',
-  'change.indicator': 'Indikator {name}',
-  'change.drawingTemplate': 'Tegneskabelon',
-  'change.studyTemplate': 'Indikatorskabelon',
-  'change.theme': 'Tema',
-  'change.script': 'Pine-script',
-  'change.renamed': 'omdøbt fra »{from}« til »{to}«',
-  'change.arrangement': 'opstilling af grafer {from} → {to}',
-  'change.symbol': 'symbol {from} → {to}',
-  'change.interval': 'interval {from} → {to}',
-  'change.chartType': 'graftypen er ændret',
-  'change.settings': 'indstillinger: {list}',
-  'change.styles': 'farver eller linjer er ændret',
-  'change.drawingOn': '{tool} på {symbol} ({points})',
-  'change.drawingWithText': '{tool} »{text}« på {symbol} ({points})',
-  'change.theChart': 'grafen',
-  'change.moved': 'flyttet: {from} → {to}',
-  'change.props': 'stil eller tekst: {list}',
-  'change.more': '(+{n} mere)',
-  'layoutStatus.added': 'Nyt layout',
-  'layoutStatus.removed': 'Layout slettet',
-  'layoutStatus.changed': 'Ændret',
-  'layoutStatus.same': 'Ingen ændringer',
-
-  'restore.title': 'Gendan en graf',
-  'restore.stepOf': 'Trin {n} af 3',
-  'restore.step1': 'Vælg grafen',
-  'restore.step2': 'Vælg hvordan',
-  'restore.step3': 'Gendan',
-  'restore.chooseTitle': 'Hvilken graf vil du have tilbage?',
-  'restore.chooseBackup': 'Vælg en backup',
-  'restore.chooseLayout': 'Vælg layoutet',
-  'restore.noBackups': 'Der er ingen backups at gendanne fra endnu.',
-  'restore.howTitle': 'Hvordan skal den gendannes?',
-  'restore.restoring': 'Du gendanner »{name}« fra backuppen taget {when}.',
-  'restore.checking': 'Tjekker din TradingView-konto…',
-  'restore.modeNew': 'Som et nyt layout',
-  'restore.recommended': 'Anbefalet',
-  'restore.modeNewNote': 'Intet på TradingView bliver ændret eller slettet. Grafen bliver lagt ind ved siden af dine andre layouts.',
-  'restore.modeReplace': 'Erstat et af mine layouts',
-  'restore.modeReplaceNote': 'Det layout, du vælger, bliver overskrevet med backuppen. ChartKeeper gemmer først en sikkerhedskopi af det.',
-  'restore.closeTabNote': 'Luk først layoutet, hvis det er åbent i din webbrowser. En åben TradingView-side kan gemme sin gamle version oven i den gendannede.',
-  'restore.reloadNote': 'Hvis TradingView er åben i din webbrowser, så genindlæs siden for at se det gendannede layout.',
-  'restore.uncheckedTitle': 'Gemt, men ikke tjekket på grafen',
-  'restore.uncheckedNote': 'TradingView har gemt alt fra backuppen, men ChartKeeper kunne ikke åbne grafen og tjekke, hvad den viser. Åbn layoutet på TradingView, og se det efter.',
-  'restore.slots': 'Du har {used} af {limit} gemte layouts på TradingView.',
-  'restore.slotsUnlimited': 'Du har {used} gemte layouts på TradingView.',
-  'restore.fullTitle': 'Der er ikke plads til et nyt layout',
-  'restore.fullBody': 'Dit TradingView-abonnement ({plan}) giver plads til {limit} gemte layouts, og de er alle i brug.',
-  'restore.fullBodyNoPlan': 'Dit TradingView-abonnement giver plads til {limit} gemte layouts, og de er alle i brug.',
-  'restore.fullWhat': 'Det kan du gøre:',
-  'restore.fullDelete': 'Slet et layout, du ikke bruger mere, på TradingView, og kom så tilbage hertil.',
-  'restore.fullUpgrade': 'Opgrader dit TradingView-abonnement, så du får plads til flere layouts.',
-  'restore.fullReplace': 'Eller vælg »Erstat et af mine layouts« ovenfor.',
-  'restore.target': 'Hvilket af dine layouts på TradingView skal erstattes?',
-  'restore.targetPick': 'Vælg et layout…',
-  'restore.noTargets': 'Du har ingen layouts på TradingView, der kan erstattes.',
-  'restore.typeName': 'Skriv navnet på layoutet for at bekræfte:',
-  'restore.typeNameLabel': 'Navnet på det layout, der skal erstattes',
-  'restore.nameMatches': 'Navnet passer.',
-  'restore.nameMismatch': 'Navnet passer ikke endnu.',
-  'restore.start': 'Gendan',
-  'restore.confirmTitle': 'Erstat »{name}«?',
-  'restore.confirmBody': 'Layoutet »{name}« på TradingView bliver overskrevet med backuppen. ChartKeeper gemmer først en sikkerhedskopi af det, så det kan hentes tilbage.',
-  'restore.confirmYes': 'Ja, erstat det',
-  'restore.running': 'Gendanner »{name}«…',
-  'restore.runningNote': 'Vent venligst. Det tager omkring et minut.',
-  'restore.done': 'Dit layout »{name}« er tilbage på TradingView',
-  'restore.checkTitle': 'ChartKeeper har tjekket resultatet',
-  'restore.colWhat': 'Hvad',
-  'restore.colBackup': 'I backuppen',
-  'restore.colSaved': 'Gemt på TradingView',
-  'restore.colShown': 'Vist på grafen',
-  'restore.notChecked': 'Kunne ikke tjekkes. Åbn layoutet og se efter.',
-  'restore.rowCharts': 'Grafer',
-  'restore.rowDrawings': 'Tegninger',
-  'restore.rowIndicators': 'Indikatorer',
-  'restore.open': 'Åbn på TradingView',
-  'restore.missingTitle': 'Ikke alt kom med',
-  'restore.missing_one': '{n} tegning fra backuppen mangler på TradingView.',
-  'restore.missing_other': '{n} tegninger fra backuppen mangler på TradingView.',
-  'restore.mismatchNote': 'Åbn layoutet på TradingView, og se det efter. Din backup er urørt, så du kan prøve igen.',
-  'restore.safety': 'Før layoutet blev erstattet, gemte ChartKeeper en sikkerhedskopi af det, som det var:',
-  'restore.resumed': 'Et tidligere forsøg var allerede gået i gang med denne gendannelse, så ChartKeeper gjorde det færdigt i stedet for at lave en kopi mere.',
-  'restore.another': 'Gendan en graf mere',
-  'restore.failed': 'Grafen kunne ikke gendannes',
-  'restore.templatesTitle': 'Skabeloner og temaer',
-  'restore.templatesNote': 'Lægger indikatorskabeloner, tegneskabeloner og farvetemaer fra den valgte backup ind på TradingView. Dem, du allerede har, bliver ikke rørt.',
-  'restore.templatesButton': 'Gendan mine skabeloner og temaer',
-  'restore.templatesRunning': 'Gendanner skabeloner og temaer…',
-  'restore.templatesAdded': 'Tilføjet',
-  'restore.templatesSkipped': 'Fandtes allerede, ikke rørt',
-  'restore.templatesNothing': 'Der var ikke noget at gendanne i denne backup.',
-  'restore.templateStudy': 'Indikatorskabelon »{name}«',
-  'restore.templateDrawing': 'Tegneskabelon »{name}«',
-  'restore.templateTheme': 'Tema »{name}«',
-  'restore.missingStudy': 'Indikatorskabeloner (ikke i denne backup)',
-  'restore.missingDrawing': 'Tegneskabeloner (ikke i denne backup)',
-  'restore.missingTheme': 'Temaer (ikke i denne backup)',
-
-  'restoreStep.check': 'Tjekker din TradingView-konto…',
-  'restoreStep.create': 'Opretter layoutet på TradingView…',
-  'restoreStep.safetyCopy': 'Gemmer en sikkerhedskopi af det layout, der bliver erstattet…',
-  'restoreStep.replace': 'Erstatter layoutet på TradingView…',
-  'restoreStep.clearDrawings': 'Fjerner gamle tegninger fra det erstattede layout…',
-  'restoreStep.verify': 'Tjekker, at alt kom med…',
-
-  'error.details': 'Detaljer',
-  'error.signInAgain': 'Log ind igen',
-  'error.not-signed-in.title': 'Du er ikke logget ind på TradingView',
-  'error.not-signed-in.body': 'Dit login er udløbet. Log ind igen, og prøv så en gang til.',
-  'error.rate-limited.title': 'TradingView har bedt ChartKeeper om at vente',
-  'error.rate-limited.body': 'Der blev sendt for mange forespørgsler på kort tid. Vent en time, og prøv så igen. Der er ikke noget galt med din konto.',
-  'error.format-changed.title': 'TradingView har ændret noget',
-  'error.format-changed.body': 'ChartKeeper genkendte ikke svaret fra TradingView og stoppede for en sikkerheds skyld. Intet på TradingView blev ændret. Se efter, om der er kommet en ny version af ChartKeeper.',
-  'error.limit-reached.title': 'Der er ikke plads til flere layouts',
-  'error.limit-reached.body': 'Dit TradingView-abonnement ({plan}) giver plads til {limit} gemte layouts, og de er alle i brug. Slet et layout på TradingView, opgrader dit abonnement, eller vælg »Erstat et af mine layouts«.',
-  'error.limit-reached.bodyGeneric': 'Dit TradingView-abonnement har ikke plads til flere gemte layouts. Slet et layout på TradingView, opgrader dit abonnement, eller vælg »Erstat et af mine layouts«.',
-  'error.too-large.title': 'Layoutet er for stort',
-  'error.too-large.body': 'TradingView vil ikke tage imod et så stort layout. Intet blev ændret.',
-  'error.not-found.title': 'Layoutet kunne ikke findes',
-  'error.not-found.body': 'TradingView kunne ikke finde det. Måske er det blevet slettet i mellemtiden.',
-  'error.network.title': 'Ingen forbindelse til internettet',
-  'error.network.body': 'Tjek, at computeren er på internettet, og prøv så igen.',
-  'error.server.title': 'TradingView har problemer lige nu',
-  'error.server.body': 'Fejlen er hos TradingView. Prøv igen lidt senere.',
-  'error.cancelled.title': 'Login-vinduet blev lukket',
-  'error.cancelled.body': 'Login-vinduet blev lukket, før du var færdig med at logge ind. Intet er gemt. Klik på »Log ind på TradingView« for at prøve igen.',
-  'error.unexpected.title': 'Noget gik galt',
-  'error.unexpected.body': 'ChartKeeper løb ind i et uventet problem. Prøv igen. Hvis det bliver ved, så send detaljerne herunder til den, der hjælper dig.',
-  'error.busy.title': 'ChartKeeper er optaget',
-  'error.busy.body': 'En anden opgave er i gang. Vent, til den er færdig, og prøv så igen.',
-  'error.browser.title': 'Browseren kunne ikke åbnes',
-  'error.browser.body': 'ChartKeeper kunne ikke åbne et vindue til at logge ind. Prøv igen. Hvis det bliver ved, så genstart computeren.',
-};
-
-export const DICTIONARIES: Record<Lang, { [K in Key]: string }> = { en, da };
-
-export type Params<K extends Key> = Record<ParamNames<(typeof en)[K]>, string | number>;
-type ParamArgs<K extends Key> = [ParamNames<(typeof en)[K]>] extends [never] ? [] : [params: Params<K>];
-
-let current: Lang = 'da';
-export const setLang = (lang: Lang) => {
-  current = lang;
-};
-export const getLang = (): Lang => current;
+export type Params<K extends Key> = Record<ParamNames<(typeof TEXT)[K]>, string | number>;
+type ParamArgs<K extends Key> = [ParamNames<(typeof TEXT)[K]>] extends [never] ? [] : [params: Params<K>];
 
 export function t<K extends Key>(key: K, ...args: ParamArgs<K>): string {
-  return fill(DICTIONARIES[current][key], args[0]);
+  return fill(TEXT[key], args[0]);
 }
 
 type PluralBase = { [K in Key]: K extends `${infer B}_one` ? B : never }[Key];
 export function tn(base: PluralBase, n: number): string {
   const key = `${base}_${n === 1 ? 'one' : 'other'}` as Key;
-  return fill(DICTIONARIES[current][key], { n: n.toLocaleString(locale()) });
+  return fill(TEXT[key], { n: n.toLocaleString(LOCALE) });
 }
 
 /** Every kind of failure the window explains, and where its words live. */
@@ -525,34 +287,31 @@ export const RESTORE_STEP_KEYS = {
 
 export function explainError(error: AppError): { title: string; body: string } {
   const [titleKey, bodyKey] = ERROR_KEYS[error.kind] ?? ERROR_KEYS.unexpected;
-  const dict = DICTIONARIES[current];
-  if (error.kind === 'limit-reached' && error.params.limit === undefined) return { title: dict[titleKey], body: dict['error.limit-reached.bodyGeneric'] };
+  if (error.kind === 'limit-reached' && error.params.limit === undefined) return { title: TEXT[titleKey], body: TEXT['error.limit-reached.bodyGeneric'] };
   const params = error.kind === 'limit-reached' ? { plan: error.params.plan ?? '', ...error.params } : error.params;
-  return { title: dict[titleKey], body: fill(dict[bodyKey], params) };
+  return { title: TEXT[titleKey], body: fill(TEXT[bodyKey], params) };
 }
 
 export function backupStepText(step: BackupStep, name: string | undefined): string {
-  return fill(DICTIONARIES[current][BACKUP_STEP_KEYS[step]], { name: name ?? '' });
+  return fill(TEXT[BACKUP_STEP_KEYS[step]], { name: name ?? '' });
 }
 
 export function restoreStepText(step: RestoreStep): string {
-  return DICTIONARIES[current][RESTORE_STEP_KEYS[step]];
+  return TEXT[RESTORE_STEP_KEYS[step]];
 }
-
-const locale = () => localeOf(current);
 
 export function formatTime(d: Date): string {
-  return new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(d);
+  return new Intl.DateTimeFormat(LOCALE, { hour: '2-digit', minute: '2-digit' }).format(d);
 }
 
-/** "fredag den 17. oktober 2026" / "Friday 17 October 2026" */
+/** "Friday 17 October 2026" */
 export function formatDay(d: Date): string {
-  const s = new Intl.DateTimeFormat(locale(), { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  const s = new Intl.DateTimeFormat(LOCALE, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).format(d);
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 export function formatDateTime(d: Date): string {
-  return new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d);
+  return new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(d);
 }
 
 export function formatHour(hour: number): string {
@@ -564,9 +323,8 @@ const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDat
 /** "today at 09:12", "yesterday at 18:30", "3 days ago", then the plain date. */
 export function formatRelative(d: Date, now: Date = new Date()): string {
   const days = Math.round((startOfDay(now) - startOfDay(d)) / 86_400_000);
-  const da = current === 'da';
-  if (days === 0) return da ? `i dag kl. ${formatTime(d)}` : `today at ${formatTime(d)}`;
-  if (days === 1) return da ? `i går kl. ${formatTime(d)}` : `yesterday at ${formatTime(d)}`;
-  if (days > 1 && days < 7) return new Intl.RelativeTimeFormat(locale(), { numeric: 'auto' }).format(-days, 'day');
-  return new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
+  if (days === 0) return `today at ${formatTime(d)}`;
+  if (days === 1) return `yesterday at ${formatTime(d)}`;
+  if (days > 1 && days < 7) return new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' }).format(-days, 'day');
+  return new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'long', year: 'numeric' }).format(d);
 }

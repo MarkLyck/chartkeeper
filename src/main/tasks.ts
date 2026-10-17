@@ -5,7 +5,6 @@ import { restoreLayout, RestoreJournal, restoreTemplates, type RestoreMode } fro
 import { cleanupInterrupted, SnapshotReader } from '../core/snapshot';
 import { nodeSocketFactory } from '../core/tv/datafeed';
 import type { BackupOutcome, RestoreOutcome, RestoreRequest, Result, TemplatesOutcome } from '../shared/api';
-import { mainStrings } from '../shared/mainStrings';
 import type { AppStatus } from './appState';
 import { log } from './log';
 import { isBackupDue } from './schedule';
@@ -90,7 +89,6 @@ export class Tasks {
         root: this.store.settings.backupFolder,
         journal: new RestoreJournal(path.join(app.getPath('userData'), 'restore-journal.json')),
         buildTime: await this.status.account.transport.buildTime(),
-        restoredWord: mainStrings(this.store.settings.lang)('restoredWord'),
         countOnPage: countOnChartPage,
         onProgress: (step, name) => this.shell.progress({ kind: 'restore', step, ...(name === undefined ? {} : { name }) }),
       });

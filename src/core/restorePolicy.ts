@@ -10,6 +10,9 @@ const normalName = (s: string) => s.normalize('NFKC').replace(/[\u2010-\u2015\u2
  */
 export const sameLayoutName = (typed: string, name: string): boolean => normalName(typed) === normalName(name);
 
+/** The name a restore as a new layout gets, so it sits next to the original without clashing. */
+export const restoredName = (name: string, at: Date): string => `${name} (restored ${at.toISOString().slice(0, 10)})`;
+
 export interface Tally {
   count: number;
   ok: boolean;

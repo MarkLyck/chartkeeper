@@ -21,8 +21,7 @@ import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
-import type { Lang } from '../../shared/api';
-import { localeOf } from '../../shared/locale';
+import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
 import { num, obj, str, type Props } from '../../core/props';
@@ -123,9 +122,9 @@ function inputsSummary(study: ParsedStudy): string {
 }
 
 /** Time axis label of a drawing, like TradingView's "Mon 14 Sep '26": the date of the bar the point sits on. */
-function timeFormatter(lang: Lang, plan: ChartPlan): (p: DrawingPoint) => string {
+function timeFormatter(plan: ChartPlan): (p: DrawingPoint) => string {
   const intraday = isIntraday(plan.timeIndex.interval);
-  const fmt = new Intl.DateTimeFormat(localeOf(lang), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
+  const fmt = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
   return (p) => {
     const t = plan.timeIndex.times[plan.timeIndex.logical(p)] ?? p.time;
     const d = new Date((t + (intraday ? timeZoneOffset(t, plan.chart.timezone) : 0)) * 1000);
@@ -206,7 +205,7 @@ export interface RenderedChart {
   destroy(): void;
 }
 
-export function renderChart(cell: HTMLElement, plan: ChartPlan, lang: Lang, visibleRange: { from: number; to: number } | undefined): RenderedChart {
+export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { from: number; to: number } | undefined): RenderedChart {
   const theme = chartTheme(plan.chart.chartProperties);
   cell.style.position = 'relative';
   cell.style.background = theme.background;
@@ -215,7 +214,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, lang: Lang, visi
     const box = legendBox(theme);
     box.append(span(`${plan.chart.shortName} · ${intervalLabel(plan.chart.interval)}`, undefined, true));
     const msg = document.createElement('div');
-    msg.textContent = STRINGS[lang].noPriceDataBanner;
+    msg.textContent = STRINGS.noPriceDataBanner;
     msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0.75;';
     cell.append(box, msg);
     return { destroy: () => cell.replaceChildren() };
@@ -228,14 +227,14 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, lang: Lang, visi
   const chart = createChart(holder, {
     ...theme.options,
     autoSize: true,
-    localization: { locale: localeOf(lang) },
+    localization: { locale: LOCALE },
     timeScale: { ...theme.options.timeScale, timeVisible: intraday, secondsVisible: plan.timeIndex.interval.unit === 'S' },
   });
 
   const drawingsEnv = {
     timeIndex: plan.timeIndex,
     formatPrice: (p: number) => formatValue(p, plan.priceFormat),
-    formatTime: timeFormatter(lang, plan),
+    formatTime: timeFormatter(plan),
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,
   };
 

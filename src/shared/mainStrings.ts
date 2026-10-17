@@ -1,8 +1,7 @@
-import type { Lang } from './api';
 import { fill, type ParamNames } from './template';
 
-/** Text the app process shows outside the window: notifications, the tray menu, restored layout names. */
-const en = {
+/** Text the app process shows outside the window: notifications and the tray menu. */
+const STRINGS = {
   backupDoneTitle: 'Backup complete',
   backupDoneBody: '{n} layouts saved.',
   backupFailedTitle: 'Backup failed',
@@ -13,29 +12,12 @@ const en = {
   trayOpen: 'Open ChartKeeper',
   trayBackUpNow: 'Back up now',
   trayQuit: 'Quit',
-  restoredWord: 'restored',
 } as const;
 
-type MainStringKey = keyof typeof en;
+type MainStringKey = keyof typeof STRINGS;
 
-const da: Record<MainStringKey, string> = {
-  backupDoneTitle: 'Backup gennemført',
-  backupDoneBody: '{n} layouts er gemt.',
-  backupFailedTitle: 'Backup mislykkedes',
-  backupFailedBody: 'Åbn ChartKeeper for at se hvorfor. {detail}',
-  signInNeededTitle: 'ChartKeeper kan ikke tage backup',
-  signInNeededBody: 'Du er ikke længere logget ind på TradingView. Åbn ChartKeeper, og log ind igen.',
-  trayBackingUp: 'ChartKeeper tager backup…',
-  trayOpen: 'Åbn ChartKeeper',
-  trayBackUpNow: 'Tag backup nu',
-  trayQuit: 'Afslut',
-  restoredWord: 'gendannet',
-};
+type Args<K extends MainStringKey> = [ParamNames<(typeof STRINGS)[K]>] extends [never] ? [] : [params: Record<ParamNames<(typeof STRINGS)[K]>, string | number>];
 
-const STRINGS: Record<Lang, Record<MainStringKey, string>> = { en, da };
-
-type Args<K extends MainStringKey> = [ParamNames<(typeof en)[K]>] extends [never] ? [] : [params: Record<ParamNames<(typeof en)[K]>, string | number>];
-
-export function mainStrings(lang: Lang) {
-  return <K extends MainStringKey>(key: K, ...args: Args<K>): string => fill(STRINGS[lang][key], args[0]);
+export function mainString<K extends MainStringKey>(key: K, ...args: Args<K>): string {
+  return fill(STRINGS[key], args[0]);
 }

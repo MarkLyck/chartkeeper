@@ -17,7 +17,7 @@ export class TvError extends Error {
     readonly kind: TvErrorKind,
     message: string,
     readonly detail = '',
-    /** Values the app needs to word the message in another language. */
+    /** Values the window fills into its own wording, such as the plan and its layout limit. */
     readonly params: Record<string, string | number> = {},
   ) {
     super(message);

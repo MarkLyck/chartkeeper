@@ -18,7 +18,6 @@ const pick: Record<string, string> = {
   'restore-choose': 'restore-step2-new',
   'restore-done': 'restore-success',
 };
-for (const lang of ['en', 'da'])
-  for (const [name, source] of Object.entries(pick)) copyFileSync(path.join(root, '.test-output/ui', `${lang}-${source}.png`), path.join(out, `${lang}-${name}.png`));
+for (const [name, source] of Object.entries(pick)) copyFileSync(path.join(root, '.test-output/ui', `${source}.png`), path.join(out, `${name}.png`));
 copyFileSync(path.join(root, '.test-output/viewer-compare.png'), path.join(out, 'viewer-vs-tradingview.png'));
 console.log('wrote', out);

@@ -22,7 +22,7 @@ async function main() {
   if (process.platform === 'win32') app.setAppUserModelId('dk.chartkeeper.app');
   await app.whenReady();
   await lockDown(app.getPath('userData'));
-  const store = await Store.open(path.join(app.getPath('userData'), 'settings.json'), defaultSettings(app.getPath('documents'), app.getLocale()));
+  const store = await Store.open(path.join(app.getPath('userData'), 'settings.json'), defaultSettings(app.getPath('documents')));
   const account = new TvAccount();
   const status = new AppStatus(store, account, () => void shell.pushState());
   const shell = new Shell(status, startHidden, () => void tasks.backup(true));

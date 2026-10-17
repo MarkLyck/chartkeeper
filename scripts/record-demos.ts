@@ -2,8 +2,7 @@
  * Records demo videos to docs/demos/*.mp4:
  *   1. the real app (Electron) with a real backup on disk: home, settings,
  *      the offline viewer, and the TradingView sign-in window;
- *   2. and 3. backup, compare and restore flows (English, Danish) in the real
- *      window UI against a simulated TradingView account (src/renderer/mockApi.ts),
+ *   2. the backup, compare and restore flows in the real window UI against a simulated TradingView account (src/renderer/mockApi.ts),
  *      because those flows need a signed-in account.
  * Each video carries a caption bar saying what is happening and whether
  * TradingView is real or simulated.
@@ -74,14 +73,14 @@ function toMp4(webm: string, mp4: string, pip?: { file: string; at: number }) {
 }
 
 async function realApp() {
-  const { app, window } = await launchApp('en', { recordVideo: { dir: path.join(WORK, 'real'), size: SIZE } }, '/tmp/ChartKeeper Demo');
+  const { app, window } = await launchApp({ recordVideo: { dir: path.join(WORK, 'real'), size: SIZE } }, '/tmp/ChartKeeper Demo');
   const t0 = Date.now();
   await window.setViewportSize(SIZE).catch(() => undefined);
   await window.waitForSelector('#go-view');
   await window.evaluate(OVERLAY);
   await caption(window, 'The real ChartKeeper app. Not signed in yet; one backup already on this computer.', 3500);
   await window.mouse.wheel(0, 500);
-  await caption(window, 'Settings: backup folder, daily automatic backup, offline prices, language.', 2500);
+  await caption(window, 'Settings: backup folder, daily automatic backup, offline prices.', 2500);
   await click(window, '#daily');
   await caption(window, 'Turning on the daily backup shows when it runs. ChartKeeper then stays in the system tray.', 3000);
   await click(window, '#daily');
@@ -131,57 +130,57 @@ async function realApp() {
   return { main, pip: { file: signIn, at: popupAt } };
 }
 
-async function simulated(lang: 'en' | 'da') {
-  const url = `file://${await buildSite(await readFixture(), path.join(WORK, `site-${lang}`))}`;
+async function simulated() {
+  const url = `file://${await buildSite(await readFixture(), path.join(WORK, 'site'))}`;
   const browser = await chromium.launch();
-  const ctx = await browser.newContext({ viewport: SIZE, recordVideo: { dir: path.join(WORK, `sim-${lang}`), size: SIZE } });
+  const ctx = await browser.newContext({ viewport: SIZE, recordVideo: { dir: path.join(WORK, 'sim'), size: SIZE } });
   const page = await ctx.newPage();
-  await page.addInitScript((init) => ((window as unknown as { __CK_MOCK_INIT__: unknown }).__CK_MOCK_INIT__ = init), { lang, signedIn: true });
+  await page.addInitScript((init) => ((window as unknown as { __CK_MOCK_INIT__: unknown }).__CK_MOCK_INIT__ = init), { signedIn: true });
   await page.goto(url);
   await page.waitForSelector('#go-view');
   await page.evaluate(() => ((window as unknown as { __mock: { stepMs: number } }).__mock.stepMs = 700));
   const mock = (fn: string) => page.evaluate(`(() => { const m = window.__mock; ${fn} })()`);
-  const say = (en: string, da: string, ms?: number) => caption(page, `${lang === 'da' ? da : en}   ·   ${lang === 'da' ? 'TradingView er simuleret' : 'TradingView simulated'}`, ms);
+  const say = (text: string, ms?: number) => caption(page, `${text}   ·   TradingView simulated`, ms);
 
-  await say('Signed in. One click takes a backup of every layout, drawing, indicator, template and script.', 'Logget ind. Ét klik tager backup af alle layouts, tegninger, indikatorer, skabeloner og scripts.', 3000);
+  await say('Signed in. One click takes a backup of every layout, drawing, indicator, template and script.', 3000);
   await click(page, '#go-backup', 300);
-  await say('Progress in plain words. Requests are spaced out so the account is not flagged.', 'Fremskridt i almindelige ord. Forespørgslerne spredes ud, så kontoen ikke bliver markeret.', 0);
+  await say('Progress in plain words. Requests are spaced out so the account is not flagged.', 0);
   await page.waitForSelector('.result-success', { timeout: 30000 });
-  await say('Done: a new dated folder on this computer.', 'Færdig: en ny mappe med dato på computeren.', 2500);
+  await say('Done: a new dated folder on this computer.', 2500);
   await click(page, '#backup-view', 1500);
   await page.waitForSelector('.chart-box canvas', { timeout: 15000 });
-  await say('View any backup offline.', 'Se enhver backup uden internet.', 2500);
+  await say('View any backup offline.', 2500);
   await page.selectOption('#compare-pick', { index: 2 });
   await click(page, '#compare-go', 1200);
-  await say('Compare two backups: what was added, removed or moved.', 'Sammenlign to backups: hvad er tilføjet, fjernet eller flyttet.', 3500);
+  await say('Compare two backups: what was added, removed or moved.', 3500);
   await caption(page, '', 0);
   await click(page, '#compare-close', 600);
   await click(page, '#nav-home', 800);
 
   await click(page, '#go-restore', 800);
   await page.waitForSelector('#pick-layout-0');
-  await say('Restore: pick a backup and a layout.', 'Gendan: vælg en backup og et layout.', 1500);
+  await say('Restore: pick a backup and a layout.', 1500);
   await click(page, '#pick-layout-0', 400);
   await click(page, '#restore-next', 800);
-  await say('Default: restore as a NEW layout. Nothing on TradingView is changed or deleted.', 'Standard: gendan som et NYT layout. Intet på TradingView bliver ændret eller slettet.', 3000);
+  await say('Default: restore as a NEW layout. Nothing on TradingView is changed or deleted.', 3000);
   await click(page, '#restore-start', 300);
   await page.waitForSelector('.result-success', { timeout: 30000 });
-  await say('Afterwards ChartKeeper opens the layout and checks that every drawing and indicator came back.', 'Bagefter åbner ChartKeeper layoutet og tjekker, at alle tegninger og indikatorer kom med.', 4000);
+  await say('Afterwards ChartKeeper opens the layout and checks that every drawing and indicator came back.', 4000);
 
   await mock(`m.scenario.slots = 'full';`);
   await click(page, '#restore-another', 800);
   await click(page, '#pick-layout-1', 400);
   await click(page, '#restore-next', 800);
-  await say('If the plan has no free layout slot, ChartKeeper explains the options instead of failing.', 'Hvis abonnementet ikke har plads, forklarer ChartKeeper mulighederne i stedet for at fejle.', 4000);
+  await say('If the plan has no free layout slot, ChartKeeper explains the options instead of failing.', 4000);
   await click(page, '#mode-replace', 500);
-  await page.selectOption('#target-pick', 'tvNOVO');
-  await say('Replacing a layout requires typing its name…', 'For at erstatte et layout skal navnet skrives…', 1200);
-  await type(page, '#confirm-name', 'Novo Nordisk - dagligt');
+  await page.selectOption('#target-pick', 'tvMSFT');
+  await say('Replacing a layout requires typing its name…', 1200);
+  await type(page, '#confirm-name', 'Microsoft - daily');
   await click(page, '#restore-start', 800);
-  await say('…and a final confirmation. A safety copy of the old layout is saved first.', '…og en sidste bekræftelse. Der gemmes først en sikkerhedskopi af det gamle layout.', 2500);
+  await say('…and a final confirmation. A safety copy of the old layout is saved first.', 2500);
   await click(page, '#dialog-yes', 300);
   await page.waitForSelector('.result-success, .result-warning', { timeout: 30000 });
-  await say('Replaced, verified, and the safety copy location is shown.', 'Erstattet, tjekket, og hvor sikkerhedskopien ligger, bliver vist.', 4000);
+  await say('Replaced, verified, and the safety copy location is shown.', 4000);
   const video = page.video();
   await ctx.close();
   await browser.close();
@@ -193,8 +192,7 @@ async function main() {
   await fs.mkdir(OUT, { recursive: true });
   const jobs: [string, () => Promise<{ main: string; pip?: { file: string; at: number } }>][] = [
     ['1-real-app-viewer-and-sign-in-en', realApp],
-    ['2-backup-compare-restore-simulated-en', async () => ({ main: await simulated('en') })],
-    ['3-backup-compare-restore-simulated-da', async () => ({ main: await simulated('da') })],
+    ['2-backup-compare-restore-simulated-en', async () => ({ main: await simulated() })],
   ];
   // Optional filter, e.g. `record-demos.ts simulated` to skip the real-app video.
   const only = process.argv[2];

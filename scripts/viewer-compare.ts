@@ -6,7 +6,7 @@
  * Fails when a drawing or indicator is neither drawn nor listed as not shown,
  * or when the page logs an error.
  *
- *   npx tsx scripts/viewer-compare.ts [--lang da]
+ *   npx tsx scripts/viewer-compare.ts
  */
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
@@ -36,7 +36,6 @@ interface HarnessResult {
 const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 
 async function main() {
-  const lang = process.argv.includes('--lang') ? process.argv[process.argv.indexOf('--lang') + 1] : 'en';
   const ref: Reference = JSON.parse(await fs.readFile(path.join(FIXTURES, 'tradingview-reference.json'), 'utf8'));
   const { layout, data } = await openLayout(await SnapshotReader.open(path.join(FIXTURES, 'reference-snapshot')), ref.uid);
 
@@ -57,7 +56,7 @@ async function main() {
   const errors: string[] = [];
   try {
     const { width, height } = ref.size;
-    const shot = await renderPage(browser, script, 'viewer-compare.html', { layout, data, options: { lang, visibleRange: ref.visibleRange } }, width, height, errors);
+    const shot = await renderPage(browser, script, 'viewer-compare.html', { layout, data, options: { visibleRange: ref.visibleRange } }, width, height, errors);
     await fs.writeFile(path.join(OUT, 'viewer-only.png'), shot.png);
 
     const refPng = await fs.readFile(path.join(FIXTURES, 'tradingview-reference.png'));
@@ -121,7 +120,7 @@ const sma = (xs: number[], n: number) => xs.map((_, i) => (i + 1 < n ? null : xs
  * A layout that exercises what the reference does not: every registered
  * drawing type, Volume with palette colours, Pine Bollinger Bands and RSI
  * (fills, gradients, shapes), Heikin Ashi, a chart without prices, an unknown
- * drawing, a hidden one, an indicator error, and Danish text.
+ * drawing, a hidden one, and an indicator error.
  */
 async function galleryInput(reference: ParsedLayout, refData: ChartData) {
   const saved = JSON.parse(await fs.readFile(path.join(FIXTURES, 'tv-saved-layout.json'), 'utf8'));
@@ -204,7 +203,7 @@ async function galleryInput(reference: ParsedLayout, refData: ChartData) {
       '2': { ...refData, chartId: '2', studies: { [maId]: ma, [errStudy.id]: { status: 'error', metaInfoId: errStudy.metaInfoId, error: 'study_limit_exceeded' } } },
       '3': null,
     },
-    options: { lang: 'da' },
+    options: {},
   };
 }
 

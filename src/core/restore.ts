@@ -3,7 +3,7 @@ import path from 'node:path';
 import { obj } from './props';
 import { captureLayout } from './backup';
 import { countLayout, parseLayout } from './layout';
-import { checkRestore, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
+import { checkRestore, restoredName, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
 import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader, writePrivate } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
@@ -68,10 +68,6 @@ export function symbolFields(record: LayoutRecord): Record<string, string> {
   };
 }
 
-export function restoredName(name: string, at: Date, word = 'restored'): string {
-  return `${name} (${word} ${at.toISOString().slice(0, 10)})`;
-}
-
 /** The complete form for TradingView's save request. */
 export function saveForm(record: LayoutRecord, drawings: DrawingsRecord, name: string): Record<string, string> {
   const content = contentWithDrawings(record, drawings);
@@ -133,8 +129,6 @@ export interface RestoreOptions {
   buildTime: string | null;
   now?: Date;
   onProgress?: (step: RestoreStep, name?: string) => void;
-  /** Word used in the new layout's name, in the user's language. */
-  restoredWord?: string;
   /** Opens the layout on TradingView and counts what it shows; null when that fails. */
   countOnPage?: (uid: string) => Promise<PageCount | null>;
 }
@@ -182,7 +176,7 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
         '',
         { limit: slots.limit ?? 0, plan: slots.plan ?? '' },
       );
-    name = restoredName(record.name, now, opts.restoredWord);
+    name = restoredName(record.name, now);
     say('create', name);
     await mark('', false);
     uid = (await client.saveLayout({ fields: saveForm(record, drawings, name) })).uid;

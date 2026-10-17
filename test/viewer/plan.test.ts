@@ -42,7 +42,7 @@ const reasonOf = (plan: LayoutPlan, id: string) => plan.notShown.find((n) => n.i
 describe('planLayout on the reference snapshot', () => {
   it('draws all 11 drawings and both indicators', () => {
     const layout = parseLayout(record, null);
-    const plan = planLayout(layout, { 1: chartData }, 'en');
+    const plan = planLayout(layout, { 1: chartData });
     expectEveryItemAccountedFor(layout, plan);
     expect(plan.notShown).toEqual([]);
     expect(plan.charts[0]!.rendered.drawings).toHaveLength(11);
@@ -104,7 +104,7 @@ describe('planLayout on a layout with problems', () => {
 
   it('lists each problem with its reason and still draws the rest', () => {
     const { layout, data } = problemLayout();
-    const plan = planLayout(layout, data, 'en');
+    const plan = planLayout(layout, data);
     expectEveryItemAccountedFor(layout, plan);
 
     const chart1 = plan.charts[0]!;
@@ -128,11 +128,10 @@ describe('planLayout on a layout with problems', () => {
     expect(chart2Items.every((n) => n.reason.code === 'no-price-data' || n.reason.code === 'other-symbol')).toBe(true);
   });
 
-  it('writes the reasons in Danish', () => {
+  it('names what is not shown and says why in plain words', () => {
     const { layout, data } = problemLayout();
-    const plan = planLayout(layout, data, 'da');
-    expect(plan.notShown.find((n) => n.id === 'err1')!.message).toBe('Kunne ikke beregnes: study_limit_exceeded');
-    expect(plan.notShown.find((n) => n.id === 'hidden1')).toMatchObject({ name: 'Trendlinje', message: 'Skjult i TradingView' });
-    expect(plan.notShown.find((n) => n.id === 'nodata1')!.message).toBe('Der blev ikke gemt værdier for denne indikator');
+    const plan = planLayout(layout, data);
+    expect(plan.notShown.find((n) => n.id === 'hidden1')).toMatchObject({ name: 'Trend line', message: 'Hidden in TradingView' });
+    expect(plan.notShown.find((n) => n.id === 'nodata1')!.message).toBe('No values were saved for this indicator');
   });
 });

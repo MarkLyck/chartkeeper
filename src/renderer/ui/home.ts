@@ -1,13 +1,8 @@
-import type { AppError, AppState, Lang, ProgressEvent, Settings, SnapshotSummary } from '../../shared/api';
+import type { AppError, AppState, ProgressEvent, Settings, SnapshotSummary } from '../../shared/api';
 import { backupStepText, formatHour, formatRelative, restoreStepText, t, tn } from '../i18n';
 import { button, errorBox, notice, progressBar, spinner, toggle } from './components';
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
-
-const LANGS: { value: Lang; label: string }[] = [
-  { value: 'da', label: 'Dansk' },
-  { value: 'en', label: 'English' },
-];
 
 export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Screen {
   const el = h('main', { class: 'screen home' });
@@ -65,8 +60,6 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
     const st = s.settings;
     const hour = h('select', { id: 'daily-hour', class: 'select', on: { change: () => save({ dailyHour: Number(hour.value) }) } },
       Array.from({ length: 24 }, (_, i) => h('option', { value: String(i), selected: i === st.dailyHour }, formatHour(i))));
-    const lang = h('select', { id: 'lang', class: 'select', on: { change: () => save({ lang: lang.value as Lang }) } },
-      LANGS.map((l) => h('option', { value: l.value, selected: l.value === st.lang }, l.label)));
 
     return h('section', { class: 'card settings', attrs: { 'aria-labelledby': 'settings-title' } },
       h('h2', { id: 'settings-title' }, t('settings.title')),
@@ -85,8 +78,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
           : null),
       h('div', { class: 'setting' },
         toggle('prices', t('settings.prices'), st.includePrices, (on) => save({ includePrices: on })),
-        h('p', { class: 'note setting-sub' }, t('settings.pricesNote'))),
-      h('div', { class: 'setting setting-row' }, h('label', { htmlFor: 'lang', class: 'inline-label' }, t('settings.language')), lang));
+        h('p', { class: 'note setting-sub' }, t('settings.pricesNote'))));
   }
 
   function render() {

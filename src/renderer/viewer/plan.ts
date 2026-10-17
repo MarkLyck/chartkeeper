@@ -3,7 +3,6 @@ import { sameTicker } from '../../core/tv/content';
 import type { Bar, ChartData } from '../../core/model';
 import { DRAWING_KINDS } from './drawings/registry';
 import { guessPriceFormat, mainSeriesSpec, type MainSeriesSpec, type PriceFormatSpec } from './series';
-import type { Lang } from '../../shared/api';
 import { drawingName, reasonText, STRINGS, type NotShownReason } from './strings';
 import { hasPineGraphics, planStudyRender, studyPriceFormat, type StudyRender } from './studies';
 import { isIntraday, parseInterval, TimeIndex, timeZoneOffset } from './time';
@@ -17,7 +16,7 @@ export interface NotShownItem {
   /** True when the item itself is drawn and only part of it is missing. */
   partial: boolean;
   reason: NotShownReason;
-  /** Plain-language reason in the requested language. */
+  /** Plain-language reason. */
   message: string;
 }
 
@@ -66,10 +65,10 @@ const studyName = (s: ParsedStudy) => s.shortName || s.name || s.metaInfoId;
  * a reason. Every drawing and indicator of the chart ends up in exactly one
  * of `rendered` or `notShown` (partial items can also appear in `notShown`).
  */
-export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartData | null, lang: Lang): ChartPlan {
+export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartData | null): ChartPlan {
   const notShown: NotShownItem[] = [];
   const add = (kind: NotShownItem['kind'], id: string, name: string, reason: NotShownReason, partial = false) =>
-    notShown.push({ chartId: chart.chartId, kind, id, name, partial, reason, message: reasonText(lang, reason) });
+    notShown.push({ chartId: chart.chartId, kind, id, name, partial, reason, message: reasonText(reason) });
 
   const bars = sortedBars(data);
   const hasPrices = bars.length > 0;
@@ -138,7 +137,7 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
 
   const renderedDrawings: string[] = [];
   for (const d of drawingsForChart(layout, chart)) {
-    const name = drawingName(d.type, lang);
+    const name = drawingName(d.type);
     const kind = DRAWING_KINDS[d.type];
     const source = chart.panes.find((p) => p.drawings.includes(d)) ?? mainSource;
     const target = panes.find((p) => p.source === source);
@@ -167,18 +166,18 @@ export interface LayoutPlan {
 }
 
 /** Plans every chart, plus layout-wide items: unreadable drawings and shared drawings for symbols no chart shows. */
-export function planLayout(layout: ParsedLayout, data: Record<string, ChartData | null>, lang: Lang): LayoutPlan {
-  const charts = layout.charts.map((c) => planChart(layout, c, data[c.chartId] ?? null, lang));
+export function planLayout(layout: ParsedLayout, data: Record<string, ChartData | null>): LayoutPlan {
+  const charts = layout.charts.map((c) => planChart(layout, c, data[c.chartId] ?? null));
   const firstId = layout.charts[0]?.chartId ?? '';
   const extra: NotShownItem[] = [];
   for (const problem of layout.problems) {
     const reason: NotShownReason = { code: 'unreadable', detail: problem };
-    extra.push({ chartId: firstId, kind: 'drawing', id: '', name: STRINGS[lang].drawing, partial: false, reason, message: reasonText(lang, reason) });
+    extra.push({ chartId: firstId, kind: 'drawing', id: '', name: STRINGS.drawing, partial: false, reason, message: reasonText(reason) });
   }
   for (const d of layout.sharedDrawings) {
     if (layout.charts.some((c) => drawingsForChart(layout, c).includes(d))) continue;
     const reason: NotShownReason = { code: 'symbol-not-in-layout', symbol: d.symbol ?? '?' };
-    extra.push({ chartId: firstId, kind: 'drawing', id: d.id, name: drawingName(d.type, lang), partial: false, reason, message: reasonText(lang, reason) });
+    extra.push({ chartId: firstId, kind: 'drawing', id: d.id, name: drawingName(d.type), partial: false, reason, message: reasonText(reason) });
   }
   return { charts, notShown: [...charts.flatMap((c) => c.notShown), ...extra] };
 }

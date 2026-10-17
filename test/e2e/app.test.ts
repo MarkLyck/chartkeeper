@@ -11,7 +11,7 @@ describe('the installed app', () => {
   const errors: string[] = [];
 
   beforeAll(async () => {
-    ({ app, window, userData } = await launchApp('en'));
+    ({ app, window, userData } = await launchApp());
     window.on('pageerror', (e) => errors.push(String(e)));
     window.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   });
@@ -22,7 +22,7 @@ describe('the installed app', () => {
     for (const name of [/back up now/i, /view my backups/i, /restore a chart/i]) await expect(window.getByRole('button', { name }).isVisible()).resolves.toBe(true);
     await expect(window.getByRole('button', { name: /sign in to tradingview/i }).isVisible()).resolves.toBe(true);
     const state = await window.evaluate(() => (window as any).chartkeeper.getState());
-    expect(state).toMatchObject({ signedIn: false, busy: null, settings: { lang: 'en' } });
+    expect(state).toMatchObject({ signedIn: false, busy: null, settings: { dailyBackup: false, dailyHour: 18 } });
   });
 
   it('keeps its private folder readable only by the user (macOS and Linux)', async () => {

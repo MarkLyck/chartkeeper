@@ -26,7 +26,7 @@ let tasks: Tasks;
 
 beforeEach(async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-tasks-'));
-  store = await Store.open(path.join(dir, 'settings.json'), { backupFolder: path.join(dir, 'backups'), dailyBackup: true, dailyHour: 18, includePrices: false, lang: 'en' });
+  store = await Store.open(path.join(dir, 'settings.json'), { backupFolder: path.join(dir, 'backups'), dailyBackup: true, dailyHour: 18, includePrices: false });
   tv = new FakeTradingView().add(referenceInAccount());
   signedIn = true;
   visible = false;

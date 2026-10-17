@@ -1,13 +1,12 @@
-import { mainStrings } from '../shared/mainStrings';
 // Dev and preview only. The real window gets window.chartkeeper from the preload script;
 // scripts/ui-preview.ts installs this mock in its place before app.js loads.
 import type { LayoutCounts, ParsedLayout } from '../core/layout';
 import type { ChartData, Manifest, ManifestLayout } from '../core/model';
 import type { RestoreStep } from '../core/restore';
-import { checkRestore } from '../core/restorePolicy';
+import { checkRestore, restoredName } from '../core/restorePolicy';
 import { urls } from '../core/tv/endpoints';
 import type {
-  AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, Lang, ProgressEvent, RestoreOutcome, RestoreTargets, Result, SnapshotSummary,
+  AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, ProgressEvent, RestoreOutcome, RestoreTargets, Result, SnapshotSummary,
 } from '../shared/api';
 
 /** The real reference snapshot, read and parsed in Node by the preview script. */
@@ -51,14 +50,14 @@ function daysAgo(days: number, hour: number, minute: number): Date {
   return d;
 }
 
-export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; signedIn?: boolean } = {}): { api: ChartKeeperApi; control: MockControl } {
+export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolean } = {}): { api: ChartKeeperApi; control: MockControl } {
   const ref = fixture.manifest.layouts[0]!;
   const extra = (uid: string, name: string, symbol: string, drawings: number, studies: number): ManifestLayout => ({
     uid, name, dir: `layouts/${uid}`, symbols: [symbol], charts: 1, drawings, studies, lastModified: null, priceData: false,
   });
-  const novo = extra('NovoD1', 'Novo Nordisk – dagligt', 'OMXCOP:NOVO_B', 23, 3);
-  const c25 = extra('C25W01', 'C25 indeks – uge', 'OMXCOP:OMXC25', 14, 1);
-  const vestas = extra('VWS001', 'Vestas gammel', 'OMXCOP:VWS', 6, 2);
+  const msft = extra('MSFT1D', 'Microsoft – daily', 'NASDAQ:MSFT', 23, 3);
+  const spx = extra('SPXW01', 'S&P 500 – weekly', 'SP:SPX', 14, 1);
+  const tsla = extra('TSLA01', 'Tesla old', 'NASDAQ:TSLA', 6, 2);
 
   const snapshot = (at: Date, layouts: ManifestLayout[], status: 'complete' | 'incomplete', error?: string): SnapshotSummary => {
     const name = stamp(at);
@@ -75,15 +74,15 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
   };
 
   const snapshots: SnapshotSummary[] = [
-    snapshot(daysAgo(9, 18, 0), [ref, novo, vestas], 'complete'),
-    snapshot(daysAgo(3, 18, 0), [ref], 'incomplete', `TradingView says "C25 indeks – uge" has 14 drawings but sent none. The backup was stopped so it isn't saved without them.`),
-    snapshot(daysAgo(0, 9, 12), [ref, novo, c25], 'complete'),
+    snapshot(daysAgo(9, 18, 0), [ref, msft, tsla], 'complete'),
+    snapshot(daysAgo(3, 18, 0), [ref], 'incomplete', `TradingView says "S&P 500 – weekly" has 14 drawings but sent none. The backup was stopped so it isn't saved without them.`),
+    snapshot(daysAgo(0, 9, 12), [ref, msft, spx], 'complete'),
   ];
 
   let state: AppState = {
     version: '1.0.0',
     platform: 'darwin',
-    settings: { backupFolder: FOLDER, dailyBackup: true, dailyHour: 18, includePrices: true, lang: init.lang ?? 'da' },
+    settings: { backupFolder: FOLDER, dailyBackup: true, dailyHour: 18, includePrices: true },
     signedIn: init.signedIn ?? true,
     username: init.signedIn === false ? null : 'thomas_k',
     browserName: 'Google Chrome',
@@ -145,14 +144,14 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
     for (const l of layouts) await progress({ kind: 'backup', progress: { done: ++done, total, step: 'layout', name: l.name } });
     if (control.scenario.backup === 'format-changed') {
       const at = new Date();
-      const s = snapshot(at, layouts.slice(0, 1), 'incomplete', 'Some drawings in "Novo Nordisk – dagligt" have an unknown format.');
+      const s = snapshot(at, layouts.slice(0, 1), 'incomplete', 'Some drawings in "Microsoft – daily" have an unknown format.');
       snapshots.push(s);
       setState({ lastBackup: { at: at.toISOString(), ok: false, dir: s.dir } });
       return {
         ok: true,
         value: {
           dir: s.dir, ok: false, layouts: 1, drawings: ref.drawings, warnings: [],
-          error: { kind: 'format-changed', message: 'Some drawings in "Novo Nordisk – dagligt" have an unknown format.\nsource LineToolGannSquare: points missing', params: {} },
+          error: { kind: 'format-changed', message: 'Some drawings in "Microsoft – daily" have an unknown format.\nsource LineToolGannSquare: points missing', params: {} },
         },
       };
     }
@@ -168,8 +167,8 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
       value: {
         dir: s.dir, ok: true, layouts: layouts.length, drawings: layouts.reduce((n, l) => n + l.drawings, 0),
         warnings: [
-          '"C25 indeks – uge": TradingView reports 15 drawings, ChartKeeper received 14.',
-          'Prices for OMXCOP:OMXC25 (1W) could not be loaded: symbol_error. The layout itself is backed up.',
+          '"S&P 500 – weekly": TradingView reports 15 drawings, ChartKeeper received 14.',
+          'Prices for SP:SPX (1W) could not be loaded: symbol_error. The layout itself is backed up.',
         ],
       },
     };
@@ -188,10 +187,10 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
   const targets = (): RestoreTargets => {
     const layouts = [
       { uid: 'tvAAPL', name: 'Reference AAPL' },
-      { uid: 'tvNOVO', name: 'Novo Nordisk – dagligt' },
-      { uid: 'tvC25', name: 'C25 indeks – uge' },
-      { uid: 'tvDANSKE', name: 'Danske Bank' },
-      ...(control.scenario.slots === 'full' ? [{ uid: 'tvMAERSK', name: 'Mærsk B – 4 timer' }] : []),
+      { uid: 'tvMSFT', name: 'Microsoft – daily' },
+      { uid: 'tvSPX', name: 'S&P 500 – weekly' },
+      { uid: 'tvJPM', name: 'JPMorgan' },
+      ...(control.scenario.slots === 'full' ? [{ uid: 'tvNVDA', name: 'Nvidia – 4 hours' }] : []),
     ];
     return { layouts, used: layouts.length, limit: 5, plan: 'Essential', free: control.scenario.slots === 'free' };
   };
@@ -206,7 +205,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
     },
     async chooseFolder() {
       record('chooseFolder');
-      return setState({ settings: { ...state.settings, backupFolder: '/Volumes/USB-NØGLE/ChartKeeper' } });
+      return setState({ settings: { ...state.settings, backupFolder: '/Volumes/USB DRIVE/ChartKeeper' } });
     },
     async signIn() {
       record('signIn');
@@ -242,16 +241,16 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
           {
             uid: ref.uid, name: ref.name, status: 'changed', changes: [
               { kind: 'added', what: 'drawing', toolType: 'LineToolTrendLine', text: null, symbol: 'NASDAQ:AAPL', points: [point('2026-09-02', 228.5), point('2026-10-10', 241.2)] },
-              { kind: 'removed', what: 'drawing', toolType: 'LineToolHorzLine', text: 'Støtte', symbol: 'NASDAQ:AAPL', points: [point('2026-08-01', 215)] },
+              { kind: 'removed', what: 'drawing', toolType: 'LineToolHorzLine', text: 'Support', symbol: 'NASDAQ:AAPL', points: [point('2026-08-01', 215)] },
               { kind: 'changed', what: 'study-inputs', shortName: 'RSI', inputs: [{ key: 'length', from: '14', to: '21' }] },
               { kind: 'changed', what: 'drawing-moved', toolType: 'LineToolFibRetracement', from: [point('2026-07-01', 190), point('2026-09-15', 236)], to: [point('2026-07-01', 190), point('2026-10-01', 244)] },
             ],
           },
-          { uid: c25.uid, name: c25.name, status: 'added', changes: [] },
-          { uid: vestas.uid, name: vestas.name, status: 'removed', changes: [] },
-          { uid: novo.uid, name: novo.name, status: 'same', changes: [] },
+          { uid: spx.uid, name: spx.name, status: 'added', changes: [] },
+          { uid: tsla.uid, name: tsla.name, status: 'removed', changes: [] },
+          { uid: msft.uid, name: msft.name, status: 'same', changes: [] },
         ],
-        other: [{ kind: 'added', what: 'study-template', name: 'Mine glidende gennemsnit' }],
+        other: [{ kind: 'added', what: 'study-template', name: 'My moving averages' }],
       };
       return { ok: true, value };
     },
@@ -281,7 +280,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
           ok: true,
           value: {
             uid,
-            name: target?.name ?? `${source.name} (${mainStrings(state.settings.lang)('restoredWord')} ${new Date().toISOString().slice(0, 10)})`,
+            name: target?.name ?? restoredName(source.name, new Date()),
             url: urls.layoutPage(uid),
             check: checkRestore(expected, actual, control.scenario.restore === 'unchecked' ? null : { drawings: actual.drawings, studies: actual.studies }),
             safetyBackup: req.mode === 'replace' ? `${FOLDER}/safety-copies/${stamp(new Date())}_${target?.name ?? req.targetUid}` : null,
@@ -295,7 +294,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
       return {
         ok: true,
         value: {
-          added: [{ kind: 'study-template', name: 'Mine glidende gennemsnit' }, { kind: 'theme', name: 'Lys med blå' }],
+          added: [{ kind: 'study-template', name: 'My moving averages' }, { kind: 'theme', name: 'Light blue' }],
           skipped: [{ kind: 'study-template', name: 'Bollinger standard' }],
           missing: [],
         },
@@ -322,7 +321,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
 
 /** Puts the mock on window before app.js runs. Options come from window.__CK_MOCK_INIT__ (set by the preview script). */
 export function installMockApi(): void {
-  const w = window as unknown as { __CK_FIXTURE__: PreviewFixture; __CK_MOCK_INIT__?: { lang?: Lang; signedIn?: boolean }; chartkeeper: ChartKeeperApi; __mock: MockControl };
+  const w = window as unknown as { __CK_FIXTURE__: PreviewFixture; __CK_MOCK_INIT__?: { signedIn?: boolean }; chartkeeper: ChartKeeperApi; __mock: MockControl };
   const { api, control } = createMockApi(w.__CK_FIXTURE__, w.__CK_MOCK_INIT__ ?? {});
   w.chartkeeper = api;
   w.__mock = control;

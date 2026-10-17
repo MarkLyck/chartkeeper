@@ -1,5 +1,4 @@
 import type { AppState, ChartKeeperApi } from '../shared/api';
-import { setLang } from './i18n';
 import { backupScreen } from './ui/backup';
 import { homeScreen } from './ui/home';
 import { restoreScreen } from './ui/restore';
@@ -38,8 +37,6 @@ function build(r: Route): Screen {
 
 function mount() {
   screen?.destroy?.();
-  setLang(state.settings.lang);
-  document.documentElement.lang = state.settings.lang;
   screen = build(route);
   root.replaceChildren(screen.el);
   window.scrollTo(0, 0);
@@ -47,14 +44,8 @@ function mount() {
 }
 
 function applyState(next: AppState) {
-  const langChanged = next.settings.lang !== state.settings.lang;
   state = next;
-  if (langChanged) {
-    // Rebuild in the new language, but keep focus on the language picker the user just used.
-    const focusedId = document.activeElement?.id;
-    mount();
-    if (focusedId) document.getElementById(focusedId)?.focus();
-  } else screen?.onState?.(next);
+  screen?.onState?.(next);
 }
 
 async function start() {

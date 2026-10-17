@@ -1,6 +1,6 @@
 import type { CompareOutcome, LoadedLayout, SnapshotSummary } from '../../shared/api';
 import type { Change, LayoutDiff } from '../../core/diff';
-import { getLang, t } from '../i18n';
+import { t } from '../i18n';
 import { renderLayout } from '../viewer';
 import { changeText } from './changes';
 import { button, errorBox, notice, screenHeader, spinner } from './components';
@@ -111,7 +111,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     const box = h('div', { class: 'chart-box', attrs: { role: 'img', 'aria-label': c.load.value.layout.name } });
     const loaded = c.load.value;
     queueMicrotask(() => {
-      if (box.isConnected) chart = renderLayout(box, loaded.layout, loaded.data, { lang: getLang() });
+      if (box.isConnected) chart = renderLayout(box, loaded.layout, loaded.data);
     });
     return box;
   }

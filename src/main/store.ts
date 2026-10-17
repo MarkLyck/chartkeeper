@@ -9,7 +9,6 @@ const SettingsSchema = z.object({
   dailyBackup: z.boolean(),
   dailyHour: z.number().int().min(0).max(23),
   includePrices: z.boolean(),
-  lang: z.enum(['da', 'en']),
 });
 
 const StateSchema = z.object({
@@ -23,12 +22,11 @@ const StateSchema = z.object({
 });
 export type StoredState = z.infer<typeof StateSchema>;
 
-export const defaultSettings = (documents: string, locale: string): Settings => ({
+export const defaultSettings = (documents: string): Settings => ({
   backupFolder: path.join(documents, 'ChartKeeper Backups'),
   dailyBackup: false,
   dailyHour: 18,
   includePrices: true,
-  lang: locale.toLowerCase().startsWith('da') ? 'da' : 'en',
 });
 
 /** Settings and the last backup result, in one small JSON file in the app's private folder. */

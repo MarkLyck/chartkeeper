@@ -9,8 +9,6 @@ import type { TvErrorKind } from '../core/tv/errors';
  * The contract between the window (renderer) and the app process (main).
  * The preload script exposes exactly this object as `window.chartkeeper`.
  */
-export type Lang = 'da' | 'en';
-
 export interface Settings {
   /** Folder that holds the "snapshots" folder. */
   backupFolder: string;
@@ -18,7 +16,6 @@ export interface Settings {
   /** Hour of day (0-23) after which the daily backup runs. */
   dailyHour: number;
   includePrices: boolean;
-  lang: Lang;
 }
 
 export interface AppState {
@@ -33,7 +30,7 @@ export interface AppState {
   busy: 'backup' | 'restore' | 'signin' | null;
 }
 
-/** A failure the window can explain. `kind` picks the wording; `message` is the English text. */
+/** A failure the window can explain. `kind` picks the wording; `message` is shown under Details. */
 export interface AppError {
   kind: TvErrorKind | 'cancelled' | 'unexpected' | 'busy' | 'browser';
   message: string;

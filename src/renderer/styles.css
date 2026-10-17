@@ -202,7 +202,6 @@ ul { margin: 0; }
 .settings h2 + .setting { border-top: none; }
 .setting-label { font-weight: 600; }
 .setting-sub { margin-left: 70px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-.setting-row { flex-direction: row; align-items: center; gap: 16px; }
 .inline-label { font-weight: 600; }
 
 .switch { display: flex; align-items: center; gap: 16px; cursor: pointer; min-height: 48px; position: relative; }

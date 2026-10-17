@@ -1,7 +1,7 @@
 import { app, BrowserWindow, Menu, nativeImage, Notification, Tray } from 'electron';
 import path from 'node:path';
 import type { ProgressEvent } from '../shared/api';
-import { mainStrings } from '../shared/mainStrings';
+import { mainString } from '../shared/mainStrings';
 import type { AppStatus } from './appState';
 import { emit } from './ipc';
 
@@ -56,15 +56,14 @@ export class Shell {
 
   updateTray(): void {
     if (!this.tray) return;
-    const text = this.text();
-    this.tray.setToolTip(this.status.busy === 'backup' ? text('trayBackingUp') : 'ChartKeeper');
+    this.tray.setToolTip(this.status.busy === 'backup' ? mainString('trayBackingUp') : 'ChartKeeper');
     this.tray.setContextMenu(
       Menu.buildFromTemplate([
-        { label: text('trayOpen'), click: () => this.show() },
-        { label: text('trayBackUpNow'), enabled: !this.status.busy, click: this.backUpNow },
+        { label: mainString('trayOpen'), click: () => this.show() },
+        { label: mainString('trayBackUpNow'), enabled: !this.status.busy, click: this.backUpNow },
         { type: 'separator' },
         {
-          label: text('trayQuit'),
+          label: mainString('trayQuit'),
           click: () => {
             this.prepareToQuit();
             app.quit();
@@ -75,18 +74,12 @@ export class Shell {
   }
 
   notifyBackup(r: { ok: true; layouts: number } | { ok: false; message: string }): void {
-    const text = this.text();
-    if (r.ok) this.notify(text('backupDoneTitle'), text('backupDoneBody', { n: r.layouts }));
-    else this.notify(text('backupFailedTitle'), text('backupFailedBody', { detail: r.message.slice(0, 120) }));
+    if (r.ok) this.notify(mainString('backupDoneTitle'), mainString('backupDoneBody', { n: r.layouts }));
+    else this.notify(mainString('backupFailedTitle'), mainString('backupFailedBody', { detail: r.message.slice(0, 120) }));
   }
 
   notifySignIn(): void {
-    const text = this.text();
-    this.notify(text('signInNeededTitle'), text('signInNeededBody'));
-  }
-
-  private text() {
-    return mainStrings(this.status.store.settings.lang);
+    this.notify(mainString('signInNeededTitle'), mainString('signInNeededBody'));
   }
 
   private notify(title: string, body: string): void {

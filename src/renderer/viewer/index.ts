@@ -4,14 +4,12 @@ import { applyGrid, arrangementGrid } from './arrangement';
 import { chartTheme, renderChart, type RenderedChart } from './chart';
 import { notShownPanel } from './panel';
 import { planLayout, type NotShownItem } from './plan';
-import type { Lang } from '../../shared/api';
 
 export type { NotShownItem } from './plan';
 export { planChart, planLayout } from './plan';
 export type { NotShownReason } from './strings';
 
 export interface RenderOptions {
-  lang: Lang;
   /** Unix seconds; `to` may lie past the last bar. Defaults to about the last 150 bars. */
   visibleRange?: { from: number; to: number };
 }
@@ -23,8 +21,8 @@ export interface RenderedLayout {
 }
 
 /** Draws a backed-up layout into `container`: every chart in TradingView's arrangement, plus a "Not shown" panel when needed. */
-export function renderLayout(container: HTMLElement, layout: ParsedLayout, data: Record<string, ChartData | null>, options: RenderOptions): RenderedLayout {
-  const plan = planLayout(layout, data, options.lang);
+export function renderLayout(container: HTMLElement, layout: ParsedLayout, data: Record<string, ChartData | null>, options: RenderOptions = {}): RenderedLayout {
+  const plan = planLayout(layout, data);
   const root = document.createElement('div');
   root.className = 'ck-viewer';
   root.style.cssText = `display:flex;flex-direction:column;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Trebuchet MS',Roboto,Ubuntu,sans-serif;`;
@@ -43,10 +41,10 @@ export function renderLayout(container: HTMLElement, layout: ParsedLayout, data:
   });
   applyGrid(grid, cells, arrangementGrid(layout.arrangement, plan.charts.length));
 
-  const panel = notShownPanel(plan.notShown, layout, options.lang, firstTheme.dark);
+  const panel = notShownPanel(plan.notShown, layout, firstTheme.dark);
   if (panel) root.append(panel);
 
-  const charts: RenderedChart[] = plan.charts.map((c, i) => renderChart(cells[i]!, c, options.lang, options.visibleRange));
+  const charts: RenderedChart[] = plan.charts.map((c, i) => renderChart(cells[i]!, c, options.visibleRange));
   return {
     notShown: plan.notShown,
     destroy() {

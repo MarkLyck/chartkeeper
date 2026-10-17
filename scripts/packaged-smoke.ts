@@ -45,7 +45,7 @@ async function main() {
   const backups = path.join(base, 'Backups');
   await fs.cp(path.join(root, 'test/fixtures/reference-snapshot'), path.join(backups, 'snapshots', '2026-10-17_10-00-00'), { recursive: true });
   await fs.mkdir(userData, { recursive: true });
-  await fs.writeFile(path.join(userData, 'settings.json'), JSON.stringify({ settings: { backupFolder: backups, dailyBackup: false, dailyHour: 18, includePrices: true, lang: 'en' }, lastBackup: null }));
+  await fs.writeFile(path.join(userData, 'settings.json'), JSON.stringify({ settings: { backupFolder: backups, dailyBackup: false, dailyHour: 18, includePrices: true }, lastBackup: null }));
 
   const port = 9300 + Math.floor(Math.random() * 500);
   const env = { ...process.env, CHARTKEEPER_USER_DATA: userData } as Record<string, string>;
