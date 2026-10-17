@@ -4,7 +4,8 @@ import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { runBackup } from '../../src/core/backup';
 import { countLayout, parseLayout } from '../../src/core/layout';
-import { compareCounts, contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields } from '../../src/core/restore';
+import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
+import { checkRestore } from '../../src/core/restorePolicy';
 import { listSnapshots, SnapshotReader } from '../../src/core/snapshot';
 import { TvClient } from '../../src/core/tv/client';
 import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
@@ -50,6 +51,12 @@ function numericChartIds(): FakeLayout {
 }
 
 const bucketsOf = (l: FakeLayout) => Object.fromEntries(Object.entries(l.storage).map(([k, v]) => [k, { sources: v, drawing_groups: {} }]));
+/** TradingView's own count of a layout in the fake account, as the chart page would show it. */
+const shownBy = (fake: FakeTradingView) => async (uid: string) => {
+  const l = fake.layouts.get(uid)!;
+  const counts = countLayout(parseLayout({ ...referenceRecord(), content: l.content, studyMetaInfoMap: l.studyMeta as Record<string, Record<string, unknown>> }, { buckets: bucketsOf(l), reportedTotal: null }));
+  return { drawings: counts.drawings, studies: counts.studies };
+};
 const drawingIdsIn = (content: TvContent, chart: number) => content.charts[chart]!.panes.flatMap((p) => p.sources.filter((s) => isDrawingType(s.type)).map((s) => s.id)).sort();
 
 describe('numeric chartIds', () => {
@@ -71,8 +78,8 @@ describe('numeric chartIds', () => {
     expect((await snap.chartData('Num00001', '2'))!.symbol).toBe('NASDAQ:AAPL');
     expect((await snap.chartData('Num00001', '1'))!.symbol).toBe('NASDAQ:MSFT');
 
-    const restored = await restoreLayout(client(), snap, 'Num00001', { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'j.json')), buildTime: null });
-    expect(restored.check).toMatchObject({ ok: true, missingDrawings: [], extraDrawings: [] });
+    const restored = await restoreLayout(client(), snap, 'Num00001', { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'j.json')), buildTime: null, countOnPage: shownBy(tv) });
+    expect(restored.check).toMatchObject({ verdict: 'verified', missingDrawings: [], extraDrawings: [] });
     const saved = tv.layouts.get(restored.uid)!.content;
     expect(saved.charts.map((c) => c.chartId)).toEqual([2, 1]);
     expect(drawingIdsIn(saved, 1)).toEqual(['msft1']);
@@ -190,11 +197,19 @@ describe('restore', () => {
   it('round trip: back up, restore as a NEW layout, and the copy matches the backup', async () => {
     const snap = await snapshot();
     const before = new Map([...tv.layouts].map(([k, v]) => [k, JSON.stringify(v)]));
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, now: new Date('2026-10-17T12:00:00Z') });
+    const steps: RestoreStep[] = [];
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, now: new Date('2026-10-17T12:00:00Z'), countOnPage: shownBy(tv), onProgress: (s) => steps.push(s) });
     expect(r.uid).not.toBe('AbCd1234');
     expect(r.name).toBe('Min AAPL (restored 2026-10-17)');
-    expect(r.check).toMatchObject({ ok: true, missingDrawings: [], extraDrawings: [] });
-    expect(r.check.actual.studies).toBe(2);
+    expect(r.check).toMatchObject({
+      verdict: 'verified',
+      charts: { expected: 1, saved: { count: 1, ok: true } },
+      drawings: { expected: 11, saved: { count: 11, ok: true }, shown: { count: 11, ok: true } },
+      indicators: { expected: 2, saved: { count: 2, ok: true }, shown: { count: 2, ok: true } },
+      missingDrawings: [],
+      extraDrawings: [],
+    });
+    expect(steps).toEqual(['check', 'create', 'verify']);
     // The original layout is untouched.
     expect(JSON.stringify(tv.layouts.get('AbCd1234'))).toBe(before.get('AbCd1234'));
   });
@@ -220,14 +235,14 @@ describe('restore', () => {
   it('a second confirmed replace overwrites again, with a new safety copy', async () => {
     const snap = await snapshot();
     tv.add(referenceInAccount('Target01', 'Old layout'));
-    const opts = { root, journal: journal(), buildTime: null };
-    const mode = { kind: 'replace' as const, targetUid: 'Target01', confirmedByUser: true as const };
+    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    const mode = { kind: 'replace' as const, targetUid: 'Target01', confirmedName: 'Old layout' };
     await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
-    const edited = tv.layouts.get('Target01')!.content as { charts: { panes: { sources: unknown[] }[] }[] };
+    const edited = tv.layouts.get('Target01')!.content;
     edited.charts[0]!.panes[0]!.sources.push({ type: 'LineToolHorzLine', id: 'edit1', state: {}, points: [{ time_t: 1780000000, offset: 0, price: 1 }] });
     const posts = tv.requests.filter((r) => r.method === 'POST').length;
     const r = await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
-    expect(r).toMatchObject({ resumed: false, check: { ok: true } });
+    expect(r).toMatchObject({ resumed: false, check: { verdict: 'verified' } });
     expect(r.safetyBackup).not.toBeNull();
     expect(tv.requests.filter((q) => q.method === 'POST').length).toBe(posts + 1);
     expect(JSON.stringify(tv.layouts.get('Target01')!.content)).not.toContain('edit1');
@@ -235,7 +250,7 @@ describe('restore', () => {
 
   it('adopts the layout when the answer to the save was lost', async () => {
     const snap = await snapshot();
-    const opts = { root, journal: journal(), buildTime: null };
+    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
     tv.failOn = (req) => {
       if (req.method !== 'POST') return null;
       tv.failOn = null;
@@ -244,26 +259,54 @@ describe('restore', () => {
     };
     await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toThrow();
     const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
-    expect(r).toMatchObject({ resumed: true });
-    expect(r.check.ok).toBe(true);
+    expect(r).toMatchObject({ resumed: true, check: { verdict: 'verified' } });
     expect(tv.layouts.size).toBe(2);
   });
 
   it('replace: saves a safety copy first, overwrites only the chosen layout, and clears old stored drawings', async () => {
     const snap = await snapshot();
     tv.add({ ...referenceInAccount('Target01', 'Old layout'), storage: { '1': { stale: { id: 'stale', ownerSource: '_seriesId', state: { type: 'LineToolHorzLine', id: 'stale', state: {}, points: [{ time_t: 1, offset: 0, price: 1 }] } } } } });
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedByUser: true }, { root, journal: journal(), buildTime: 'bt' });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedName: 'Old layout' }, { root, journal: journal(), buildTime: 'bt', countOnPage: shownBy(tv) });
     expect(r.uid).toBe('Target01');
-    expect(r.check.ok).toBe(true);
+    expect(r.check.verdict).toBe('verified');
     expect(tv.layouts.get('Target01')!.storage['1']).toEqual({});
     const safety = await listSnapshots(path.join(root, 'safety-copies'));
     expect(safety[0]!.manifest!.layouts[0]).toMatchObject({ uid: 'Target01', name: 'Old layout' });
     expect(tv.requests.find((q) => q.method === 'PUT')!.headers).toEqual({ 'X-BUILD-TIME': 'bt' });
   });
 
-  it('verification reports drawings that did not come back', () => {
+  it('replace: refuses a confirmed name that does not match the target, before writing anything', async () => {
+    const snap = await snapshot();
+    tv.add(referenceInAccount('Target01', 'Old layout'));
+    tv.requests.length = 0;
+    const replace = (confirmedName: string) => restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedName }, { root, journal: journal(), buildTime: null });
+    await expect(replace('Min AAPL')).rejects.toMatchObject({ kind: 'not-found', message: expect.stringMatching(/does not match/) });
+    expect(tv.requests.filter((q) => q.method !== 'GET')).toEqual([]);
+    expect(await listSnapshots(path.join(root, 'safety-copies'))).toEqual([]);
+    await expect(replace('  OLD   layout ')).resolves.toMatchObject({ uid: 'Target01' });
+  });
+
+  it('a layout TradingView shows with a drawing missing is a mismatch, even when the read-back matched', async () => {
+    const snap = await snapshot();
+    const countOnPage = async (uid: string) => ({ ...(await shownBy(tv)(uid)), drawings: 10 });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, countOnPage });
+    expect(r.check).toMatchObject({ verdict: 'mismatch', drawings: { saved: { ok: true }, shown: { count: 10, ok: false } }, missingDrawings: [] });
+  });
+
+  it('says the chart page was not checked when TradingView could not be counted', async () => {
+    const snap = await snapshot();
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, countOnPage: async () => null });
+    expect(r.check).toMatchObject({ verdict: 'shown-unchecked', drawings: { saved: { ok: true }, shown: 'unchecked' }, indicators: { shown: 'unchecked' } });
+  });
+
+  it('verification rules: every drawing exactly, at least every indicator, and drawings that did not come back', () => {
     const expected = { charts: 1, drawings: 2, studies: 1, drawingIds: ['a', 'b'], studyIds: ['s'], symbols: [] };
-    expect(compareCounts(expected, { ...expected, drawings: 1, drawingIds: ['a'] })).toMatchObject({ ok: false, missingDrawings: ['b'] });
+    expect(checkRestore(expected, { ...expected, drawings: 1, drawingIds: ['a'] }, { drawings: 2, studies: 1 })).toMatchObject({ verdict: 'mismatch', drawings: { saved: { count: 1, ok: false } }, missingDrawings: ['b'] });
+    expect(checkRestore(expected, { ...expected, drawings: 1, drawingIds: ['a'] }, null)).toMatchObject({ verdict: 'mismatch' });
+    expect(checkRestore(expected, expected, { drawings: 3, studies: 1 })).toMatchObject({ verdict: 'mismatch', drawings: { shown: { count: 3, ok: false } } });
+    expect(checkRestore(expected, expected, { drawings: 2, studies: 0 })).toMatchObject({ verdict: 'mismatch', indicators: { shown: { count: 0, ok: false } } });
+    expect(checkRestore(expected, expected, { drawings: 2, studies: 2 })).toMatchObject({ verdict: 'verified', indicators: { shown: { count: 2, ok: true } } });
+    expect(checkRestore(expected, { ...expected, charts: 2 }, { drawings: 2, studies: 1 })).toMatchObject({ verdict: 'mismatch', charts: { saved: { count: 2, ok: false } } });
   });
 
   it('adds missing templates and leaves existing ones alone', async () => {

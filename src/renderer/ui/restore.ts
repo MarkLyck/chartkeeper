@@ -1,3 +1,4 @@
+import { sameLayoutName, type Tally } from '../../core/restorePolicy';
 import type { ManifestLayout } from '../../core/model';
 import type { AppError, RestoreOutcome, RestoreRequest, RestoreTargets, SnapshotSummary } from '../../shared/api';
 import { formatDateTime, restoreStepText, t, tn } from '../i18n';
@@ -14,13 +15,6 @@ interface Source {
 }
 
 type Mode = 'new' | 'replace';
-
-/**
- * The typed confirmation proves intent, not typing skill: dash styles
- * (TradingView names often hold "–"), repeated spaces and letter case are ignored.
- */
-const normalName = (s: string) => s.normalize('NFKC').replace(/[\u2010-\u2015\u2212]/g, '-').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
-const sameName = (typed: string, name: string) => normalName(typed) === normalName(name);
 
 type Step =
   | { k: 'choose'; snapshotDir: string | null; uid: string | null }
@@ -154,7 +148,7 @@ export function restoreScreen(ctx: Ctx): Screen {
     });
     const sync = () => {
       const typed = nameInput.value;
-      const matches = target !== null && sameName(typed, target.name);
+      const matches = target !== null && sameLayoutName(typed, target.name);
       start.disabled = c.mode === 'new' ? !tg.free : !matches;
       hint.textContent = target && typed.trim() ? (matches ? t('restore.nameMatches') : t('restore.nameMismatch')) : '';
       hint.className = `match-hint${matches ? ' match-ok' : ''}`;
@@ -217,15 +211,14 @@ export function restoreScreen(ctx: Ctx): Screen {
   }
 
   function verifyTable(o: RestoreOutcome): HTMLElement {
-    const { expected, actual } = o.check;
-    const shown = o.onChart;
-    /** onChart undefined: TradingView's own count doesn't cover this row. */
-    const row = (label: string, want: number, got: number, onChart: number | undefined) =>
+    const { charts, drawings, indicators } = o.check;
+    const cell = (tally: Tally) => h('td', { class: tally.ok ? 'cell-ok' : 'cell-warn' }, tally.count);
+    const row = (label: string, r: { expected: number; saved: Tally; shown?: Tally | 'unchecked' }) =>
       h('tr', {},
         h('th', { scope: 'row' }, label),
-        h('td', {}, want),
-        h('td', { class: got === want ? 'cell-ok' : 'cell-warn' }, got),
-        onChart === undefined ? h('td', {}, '') : shown === null ? h('td', { class: 'cell-warn' }, t('restore.notChecked')) : h('td', { class: onChart >= want ? 'cell-ok' : 'cell-warn' }, onChart));
+        h('td', {}, r.expected),
+        cell(r.saved),
+        r.shown === undefined ? h('td', {}, '') : r.shown === 'unchecked' ? h('td', { class: 'cell-warn' }, t('restore.notChecked')) : cell(r.shown));
     return h('table', { class: 'verify' },
       h('caption', {}, t('restore.checkTitle')),
       h('thead', {}, h('tr', {},
@@ -234,21 +227,23 @@ export function restoreScreen(ctx: Ctx): Screen {
         h('th', { scope: 'col' }, t('restore.colSaved')),
         h('th', { scope: 'col' }, t('restore.colShown')))),
       h('tbody', {},
-        row(t('restore.rowCharts'), expected.charts, actual.charts, undefined),
-        row(t('restore.rowDrawings'), expected.drawings, actual.drawings, shown?.drawings ?? -1),
-        row(t('restore.rowIndicators'), expected.studies, actual.studies, shown?.studies ?? -1)));
+        row(t('restore.rowCharts'), charts),
+        row(t('restore.rowDrawings'), drawings),
+        row(t('restore.rowIndicators'), indicators)));
   }
 
   function doneStep(c: Extract<Step, { k: 'done' }>): (HTMLElement | null)[] {
     const o = c.outcome;
     const missing = o.check.missingDrawings.length;
+    // When TradingView's own count could not run, the table says so; the read-back still matched.
+    const ok = o.check.verdict !== 'mismatch';
     return [
-      h('section', { class: `result ${o.check.ok ? 'result-success' : 'result-warning'}` },
-        o.check.ok ? icons.check() : icons.warn(),
+      h('section', { class: `result ${ok ? 'result-success' : 'result-warning'}` },
+        ok ? icons.check() : icons.warn(),
         h('div', { class: 'result-body' },
           h('h2', { class: 'result-title step-title', tabIndex: -1 }, t('restore.done', { name: o.name })),
           h('div', { class: 'actions' }, button(t('restore.open'), () => ctx.api.openOnTradingView(o.url), { kind: 'primary', big: true, id: 'restore-open' })))),
-      o.check.ok ? null : notice('warning', t('restore.missingTitle'), missing ? h('p', {}, tn('restore.missing', missing)) : null, h('p', {}, t('restore.mismatchNote'))),
+      ok ? null : notice('warning', t('restore.missingTitle'), missing ? h('p', {}, tn('restore.missing', missing)) : null, h('p', {}, t('restore.mismatchNote'))),
       verifyTable(o),
       o.safetyBackup ? h('div', { class: 'card card-quiet' }, h('p', {}, t('restore.safety')), h('p', { class: 'path' }, o.safetyBackup), button(t('common.openFolder'), () => ctx.api.openFolder(o.safetyBackup!), { id: 'safety-open' })) : null,
       o.resumed ? h('p', { class: 'note' }, t('restore.resumed')) : null,

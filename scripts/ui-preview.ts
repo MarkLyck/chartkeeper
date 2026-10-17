@@ -187,7 +187,18 @@ async function main() {
     await page.click('#restore-open');
     const opened = (await calls(page)).find((c) => c.method === 'openOnTradingView');
     expect(String(opened?.args[0]).startsWith('https://www.tradingview.com/chart/'), `[${lang}] Open on TradingView did not pass the layout url`);
+    expect((await page.$$('.verify .cell-ok')).length === 5 && (await page.$$('.verify .cell-warn')).length === 0, `[${lang}] a verified restore shows a cell that is not green`);
     await shot(page, 'restore-success');
+
+    await mock(page, `m.scenario.restore = 'unchecked';`);
+    await page.click('#restore-another');
+    await page.check('#pick-layout-0');
+    await page.click('#restore-next');
+    await page.waitForSelector('#mode-new');
+    await page.click('#restore-start');
+    await page.waitForSelector('.result-success');
+    expect((await page.$$('.verify .cell-warn')).length === 2, `[${lang}] an unchecked chart page does not say "could not check" for drawings and indicators`);
+    await shot(page, 'restore-unchecked');
 
     // Restore: plan full, then replace with typed confirmation
     await mock(page, `m.scenario.slots = 'full'; m.scenario.restore = 'mismatch';`);
@@ -205,14 +216,17 @@ async function main() {
     await page.fill('#confirm-name', 'novo nordisk - dagligt');
     expect(!(await page.isDisabled('#restore-start')), `[${lang}] Restore stays disabled after the name matches`);
     await shot(page, 'restore-step2-replace');
+    const restores = async () => (await calls(page)).filter((c) => c.method === 'restore').length;
+    const before = await restores();
     await page.click('#restore-start');
     await page.waitForSelector('dialog[open]');
     await shot(page, 'restore-confirm');
     await page.click('#dialog-no');
-    expect((await calls(page)).filter((c) => c.method === 'restore').length === 1, `[${lang}] cancelling the confirm dialog still restored`);
+    expect((await restores()) === before, `[${lang}] cancelling the confirm dialog still restored`);
     await page.click('#restore-start');
     await page.click('#dialog-yes');
     await page.waitForSelector('.result-warning');
+    expect((await page.$$('.verify .cell-warn')).length === 2, `[${lang}] a mismatch does not mark the saved and shown drawings`);
     const replaceReq = (await calls(page)).filter((c) => c.method === 'restore').at(-1)?.args[0] as { mode: string; confirmedName?: string } | undefined;
     expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'Novo Nordisk – dagligt', `[${lang}] replace request did not carry the confirmed name`);
     await shot(page, 'restore-mismatch');

@@ -1,6 +1,6 @@
 import type { BackupProgress } from '../core/backup';
 import type { Manifest } from '../core/model';
-import type { RestoreCheck, RestoreStep } from '../core/restore';
+import type { RestoreResult, RestoreStep } from '../core/restore';
 import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';
 export type { LoadedLayout } from '../core/snapshotView';
 import type { TvErrorKind } from '../core/tv/errors';
@@ -75,16 +75,7 @@ export interface RestoreTargets {
 
 export type RestoreRequest = { snapshotDir: string; uid: string } & ({ mode: 'new' } | { mode: 'replace'; targetUid: string; confirmedName: string });
 
-export interface RestoreOutcome {
-  uid: string;
-  name: string;
-  url: string;
-  check: RestoreCheck;
-  /** What TradingView itself shows when the restored layout is opened, or null if that check could not run. */
-  onChart: { drawings: number; studies: number } | null;
-  safetyBackup: string | null;
-  resumed: boolean;
-}
+export type RestoreOutcome = RestoreResult;
 
 export type CompareOutcome = SnapshotComparison;
 

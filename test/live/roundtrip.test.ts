@@ -102,7 +102,7 @@ describe('live round trip on tradingview.com', () => {
 
     const restored = await restoreLayout(client, reader, source.uid, { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'journal.json')), buildTime: await transportFor(page).buildTime() });
     expect(restored.check.missingDrawings).toEqual([]);
-    expect(restored.check.ok).toBe(true);
+    expect(restored.check.verdict).toBe('shown-unchecked');
 
     const original = parseLayout(await reader.layout(source.uid), await reader.drawings(source.uid));
     const entry = (await client.listLayouts()).find((l) => l.uid === restored.uid)!;

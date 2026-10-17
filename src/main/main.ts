@@ -3,7 +3,7 @@ import { appendFileSync, mkdirSync, statSync, renameSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { runBackup } from '../core/backup';
-import { restoreLayout, RestoreJournal, restoreTemplates } from '../core/restore';
+import { restoreLayout, RestoreJournal, restoreTemplates, type RestoreMode } from '../core/restore';
 import { cleanupInterrupted, listSnapshots, SnapshotReader } from '../core/snapshot';
 import { compareSnapshots, openLayout } from '../core/snapshotView';
 import { TvClient } from '../core/tv/client';
@@ -201,27 +201,18 @@ function notify(ok: boolean, detail: string) {
 async function doRestore(req: RestoreRequest) {
   const c = await client();
   const reader = await SnapshotReader.open(req.snapshotDir);
-  let mode: Parameters<typeof restoreLayout>[3] = { kind: 'new' };
-  if (req.mode === 'replace') {
-    const target = (await c.listLayouts()).find((l) => l.uid === req.targetUid);
-    if (!target || target.name !== req.confirmedName) throw new TvError('not-found', 'The layout name you typed does not match the layout you chose. Nothing was changed.');
-    mode = { kind: 'replace', targetUid: req.targetUid, confirmedByUser: true };
-  }
+  const mode: RestoreMode = req.mode === 'replace' ? { kind: 'replace', targetUid: req.targetUid, confirmedName: req.confirmedName } : { kind: 'new' };
   log(`restore ${req.uid} from ${req.snapshotDir} mode=${req.mode}`);
   const r = await restoreLayout(c, reader, req.uid, mode, {
     root: store.settings.backupFolder,
     journal: new RestoreJournal(path.join(app.getPath('userData'), 'restore-journal.json')),
     buildTime: await transport.buildTime(),
     restoredWord: store.settings.lang === 'da' ? 'gendannet' : 'restored',
+    countOnPage: countOnChartPage,
     onProgress: (step, name) => progress({ kind: 'restore', step, ...(name === undefined ? {} : { name }) }),
   });
-  progress({ kind: 'restore', step: 'verify' });
-  const onChart = await countOnChartPage(r.uid);
-  // What TradingView itself shows is the real test; the read-back alone only proves what was stored.
-  const shownOk = onChart === null || (onChart.drawings === r.check.expected.drawings && onChart.studies >= r.check.expected.studies);
-  const check = { ...r.check, ok: r.check.ok && shownOk };
-  log(`restore done ${r.uid} ok=${check.ok} missing=${r.check.missingDrawings.length} onChart=${JSON.stringify(onChart)}`);
-  return { ...r, check, onChart };
+  log(`restore done ${r.uid} verdict=${r.check.verdict} missing=${r.check.missingDrawings.length} shown=${JSON.stringify([r.check.drawings.shown, r.check.indicators.shown])}`);
+  return r;
 }
 
 async function applyAutostart(enabled: boolean) {

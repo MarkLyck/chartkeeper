@@ -3,6 +3,7 @@
 import type { LayoutCounts, ParsedLayout } from '../core/layout';
 import type { ChartData, Manifest, ManifestLayout } from '../core/model';
 import type { RestoreStep } from '../core/restore';
+import { checkRestore } from '../core/restorePolicy';
 import type {
   AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, Lang, ProgressEvent, RestoreOutcome, RestoreTargets, Result, SnapshotSummary,
 } from '../shared/api';
@@ -18,7 +19,7 @@ export interface MockScenario {
   signIn: 'ok' | 'browser';
   backup: 'ok' | 'format-changed' | 'not-signed-in';
   slots: 'free' | 'full';
-  restore: 'ok' | 'mismatch' | 'limit-reached';
+  restore: 'ok' | 'mismatch' | 'unchecked' | 'limit-reached';
 }
 
 export interface MockControl {
@@ -279,8 +280,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
             uid,
             name: target?.name ?? `${source.name} (restored ${new Date().toISOString().slice(0, 10)})`,
             url: `https://www.tradingview.com/chart/${uid}/`,
-            check: { ok: missing.length === 0, expected, actual, missingDrawings: missing, extraDrawings: [] },
-            onChart: { drawings: actual.drawings, studies: actual.studies },
+            check: checkRestore(expected, actual, control.scenario.restore === 'unchecked' ? null : { drawings: actual.drawings, studies: actual.studies }),
             safetyBackup: req.mode === 'replace' ? `${FOLDER}/safety-copies/${stamp(new Date())}_${target?.name ?? req.targetUid}` : null,
             resumed: false,
           },

@@ -1,7 +1,8 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { captureLayout } from './backup';
-import { countLayout, parseLayout, type LayoutCounts } from './layout';
+import { countLayout, parseLayout } from './layout';
+import { checkRestore, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
 import { APP_NAME, noExtras, SNAPSHOT_FILES, SnapshotWriter, type SnapshotReader } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
@@ -10,15 +11,8 @@ import { TvError } from './tv/errors';
 
 export type RestoreStep = 'check' | 'create' | 'safetyCopy' | 'replace' | 'clearDrawings' | 'verify';
 
-export type RestoreMode = { kind: 'new' } | { kind: 'replace'; targetUid: string; confirmedByUser: true };
-
-export interface RestoreCheck {
-  ok: boolean;
-  expected: LayoutCounts;
-  actual: LayoutCounts;
-  missingDrawings: string[];
-  extraDrawings: string[];
-}
+/** "replace" carries the layout name the user confirmed; it must still match the target when the restore runs. */
+export type RestoreMode = { kind: 'new' } | { kind: 'replace'; targetUid: string; confirmedName: string };
 
 export interface RestoreResult {
   uid: string;
@@ -89,15 +83,6 @@ export function saveForm(record: LayoutRecord, drawings: DrawingsRecord, name: s
   };
 }
 
-export function compareCounts(expected: LayoutCounts, actual: LayoutCounts): RestoreCheck {
-  const have = new Set(actual.drawingIds);
-  const want = new Set(expected.drawingIds);
-  const missingDrawings = expected.drawingIds.filter((id) => !have.has(id));
-  const extraDrawings = actual.drawingIds.filter((id) => !want.has(id));
-  const ok = missingDrawings.length === 0 && extraDrawings.length === 0 && actual.studies === expected.studies && actual.charts === expected.charts;
-  return { ok, expected, actual, missingDrawings, extraDrawings };
-}
-
 interface JournalEntry {
   key: string;
   createdUid: string;
@@ -149,15 +134,17 @@ export interface RestoreOptions {
   onProgress?: (step: RestoreStep, name?: string) => void;
   /** Word used in the new layout's name, in the user's language. */
   restoredWord?: string;
+  /** Opens the layout on TradingView and counts what it shows; null when that fails. */
+  countOnPage?: (uid: string) => Promise<PageCount | null>;
 }
 
 /**
  * Recreates one layout from a snapshot on TradingView.
  *
- * "new" never touches existing layouts. "replace" requires the caller to pass
- * `confirmedByUser: true`, which the app only does after the user confirmed
- * by name, and it first saves a safety copy of the layout it overwrites.
- * Afterwards the restored layout is read back and compared with the backup.
+ * "new" never touches existing layouts. "replace" only runs when the name the
+ * user confirmed still matches the target, and it first saves a safety copy
+ * of the layout it overwrites. Afterwards the restored layout is read back,
+ * counted on the chart page, and compared with the backup.
  */
 export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, sourceUid: string, mode: RestoreMode, opts: RestoreOptions): Promise<RestoreResult> {
   const say = opts.onProgress ?? (() => undefined);
@@ -174,6 +161,7 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
   let name: string;
   let safetyBackup: string | null = null;
   let resumed = false;
+  const mark = (createdUid: string, finished: boolean) => opts.journal.put({ key, createdUid, name, at: now.toISOString(), finished });
 
   // A "new" restore records its planned name before saving; if the answer to
   // the save was lost, the layout with that name is the one it created.
@@ -195,12 +183,13 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
       );
     name = restoredName(record.name, now, opts.restoredWord);
     say('create', name);
-    await opts.journal.put({ key, createdUid: '', name, at: now.toISOString(), finished: false });
+    await mark('', false);
     uid = (await client.saveLayout({ fields: saveForm(record, drawings, name) })).uid;
-    await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString(), finished: false });
+    await mark(uid, false);
   } else {
     const target = list.find((e) => e.uid === mode.targetUid);
     if (!target) throw new TvError('not-found', 'The layout you chose to replace no longer exists on TradingView.');
+    if (!sameLayoutName(mode.confirmedName, target.name)) throw new TvError('not-found', 'The layout name you typed does not match the layout you chose. Nothing was changed.');
     say('safetyCopy', target.name);
     safetyBackup = await saveSafetyCopy(client, target, opts.root, now);
     name = target.name;
@@ -214,8 +203,9 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
   say('verify');
   const entry: LayoutListEntry = (await client.listLayouts()).find((e) => e.uid === uid) ?? { uid, url: uid, id: null, name, lastModified: null, raw: {} };
   const after = await captureLayout(client, entry);
-  const check = compareCounts(expected, countLayout(after.layout));
-  if (mode.kind === 'new') await opts.journal.put({ key, createdUid: uid, name, at: now.toISOString(), finished: true });
+  if (mode.kind === 'new') await mark(uid, true);
+  const shown = opts.countOnPage ? await opts.countOnPage(uid) : null;
+  const check = checkRestore(expected, countLayout(after.layout), shown);
   return { uid, name, url: `https://www.tradingview.com/chart/${uid}/`, check, safetyBackup, resumed };
 }
 
