@@ -1,13 +1,17 @@
 /**
  * Starts the packaged app from release/ (what the installer contains), opens
  * the reference backup in the viewer, and takes a screenshot. Fails on any
- * page error. Run after `electron-builder`: npx tsx scripts/packaged-smoke.ts
+ * page error. It also asks for the end-to-end tests' fake TradingView, signed
+ * in, and fails if the packaged app listens. Run after `electron-builder`:
+ * npx tsx scripts/packaged-smoke.ts
  */
 import { spawn } from 'node:child_process';
 import { existsSync, promises as fs, readdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+import { FAKE_TRADINGVIEW_ENV } from '../src/main/fakeTradingView';
+import { SEED_ENV } from '../test/fakes/fakeTradingViewApp';
 
 const root = path.resolve(__dirname, '..');
 const release = path.join(root, 'release');
@@ -46,9 +50,11 @@ async function main() {
   await fs.cp(path.join(root, 'test/fixtures/reference-snapshot'), path.join(backups, 'snapshots', '2026-10-17_10-00-00'), { recursive: true });
   await fs.mkdir(userData, { recursive: true });
   await fs.writeFile(path.join(userData, 'settings.json'), JSON.stringify({ settings: { backupFolder: backups, dailyBackup: false, dailyHour: 18, includePrices: true }, lastBackup: null }));
+  const fakeSeed = path.join(base, 'fake-seed.json');
+  await fs.writeFile(fakeSeed, JSON.stringify({ layouts: [], plan: 'pro_premium', signedIn: true, scheduleEveryMs: 1000 }));
 
   const port = 9300 + Math.floor(Math.random() * 500);
-  const env = { ...process.env, CHARTKEEPER_USER_DATA: userData } as Record<string, string>;
+  const env = { ...process.env, CHARTKEEPER_USER_DATA: userData, [FAKE_TRADINGVIEW_ENV]: '1', [SEED_ENV]: fakeSeed } as Record<string, string>;
   delete env.ELECTRON_RUN_AS_NODE;
   const args = [`--remote-debugging-port=${port}`, ...(process.platform === 'linux' ? ['--no-sandbox'] : [])];
   const child = spawn(packagedBinary(), args, { env, stdio: 'ignore', detached: process.platform !== 'win32' });
@@ -78,6 +84,9 @@ async function main() {
       })), errors);
       throw e;
     }
+    const state = await page.evaluate(() => (window as any).chartkeeper.getState());
+    const logged = await fs.readFile(path.join(userData, 'logs', 'chartkeeper.log'), 'utf8').catch(() => '');
+    if (state.signedIn || logged.includes('FAKE TRADINGVIEW')) throw new Error('The packaged app used the fake TradingView.');
     const canvases = await page.locator('canvas').count();
     await fs.mkdir(path.join(root, '.test-output'), { recursive: true });
     await page.screenshot({ path: path.join(root, '.test-output', `packaged-${process.platform}.png`) });
