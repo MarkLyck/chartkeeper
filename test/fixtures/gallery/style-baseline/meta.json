@@ -1,0 +1,63 @@
+{
+  "scene": "style-baseline",
+  "description": "Baseline chart (style 10), with a trend line and a horizontal line.",
+  "uid": "style-baseline",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:24:29.414Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 10,
+        "name": "Baseline"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1777248000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 260.19418938552263,
+        "to": 352.72976326809675
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

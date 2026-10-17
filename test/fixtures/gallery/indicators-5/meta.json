@@ -1,0 +1,51 @@
+{
+  "scene": "indicators-5",
+  "description": "Chaikin Money Flow and Moving Average on NASDAQ:AMZN.",
+  "uid": "indicators-5",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:26:31.023Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AMZN",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 190.52119324385075,
+        "to": 297.97350844518655
+      },
+      "tradingView": {
+        "drawings": 0,
+        "shapes": 0,
+        "studies": [
+          "Moving Average",
+          "Chaikin money flow"
+        ]
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": []
+}

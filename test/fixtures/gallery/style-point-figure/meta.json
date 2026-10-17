@@ -1,0 +1,63 @@
+{
+  "scene": "style-point-figure",
+  "description": "Point & Figure chart (style 6), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-point-figure",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:23:46.727Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 6,
+        "name": "Point & Figure"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{\"atrLength\":14,\"boxSize\":1,\"oneStepBackBuilding\":false,\"percentageLTP\":1,\"reversalAmount\":3,\"sources\":\"Close\",\"style\":\"ATR\"},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetPnF@tv-prostudies-73!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 345427200,
+        "to": 1790035200
+      },
+      "priceRange": {
+        "from": -32.8505255961029,
+        "to": 377.0631569951287
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

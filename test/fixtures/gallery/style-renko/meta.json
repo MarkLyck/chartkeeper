@@ -1,0 +1,63 @@
+{
+  "scene": "style-renko",
+  "description": "Renko chart (style 4), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-renko",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:27:23.233Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 4,
+        "name": "Renko"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{\"atrLength\":14,\"boxSize\":3,\"percentageLTP\":1,\"source\":\"close\",\"sources\":\"Close\",\"style\":\"ATR\",\"wicks\":true},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetRenko@tv-prostudies-73!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1545264000,
+        "to": 1793577600
+      },
+      "priceRange": {
+        "from": 5.443073027946333,
+        "to": 381.0905337150671
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

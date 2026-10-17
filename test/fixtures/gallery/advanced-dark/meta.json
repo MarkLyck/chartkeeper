@@ -1,0 +1,192 @@
+{
+  "scene": "advanced-dark",
+  "description": "Dark theme on hourly bars: Volume and Commodity Channel Index, 20 drawings using tools the light scene does not (Elliott, ABCD, regression, fib channel, ranges, forecast, highlighter, emoji, ...).",
+  "uid": "advanced-dark",
+  "theme": "dark",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:18:43.636Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:TSLA",
+      "interval": "60",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1789569000,
+        "to": 1792607400
+      },
+      "priceRange": {
+        "from": 341.71016330038674,
+        "to": 393.77479587451654
+      },
+      "tradingView": {
+        "drawings": 20,
+        "shapes": 20,
+        "studies": [
+          "Volume",
+          "Commodity channel index"
+        ]
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolABCD",
+      "type": "LineToolABCD",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolRegressionTrend",
+      "type": "LineToolRegressionTrend",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolFibChannel",
+      "type": "LineToolFibChannel",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolInfoLine",
+      "type": "LineToolInfoLine",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolRay",
+      "type": "LineToolRay",
+      "image": "isolated/c1d06.png"
+    },
+    {
+      "id": "c1d07",
+      "chartId": "1",
+      "requestedType": "LineToolExtended",
+      "type": "LineToolExtended",
+      "image": "isolated/c1d07.png"
+    },
+    {
+      "id": "c1d08",
+      "chartId": "1",
+      "requestedType": "LineToolCrossLine",
+      "type": "LineToolCrossLine",
+      "image": "isolated/c1d08.png"
+    },
+    {
+      "id": "c1d09",
+      "chartId": "1",
+      "requestedType": "LineToolFlagMark",
+      "type": "LineToolFlagMark",
+      "image": "isolated/c1d09.png"
+    },
+    {
+      "id": "c1d10",
+      "chartId": "1",
+      "requestedType": "LineToolFlagMark",
+      "type": "LineToolFlagMark",
+      "image": "isolated/c1d10.png"
+    },
+    {
+      "id": "c1d11",
+      "chartId": "1",
+      "requestedType": "LineToolBalloon",
+      "type": "LineToolBalloon",
+      "image": "isolated/c1d11.png"
+    },
+    {
+      "id": "c1d12",
+      "chartId": "1",
+      "requestedType": "LineToolSignpost",
+      "type": "LineToolSignpost",
+      "image": "isolated/c1d12.png"
+    },
+    {
+      "id": "c1d13",
+      "chartId": "1",
+      "requestedType": "LineToolPriceRange",
+      "type": "LineToolPriceRange",
+      "image": "isolated/c1d13.png"
+    },
+    {
+      "id": "c1d14",
+      "chartId": "1",
+      "requestedType": "LineToolDateRange",
+      "type": "LineToolDateRange",
+      "image": "isolated/c1d14.png"
+    },
+    {
+      "id": "c1d15",
+      "chartId": "1",
+      "requestedType": "LineToolEllipse",
+      "type": "LineToolEllipse",
+      "image": "isolated/c1d15.png"
+    },
+    {
+      "id": "c1d16",
+      "chartId": "1",
+      "requestedType": "LineToolTriangle",
+      "type": "LineToolTriangle",
+      "image": "isolated/c1d16.png"
+    },
+    {
+      "id": "c1d17",
+      "chartId": "1",
+      "requestedType": "LineToolHighlighter",
+      "type": "LineToolHighlighter",
+      "image": "isolated/c1d17.png"
+    },
+    {
+      "id": "c1d18",
+      "chartId": "1",
+      "requestedType": "LineToolEmoji",
+      "type": "LineToolEmoji",
+      "image": "isolated/c1d18.png"
+    },
+    {
+      "id": "c1d19",
+      "chartId": "1",
+      "requestedType": "LineToolNoteAbsolute",
+      "type": "LineToolNoteAbsolute",
+      "image": "isolated/c1d19.png"
+    },
+    {
+      "id": "c1d20",
+      "chartId": "1",
+      "requestedType": "LineToolPrediction",
+      "type": "LineToolPrediction",
+      "image": "isolated/c1d20.png"
+    }
+  ]
+}
