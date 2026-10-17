@@ -62,7 +62,7 @@ describe('planLayout on a layout with problems', () => {
     const mainSources = content.charts[0]!.panes[0]!.sources;
     const trend = mainSources.find((s) => s.id === 'tl0001')!;
     mainSources.push(
-      { ...clone(trend), id: 'gann1', type: 'LineToolGannFan' },
+      { ...clone(trend), id: 'unknown1', type: 'LineToolNotARealTool' },
       { ...clone(trend), id: 'hidden1', state: { ...(trend.state as object), visible: false } },
       { ...clone(trend), id: 'short1', points: [(trend.points as unknown[])[0]] },
       { ...clone(trend), id: 'msft1', state: { ...(trend.state as object), symbol: 'NASDAQ:MSFT' } },
@@ -111,7 +111,7 @@ describe('planLayout on a layout with problems', () => {
     expect(chart1.rendered.drawings).toContain('tl0001');
     expect(chart1.rendered.drawings).toContain('sharedAapl');
     expect(chart1.rendered.studies).toContain('pine1');
-    expect(reasonOf(plan, 'gann1')).toBe('unknown-drawing');
+    expect(reasonOf(plan, 'unknown1')).toBe('unknown-drawing');
     expect(reasonOf(plan, 'hidden1')).toBe('hidden');
     expect(reasonOf(plan, 'short1')).toBe('too-few-points');
     expect(reasonOf(plan, 'msft1')).toBe('other-symbol');
