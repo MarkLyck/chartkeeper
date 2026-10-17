@@ -12,6 +12,10 @@ export type { NotShownReason } from './strings';
 export interface RenderOptions {
   /** Unix seconds; `to` may lie past the last bar. Defaults to about the last 150 bars. */
   visibleRange?: { from: number; to: number };
+  /** Price range of each chart's main pane, instead of fitting the visible bars. */
+  priceRange?: { from: number; to: number };
+  /** Show the "Not shown" panel under the charts. Defaults to true. */
+  notShownPanel?: boolean;
 }
 
 export interface RenderedLayout {
@@ -41,10 +45,10 @@ export function renderLayout(container: HTMLElement, layout: ParsedLayout, data:
   });
   applyGrid(grid, cells, arrangementGrid(layout.arrangement, plan.charts.length));
 
-  const panel = notShownPanel(plan.notShown, layout, firstTheme.dark);
+  const panel = options.notShownPanel === false ? null : notShownPanel(plan.notShown, layout, firstTheme.dark);
   if (panel) root.append(panel);
 
-  const charts: RenderedChart[] = plan.charts.map((c, i) => renderChart(cells[i]!, c, options.visibleRange));
+  const charts: RenderedChart[] = plan.charts.map((c, i) => renderChart(cells[i]!, c, options));
   return {
     notShown: plan.notShown,
     destroy() {

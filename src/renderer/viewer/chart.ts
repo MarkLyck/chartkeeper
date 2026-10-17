@@ -205,7 +205,8 @@ export interface RenderedChart {
   destroy(): void;
 }
 
-export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { from: number; to: number } | undefined): RenderedChart {
+export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleRange?: { from: number; to: number }; priceRange?: { from: number; to: number } }): RenderedChart {
+  const { visibleRange, priceRange } = view;
   const theme = chartTheme(plan.chart.chartProperties);
   cell.style.position = 'relative';
   cell.style.background = theme.background;
@@ -239,10 +240,12 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { 
   };
 
   const legends: { pane: number; legend: Legend }[] = [];
+  let mainSeries: ISeriesApi<SeriesType> | null = null;
   plan.panes.forEach((pane, index) => {
     let host: ISeriesApi<SeriesType> | null = null;
     if (pane.main) {
       host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
+      mainSeries = host;
       legends.push({ pane: index, legend: mainLegend(plan, theme) });
     }
     for (const ps of pane.studies) {
@@ -287,6 +290,11 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { 
   const applyRange = () => {
     const range = visibleRange ? { from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) } : { from: last - 150, to: last + 10 };
     chart.timeScale().setVisibleLogicalRange(range);
+    if (priceRange && mainSeries) {
+      // An explicit range spans the whole pane, so the autoscale margins must not shrink it.
+      mainSeries.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0, bottom: 0 } });
+      mainSeries.priceScale().setVisibleRange(priceRange);
+    }
   };
   applyRange();
   const onSize = () => {

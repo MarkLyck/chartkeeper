@@ -21,6 +21,7 @@
     "test:compat": "vitest run --config vitest.compat.config.mts",
     "test:e2e": "node scripts/build.mjs --test-fake && vitest run --config vitest.e2e.config.mts",
     "viewer:compare": "tsx scripts/viewer-compare.ts",
+    "gallery:compare": "tsx scripts/gallery-compare.ts",
     "screenshots": "tsx scripts/readme-screenshots.ts",
     "dist": "npm run build && electron-builder --publish never"
   },
