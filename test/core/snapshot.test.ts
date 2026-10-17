@@ -93,4 +93,70 @@ describe('snapshot folders', () => {
     }
     expect(await fs.readFile(path.join(root, 'b'), 'utf8')).toBe('x');
   });
+
+  it('does not wait before failing a rename for a reason other than a lock', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    let waits = 0;
+    await expect(renameWithRetry(path.join(root, 'missing'), path.join(root, 'b'), async () => void waits++)).rejects.toMatchObject({ code: 'ENOENT' });
+    expect(waits).toBe(0);
+  });
+
+  it('gives up on a rename that stays locked, after waiting long enough for a virus scan', async () => {
+    const realRename = fs.rename;
+    (fs as { rename: typeof fs.rename }).rename = async () => {
+      throw Object.assign(new Error('locked'), { code: 'EPERM' });
+    };
+    const waited: number[] = [];
+    try {
+      await expect(renameWithRetry('a', 'b', async (ms) => void waited.push(ms))).rejects.toMatchObject({ code: 'EPERM' });
+    } finally {
+      (fs as { rename: typeof fs.rename }).rename = realRename;
+    }
+    const total = waited.reduce((a, b) => a + b, 0);
+    expect(total).toBeGreaterThanOrEqual(10_000);
+    expect(total).toBeLessThanOrEqual(20_000);
+    expect(Math.max(...waited)).toBeLessThanOrEqual(2000);
+  });
+
+  it('removes a crashed work folder when its INCOMPLETE copy is already there', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const failed = await SnapshotWriter.begin(root, new Date(2026, 0, 4));
+    const incomplete = await failed.fail(body, 'boom');
+    const crashed = await SnapshotWriter.begin(root, new Date(2026, 0, 4));
+    await crashed.writeJson('x.json', {});
+    expect(await cleanupInterrupted(root)).toBe(1);
+    expect(await fs.readdir(path.dirname(incomplete))).toEqual([path.basename(incomplete)]);
+    expect((await listSnapshots(root))[0]!.manifest).toMatchObject({ status: 'incomplete', error: 'boom' });
+  });
+
+  it('lists only snapshot folders, ignoring stray files such as .DS_Store', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    expect(await listSnapshots(root)).toEqual([]);
+    const dir = await (await SnapshotWriter.begin(root, new Date(2026, 0, 5))).finish(body);
+    await fs.writeFile(path.join(root, 'snapshots', '.DS_Store'), '');
+    expect((await listSnapshots(root)).map((s) => s.dir)).toEqual([dir]);
+  });
+
+  it('reports a missing file and refuses a layout the backup does not have', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const w = await SnapshotWriter.begin(root);
+    await w.writeJson('templates/themes.json', { themes: {} });
+    const dir = await w.finish(body);
+    const r = await SnapshotReader.open(dir);
+    await fs.rm(path.join(dir, 'templates/themes.json'));
+    expect(await r.verify()).toEqual(['templates/themes.json']);
+    expect(() => r.layout('Nope')).toThrow(/Layout Nope is not in this backup/);
+  });
+
+  it('reads damaged extras as absent, so the layouts can still be opened', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const w = await SnapshotWriter.begin(root);
+    await w.writeText('templates/themes.json', '{"themes": broken');
+    await w.writeJson('user-drawings.json', { sources: 'not a map' });
+    await w.writeJson('scripts/index.json', { scripts: [] });
+    const r = await SnapshotReader.open(await w.finish(body));
+    expect(await r.themes()).toBeNull();
+    expect(await r.userDrawings()).toBeNull();
+    expect(await r.scriptsIndex()).toEqual({ scripts: [] });
+  });
 });

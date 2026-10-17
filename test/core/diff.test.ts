@@ -40,6 +40,79 @@ describe('comparing two backups', () => {
     expect(diffSnapshots(new Map([[a.uid, a]]), new Map([[b.uid, b]])).map((d) => [d.name, d.status])).toEqual([['Reference AAPL', 'removed'], ['Other', 'added']]);
   });
 
+  it('reports a renamed layout and a new chart arrangement', () => {
+    const a = parseLayout(base(), null);
+    const b = { ...structuredClone(a), name: 'Renamed', arrangement: '2h' };
+    expect(diffLayouts(a, b)).toEqual([
+      { kind: 'changed', what: 'layout-name', from: 'Reference AAPL', to: 'Renamed' },
+      { kind: 'changed', what: 'arrangement', from: 's', to: '2h' },
+    ]);
+  });
+
+  it('reports charts added and removed, and a chart whose symbol, interval or style changed', () => {
+    const one = parseLayout(base(), null);
+    const two = structuredClone(one);
+    two.charts.push({ ...structuredClone(one.charts[0]!), chartId: '2', symbol: 'NASDAQ:MSFT', interval: '60' });
+    expect(diffLayouts(one, two)).toEqual([{ kind: 'added', what: 'chart', index: 1, symbol: 'NASDAQ:MSFT', interval: '60' }]);
+    expect(diffLayouts(two, one)).toEqual([{ kind: 'removed', what: 'chart', index: 1, symbol: 'NASDAQ:MSFT', interval: '60' }]);
+
+    const changed = structuredClone(one);
+    Object.assign(changed.charts[0]!, { symbol: 'NYSE:IBM', interval: 'W', style: 2 });
+    expect(diffLayouts(one, changed)).toEqual([
+      { kind: 'changed', what: 'chart-symbol', index: 0, from: 'NASDAQ:AAPL', to: 'NYSE:IBM' },
+      { kind: 'changed', what: 'chart-interval', index: 0, from: 'D', to: 'W' },
+      { kind: 'changed', what: 'chart-style', index: 0 },
+    ]);
+  });
+
+  it('reports indicators added, removed and restyled, but not a recompiled script', () => {
+    const a = parseLayout(base(), null);
+    const pane = (l: typeof a) => l.charts[0]!.panes[0]!;
+    const [first, ...rest] = pane(a).studies;
+    const removed = structuredClone(a);
+    pane(removed).studies = rest;
+    expect(diffLayouts(a, removed)).toEqual([{ kind: 'removed', what: 'study', shortName: first!.shortName, name: first!.name }]);
+    expect(diffLayouts(removed, a)).toEqual([{ kind: 'added', what: 'study', shortName: first!.shortName, name: first!.name }]);
+
+    const restyled = structuredClone(a);
+    pane(restyled).studies[0]!.styles = { plot_0: { color: '#123456' } };
+    pane(restyled).studies[0]!.inputs = { ...pane(restyled).studies[0]!.inputs, text: 'recompiled source' };
+    expect(diffLayouts(a, restyled)).toEqual([{ kind: 'changed', what: 'study-style', shortName: first!.shortName }]);
+  });
+
+  it('reports which drawing properties changed, ignoring key order', () => {
+    const a = parseLayout(base(), null);
+    const b = structuredClone(a);
+    const d = b.charts[0]!.panes[0]!.drawings.find((x) => x.type === 'LineToolTrendLine')!;
+    d.props = Object.fromEntries(Object.entries(d.props).reverse());
+    expect(diffLayouts(a, b)).toEqual([]);
+    d.props = { ...d.props, linecolor: '#000000', linewidth: undefined, newProp: { b: 1, a: 2 } };
+    expect(diffLayouts(a, b)).toEqual([
+      {
+        kind: 'changed', what: 'drawing-props', toolType: 'LineToolTrendLine',
+        props: [
+          { key: 'linecolor', from: '"#ff9800"', to: '"#000000"' },
+          { key: 'linewidth', from: '3', to: null },
+          { key: 'newProp', from: null, to: '{"a":2,"b":1}' },
+        ],
+      },
+    ]);
+  });
+
+  it('lists removed layouts first, then changed, added and unchanged ones, each by name', () => {
+    const l = parseLayout(base(), null);
+    const named = (uid: string, name: string) => ({ ...structuredClone(l), uid, name });
+    const before = new Map([['r', named('r', 'Removed')], ['s2', named('s2', 'B same')], ['s1', named('s1', 'A same')], ['c', named('c', 'Changed')]]);
+    const after = new Map([['a', named('a', 'Added')], ['s2', named('s2', 'B same')], ['s1', named('s1', 'A same')], ['c', named('c', 'Changed now')]]);
+    expect(diffSnapshots(before, after).map((d) => [d.name, d.status])).toEqual([
+      ['Removed', 'removed'],
+      ['Changed now', 'changed'],
+      ['Added', 'added'],
+      ['A same', 'same'],
+      ['B same', 'same'],
+    ]);
+  });
+
   it('compares named items by content', () => {
     const items = (o: Record<string, unknown>) => new Map(Object.entries(o).map(([k, content]) => [k, { item: k, content }]));
     expect(diffNamed(items({ a: 1, b: { x: 1, y: 2 }, c: 1 }), items({ b: { y: 2, x: 1 }, c: 2, d: 1 }))).toEqual([

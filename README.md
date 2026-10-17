@@ -147,6 +147,7 @@ npm install
 npm test                 # unit tests: parsing, restore logic, viewer, strings
 npm run test:e2e         # starts the real app window and runs every flow against a fake TradingView
 npm run viewer:compare   # viewer next to TradingView's own rendering
+npm run test:compat      # restore keeps every feature, checked by tradingview.com's own loader (no account)
 npm run test:live        # round trip on a real TradingView account (asks you to sign in)
 npm run dist             # installer for this computer, in release/
 npx tsx scripts/packaged-smoke.ts   # starts the packaged app from release/ and opens a backup
@@ -165,3 +166,38 @@ to `none` to use ChartKeeper's own sign-in window.
 
 `npx tsx scripts/capture-reference.ts` rebuilds the reference backup and the
 TradingView screenshot from a signed-out TradingView chart.
+
+### Compatibility test
+
+`npm run test:compat` backs up an "advanced" test account (every drawing tool,
+custom styles, indicators, custom chart settings, two charts) with the real
+backup code, and restores it with the real restore code. It then loads the
+content that the restore sends to TradingView into a signed-out
+tradingview.com chart, through TradingView's own loader. It reads the result
+back with TradingView's own serializer and compares every drawing, indicator
+and chart setting. The report is in `.test-output/compat/report.md`.
+`test/compat/knownRewrites.ts` lists the values that TradingView's loader
+changes by itself. `npx tsx scripts/build-compat-fixture.ts` rebuilds the
+drawing-tool fixture from tradingview.com.
+
+### Live round trip in CI
+
+The `live` job in `.github/workflows/compat.yml` runs `npm run test:live` with
+a saved TradingView session. When the session secret is not set, the job is
+skipped. This happens on pull requests from forks, which get no secrets.
+
+To set the secret:
+
+1. Sign in once on your computer: `npm run test:live`. A browser window opens.
+   Sign in to the test account. The session is saved to
+   `.test-output/live-session.json`.
+2. Store the session as a repository secret:
+   `gh secret set TV_SESSION_COOKIES < .test-output/live-session.json`.
+3. When TradingView ends the session, the job fails with "has expired". Delete
+   `.test-output/live-session.json` and do steps 1 and 2 again.
+
+The secret is a signed-in TradingView session. Anyone who can read it can use
+that TradingView account, and a workflow change in a branch of this
+repository can read it. Use a dedicated test account with no payment details
+and no layouts you need. Each run creates one layout on that account and then
+deletes it (`TV_TEST_CLEANUP=1`), so the account needs one free layout slot.

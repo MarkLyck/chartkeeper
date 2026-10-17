@@ -2,7 +2,7 @@ import { promises as fs, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { runBackup } from '../../src/core/backup';
+import { runBackup, type BackupProgress } from '../../src/core/backup';
 import { countLayout, parseLayout } from '../../src/core/layout';
 import { LayoutRecordSchema } from '../../src/core/model';
 import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
@@ -159,6 +159,71 @@ describe('backup', () => {
     const reader = await SnapshotReader.open((await listSnapshots(root))[0]!.dir);
     const studies = Object.values((await reader.chartData('AbCd1234', '1'))!.studies);
     expect(studies.map((s) => s.status).sort()).toEqual(['error', 'ok']);
+  });
+
+  it('reports progress step by step up to exactly the total', async () => {
+    tv.add(referenceInAccount('Second01', 'Second'));
+    const seen: BackupProgress[] = [];
+    await backup({ onProgress: (p) => seen.push(p) });
+    expect(seen.map((p) => [p.step, p.name ?? null])).toEqual([
+      ['list', null],
+      ['layout', 'Min AAPL'],
+      ['layout', 'Second'],
+      ['userDrawings', null],
+      ['studyTemplates', null],
+      ['drawingTemplates', null],
+      ['scripts', null],
+      ['prices', 'Min AAPL'],
+      ['prices', 'Second'],
+      ['finish', null],
+    ]);
+    const total = seen[1]!.total;
+    expect(seen.slice(1).every((p) => p.total === total)).toBe(true);
+    expect(seen.map((p) => p.done)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, total]);
+    expect(total).toBe(8);
+  });
+
+  it('without prices, opens no price connection and says the snapshot has none', async () => {
+    let sockets = 0;
+    const { factory } = fakeDataSocket();
+    const r = await backup({ includePrices: false, socketFactory: (u, o) => (sockets++, factory(u, o)) });
+    expect(r.ok).toBe(true);
+    expect(sockets).toBe(0);
+    const reader = await SnapshotReader.open(r.dir);
+    expect(reader.manifest.layouts[0]!.priceData).toBe(false);
+    expect(await reader.chartData('AbCd1234', '1')).toBeNull();
+  });
+
+  it('warns when TradingView sends no prices for a symbol', async () => {
+    const r = await backup({ socketFactory: fakeDataSocket({ bars: 0 }).factory });
+    expect(r.ok).toBe(true);
+    expect(r.warnings).toEqual(['"Min AAPL": prices for NASDAQ:AAPL (D) could not be saved: no prices returned']);
+    const reader = await SnapshotReader.open(r.dir);
+    expect(reader.manifest.layouts[0]!.priceData).toBe(false);
+    expect(await reader.chartData('AbCd1234', '1')).toBeNull();
+  });
+
+  it('stops with an INCOMPLETE snapshot when a stored drawing has a format it does not know', async () => {
+    tv.layouts.get('AbCd1234')!.storage['1']!.odd = { id: 'odd', state: { foo: 1 } };
+    const r = await backup();
+    expect(r).toMatchObject({ ok: false, error: { kind: 'format-changed', message: 'Some drawings in "Min AAPL" have an unknown format.' } });
+    const [snap] = await listSnapshots(root);
+    expect(snap!.name).toMatch(/-INCOMPLETE$/);
+    expect(snap!.manifest!.error).toMatch(/Drawing odd has a format ChartKeeper does not recognise/);
+  });
+
+  it('calls a failure that is not a TradingView answer "unexpected", and still keeps the INCOMPLETE folder', async () => {
+    for (const p of tv.layouts.get('AbCd1234')!.content.charts[0]!.panes) p.sources = p.sources.filter((s) => s.type !== 'MainSeries');
+    const r = await backup();
+    expect(r).toMatchObject({ ok: false, layouts: 0, error: { kind: 'unexpected', params: {}, message: 'The backup stopped because of an unexpected error: Chart 1 in "Min AAPL" has no price series.' } });
+    expect(path.basename(r.dir)).toMatch(/-INCOMPLETE$/);
+  });
+
+  it('keeps a Pine script with path characters in its name inside the scripts folder', async () => {
+    tv.scripts = [{ scriptIdPart: 'USER;x', scriptName: '../../outside', version: '1.0', source: 'a' }, { scriptIdPart: 'USER;y', scriptName: '', version: '1.0', source: 'b' }];
+    const r = await backup({ includePrices: false });
+    expect((await fs.readdir(path.join(r.dir, 'scripts'))).sort()).toEqual(['.._.._outside.pine', 'index.json', 'script.pine']);
+    expect(await fs.readdir(path.dirname(r.dir))).toEqual([path.basename(r.dir)]);
   });
 });
 
@@ -339,5 +404,80 @@ describe('restore', () => {
     tv.themes = {};
     expect(await restoreTemplates(client(), snap)).toMatchObject({ added: [], missing: ['theme'] });
     expect(tv.themes).toEqual({});
+  });
+
+  it('adds missing indicator templates and themes with their content', async () => {
+    const snap = await snapshot();
+    const [study] = tv.studyTemplates;
+    const theme = tv.themes['My dark'];
+    tv.studyTemplates = [];
+    tv.themes = {};
+    const r = await restoreTemplates(client(), snap);
+    expect(r.added).toEqual([{ kind: 'study-template', name: 'My RSI setup' }, { kind: 'theme', name: 'My dark' }]);
+    expect(tv.studyTemplates).toEqual([{ id: expect.any(Number), name: 'My RSI setup', content: study!.content, meta_info: study!.meta_info }]);
+    expect(tv.themes).toEqual({ 'My dark': theme });
+  });
+
+  it('says every template kind a backup lacks, and adds nothing', async () => {
+    const snap = await snapshot();
+    for (const f of [SNAPSHOT_FILES.studyTemplates, SNAPSHOT_FILES.drawingTemplates, SNAPSHOT_FILES.themes]) await fs.rm(path.join(snap.dir, f));
+    tv.studyTemplates = [];
+    tv.drawingTemplates = {};
+    tv.themes = {};
+    expect(await restoreTemplates(client(), snap)).toEqual({ added: [], skipped: [], missing: ['study-template', 'drawing-template', 'theme'] });
+    expect(tv.requests.filter((q) => q.method === 'POST')).toEqual([]);
+  });
+
+  it('finishes the layout an interrupted restore already created, even after it was renamed', async () => {
+    const snap = await snapshot();
+    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    tv.failOn = (req) => (/^\/chart\/New\d+\/json\/$/.test(new URL(req.url).pathname) ? { status: 500, contentType: 'text/plain', body: 'down' } : null);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toMatchObject({ kind: 'server' });
+    tv.failOn = null;
+    const created = [...tv.layouts.values()].find((l) => l.uid !== 'AbCd1234')!;
+    created.name = 'Renamed on TradingView';
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    expect(r).toMatchObject({ uid: created.uid, name: 'Renamed on TradingView', resumed: true, check: { verdict: 'verified' } });
+    expect(tv.layouts.size).toBe(2);
+    expect(tv.requests.filter((q) => q.method === 'POST')).toHaveLength(1);
+  });
+
+  it('creates the layout afresh when the interrupted save never reached TradingView', async () => {
+    const snap = await snapshot();
+    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    tv.failOn = (req) => (req.method === 'POST' ? { status: 500, contentType: 'text/html', body: 'down' } : null);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toMatchObject({ kind: 'server' });
+    expect(tv.layouts.size).toBe(1);
+    tv.failOn = null;
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    expect(r).toMatchObject({ resumed: false, check: { verdict: 'verified' } });
+    expect(r.uid).not.toBe('AbCd1234');
+    expect(tv.layouts.size).toBe(2);
+  });
+
+  it('replace: stops when the chosen layout was deleted on TradingView meanwhile', async () => {
+    const snap = await snapshot();
+    tv.requests.length = 0;
+    const mode = { kind: 'replace' as const, targetUid: 'Gone0001', confirmedName: 'Gone' };
+    await expect(restoreLayout(client(), snap, 'AbCd1234', mode, { root, journal: journal(), buildTime: null })).rejects.toMatchObject({ kind: 'not-found', message: expect.stringMatching(/no longer exists/) });
+    expect(tv.requests.filter((q) => q.method !== 'GET')).toEqual([]);
+  });
+
+  it('names the plan and its limit when no layout slot is free', async () => {
+    const snap = await snapshot();
+    for (let i = 0; i < 4; i++) tv.add(referenceInAccount(`Extra00${i}`, `Extra ${i}`));
+    tv.account = { ...tv.account!, plan: 'essential' };
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null })).rejects.toMatchObject({
+      kind: 'limit-reached',
+      params: { limit: 5, plan: 'essential' },
+      message: expect.stringContaining('Your TradingView plan (essential) allows 5 saved layouts, and all are in use.'),
+    });
+  });
+
+  it('reads the older list entry fields for the save request', () => {
+    expect(symbolFields({ ...referenceRecord(), listEntry: { symbol: 'NYSE:IBM', interval: '15', short_symbol: 'IBM', legs: [{ symbol: 'NYSE:IBM' }] } })).toEqual({
+      resolution: '15', symbol_type: 'stock', exchange: 'NYSE', listed_exchange: 'NYSE', symbol: 'NYSE:IBM', short_name: 'IBM', legs: '[{"symbol":"NYSE:IBM"}]',
+    });
+    expect(symbolFields({ ...referenceRecord(), listEntry: { legs: '[{"symbol":"X"}]' } }).legs).toBe('[{"symbol":"X"}]');
   });
 });

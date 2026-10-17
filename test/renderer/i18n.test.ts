@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { BackupStep } from '../../src/core/backup';
 import type { RestoreStep } from '../../src/core/restore';
 import {
-  BACKUP_STEP_KEYS, backupStepText, ERROR_KEYS, explainError, formatRelative, RESTORE_STEP_KEYS, restoreStepText, TEXT, type Key,
+  BACKUP_STEP_KEYS, backupStepText, ERROR_KEYS, explainError, formatHour, formatRelative, RESTORE_STEP_KEYS, restoreStepText, TEXT, tn, type Key,
 } from '../../src/renderer/i18n';
 import type { AppError } from '../../src/shared/api';
 
@@ -84,5 +84,18 @@ describe('relative dates', () => {
     expect(formatRelative(new Date(2026, 9, 16, 18, 0), now)).toBe('yesterday at 18:00');
     expect(formatRelative(new Date(2026, 9, 14, 18, 0), now)).toBe('3 days ago');
     expect(formatRelative(new Date(2026, 9, 1, 9, 12), now)).toBe('1 October 2026');
+  });
+
+  it('writes the daily backup hour on the 24-hour clock', () => {
+    expect(formatHour(7)).toBe('07:00');
+    expect(formatHour(18)).toBe('18:00');
+  });
+});
+
+describe('counted words', () => {
+  it('uses the singular only for exactly one, and groups thousands', () => {
+    expect(tn('count.layouts', 1)).toBe('1 layout');
+    expect(tn('count.layouts', 0)).toBe('0 layouts');
+    expect(tn('count.drawings', 1234)).toBe('1,234 drawings');
   });
 });
