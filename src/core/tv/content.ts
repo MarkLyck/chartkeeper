@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { isObj } from '../props';
 
 /**
  * TradingView's layout `content`: charts -> panes -> sources. Only the fields
@@ -35,8 +36,6 @@ export const TvContentSchema = z.custom<TvContent>().superRefine((value, ctx) =>
 const isTvSource = (v: unknown): v is TvSource => TvSourceShape.safeParse(v).success;
 
 export class LayoutParseError extends Error {}
-
-export const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 export const isDrawingType = (type: unknown): type is string => typeof type === 'string' && type.startsWith('LineTool');
 

@@ -4,6 +4,7 @@ import type { LayoutCounts, ParsedLayout } from '../core/layout';
 import type { ChartData, Manifest, ManifestLayout } from '../core/model';
 import type { RestoreStep } from '../core/restore';
 import { checkRestore } from '../core/restorePolicy';
+import { urls } from '../core/tv/endpoints';
 import type {
   AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, Lang, ProgressEvent, RestoreOutcome, RestoreTargets, Result, SnapshotSummary,
 } from '../shared/api';
@@ -280,7 +281,7 @@ export function createMockApi(fixture: PreviewFixture, init: { lang?: Lang; sign
           value: {
             uid,
             name: target?.name ?? `${source.name} (restored ${new Date().toISOString().slice(0, 10)})`,
-            url: `https://www.tradingview.com/chart/${uid}/`,
+            url: urls.layoutPage(uid),
             check: checkRestore(expected, actual, control.scenario.restore === 'unchecked' ? null : { drawings: actual.drawings, studies: actual.studies }),
             safetyBackup: req.mode === 'replace' ? `${FOLDER}/safety-copies/${stamp(new Date())}_${target?.name ?? req.targetUid}` : null,
             resumed: false,

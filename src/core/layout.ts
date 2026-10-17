@@ -1,5 +1,6 @@
 import type { DrawingBucket, DrawingsRecord, LayoutRecord } from './model';
-import { chartIdOf, drawingSourceFromStored, isDrawingType, isObj, LayoutParseError, mainSeriesOf, placeDrawing, sameTicker, type TvSource } from './tv/content';
+import { anyStr, isObj, num } from './props';
+import { chartIdOf, drawingSourceFromStored, isDrawingType, LayoutParseError, mainSeriesOf, placeDrawing, sameTicker, type TvSource } from './tv/content';
 
 /**
  * A layout reduced to what people recognise on screen: charts, panes,
@@ -86,8 +87,6 @@ export interface ParsedDrawing {
   source: TvSource;
 }
 
-const str = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback);
-const num = (v: unknown, fallback = 0): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
 const STUDY_TYPES = /^(Study|study_|StudyStrategy|study$)/;
 export const isStudyType = (type: unknown): boolean => typeof type === 'string' && STUDY_TYPES.test(type);
@@ -98,18 +97,18 @@ export function parseDrawing(source: TvSource, origin: DrawingOrigin): ParsedDra
   return {
     id: source.id,
     type: source.type,
-    points: points.filter(isObj).map((p) => ({ time: num(p.time_t), offset: num(p.offset), price: num(p.price) })),
+    points: points.filter(isObj).map((p) => ({ time: num(p.time_t, 0), offset: num(p.offset, 0), price: num(p.price, 0) })),
     props,
     symbol: typeof props.symbol === 'string' ? props.symbol : null,
     ownerSource: typeof source.ownerSource === 'string' ? source.ownerSource : null,
     visible: props.visible !== false,
-    zorder: num(source.zorder),
+    zorder: num(source.zorder, 0),
     origin,
     source,
   };
 }
 
-export function parseBucket(bucket: DrawingBucket, origin: DrawingOrigin): { drawings: ParsedDrawing[]; problems: string[] } {
+function drawingsOfBucket(bucket: DrawingBucket, origin: DrawingOrigin): { drawings: ParsedDrawing[]; problems: string[] } {
   const drawings: ParsedDrawing[] = [];
   const problems: string[] = [];
   for (const [id, stored] of Object.entries(bucket.sources)) {
@@ -131,7 +130,7 @@ function resolveMetaInfo(source: TvSource, map: Record<string, Record<string, un
 
 function metaInfoId(source: TvSource, meta: Record<string, unknown> | null): string {
   if (typeof source.metaInfo === 'string') return source.metaInfo;
-  if (meta) return str(meta.fullId) || str(meta.id);
+  if (meta) return anyStr(meta.fullId) || anyStr(meta.id);
   return '';
 }
 
@@ -139,14 +138,14 @@ function parseStudy(source: TvSource, map: Record<string, Record<string, unknown
   const meta = resolveMetaInfo(source, map);
   const state = source.state ?? {};
   const id = metaInfoId(source, meta);
-  const plots = meta && Array.isArray(meta.plots) ? meta.plots.filter(isObj).map((p) => ({ id: str(p.id), type: str(p.type), ...(typeof p.target === 'string' ? { target: p.target } : {}) })) : [];
+  const plots = meta && Array.isArray(meta.plots) ? meta.plots.filter(isObj).map((p) => ({ id: anyStr(p.id), type: anyStr(p.type), ...(typeof p.target === 'string' ? { target: p.target } : {}) })) : [];
   const styles = isObj(state.styles) ? (state.styles as Record<string, Record<string, unknown>>) : {};
   return {
     id: source.id,
     metaInfoId: id,
-    name: str(meta?.description, str(state.description, id)),
-    shortName: str(meta?.shortDescription, str(meta?.description, id)),
-    isPine: id.startsWith('Script') || isObj(meta?.pine) || str(meta?.productId) === 'pine',
+    name: anyStr(meta?.description, anyStr(state.description, id)),
+    shortName: anyStr(meta?.shortDescription, anyStr(meta?.description, id)),
+    isPine: id.startsWith('Script') || isObj(meta?.pine) || anyStr(meta?.productId) === 'pine' || meta?.isTVScript === true,
     isPriceStudy: meta?.is_price_study === true,
     visible: state.visible !== false,
     inputs: isObj(state.inputs) ? state.inputs : {},
@@ -185,12 +184,12 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
     const seriesState = main.state ?? {};
     return {
       chartId,
-      symbol: str(seriesState.symbol),
-      shortName: str(seriesState.shortName, str(seriesState.symbol)),
-      interval: str(seriesState.interval, 'D'),
+      symbol: anyStr(seriesState.symbol),
+      shortName: anyStr(seriesState.shortName, anyStr(seriesState.symbol)),
+      interval: anyStr(seriesState.interval, 'D'),
       style: num(seriesState.style, 1),
       seriesState,
-      timezone: str(chart.timezone, 'Etc/UTC'),
+      timezone: anyStr(chart.timezone, 'Etc/UTC'),
       chartProperties: isObj(chart.chartProperties) ? chart.chartProperties : {},
       panes,
     };
@@ -198,7 +197,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
 
   const sharedDrawings: ParsedDrawing[] = [];
   for (const [bucketId, bucket] of Object.entries(drawings?.buckets ?? {})) {
-    const parsed = parseBucket(bucket, `storage:${bucketId}`);
+    const parsed = drawingsOfBucket(bucket, `storage:${bucketId}`);
     problems.push(...parsed.problems);
     for (const d of parsed.drawings) {
       if (seen.has(d.id)) continue;
@@ -209,12 +208,12 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
     }
   }
   if (userDrawings) {
-    const parsed = parseBucket(userDrawings, 'user');
+    const parsed = drawingsOfBucket(userDrawings, 'user');
     problems.push(...parsed.problems);
     sharedDrawings.push(...parsed.drawings.filter((d) => !seen.has(d.id)));
   }
 
-  return { uid: record.uid, name: record.name, arrangement: str(content.layout, 's'), charts, sharedDrawings, problems };
+  return { uid: record.uid, name: record.name, arrangement: anyStr(content.layout, 's'), charts, sharedDrawings, problems };
 }
 
 /** Drawings that belong on a chart: its own plus shared ones for the same symbol. */

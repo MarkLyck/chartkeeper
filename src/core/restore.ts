@@ -7,6 +7,7 @@ import type { DrawingsRecord, LayoutRecord } from './model';
 import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
+import { urls } from './tv/endpoints';
 import { TvError } from './tv/errors';
 
 export type RestoreStep = 'check' | 'create' | 'safetyCopy' | 'replace' | 'clearDrawings' | 'verify';
@@ -206,7 +207,7 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
   if (mode.kind === 'new') await mark(uid, true);
   const shown = opts.countOnPage ? await opts.countOnPage(uid) : null;
   const check = checkRestore(expected, countLayout(after.layout), shown);
-  return { uid, name, url: `https://www.tradingview.com/chart/${uid}/`, check, safetyBackup, resumed };
+  return { uid, name, url: urls.layoutPage(uid), check, safetyBackup, resumed };
 }
 
 /** After "replace", the saved content holds every backed-up drawing, so the storage copies are removed to avoid duplicates. */

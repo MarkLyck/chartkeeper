@@ -1,14 +1,12 @@
-import type { AppError, CompareOutcome, LoadedLayout, SnapshotSummary } from '../../shared/api';
+import type { CompareOutcome, LoadedLayout, SnapshotSummary } from '../../shared/api';
 import type { Change, LayoutDiff } from '../../core/diff';
 import { getLang, t } from '../i18n';
 import { renderLayout } from '../viewer';
 import { changeText } from './changes';
 import { button, errorBox, notice, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
-import type { Ctx, Screen } from './screen';
+import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { incompleteReason, isIncomplete, layoutFacts, layoutsOf, newestFirst, snapshotDate, snapshotLines, snapshotTitle } from './snapshots';
-
-type Loadable<T> = { k: 'loading' } | { k: 'ok'; value: T } | { k: 'error'; error: AppError };
 
 type Main =
   | { k: 'none' }
@@ -50,7 +48,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     setMain({ k: 'chart', uid, load: { k: 'loading' } });
     const r = await ctx.api.loadLayout(selected.dir, uid);
     if (mine !== token) return;
-    setMain({ k: 'chart', uid, load: r.ok ? { k: 'ok', value: r.value } : { k: 'error', error: r.error } });
+    setMain({ k: 'chart', uid, load: loaded(r) });
   }
 
   async function compareWith(olderDir: string) {
@@ -60,7 +58,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     setMain({ k: 'compare', olderDir, returnTo, load: { k: 'loading' } });
     const r = await ctx.api.compare(olderDir, selected.dir);
     if (mine !== token) return;
-    setMain({ k: 'compare', olderDir, returnTo, load: r.ok ? { k: 'ok', value: r.value } : { k: 'error', error: r.error } });
+    setMain({ k: 'compare', olderDir, returnTo, load: loaded(r) });
   }
 
   function renderSidebar() {

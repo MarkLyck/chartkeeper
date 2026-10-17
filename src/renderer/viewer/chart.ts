@@ -11,6 +11,7 @@ import {
   type DeepPartial,
   type IChartApi,
   type ISeriesApi,
+  type SeriesDefinition,
   type SeriesOptionsCommon,
   type SeriesType,
   type TimeChartOptions,
@@ -19,15 +20,13 @@ import type { DrawingPoint, ParsedStudy } from '../../core/layout';
 import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, StudyBackdropPrimitive } from './primitives';
-import { lineWidth, type PriceFormatSpec, type SeriesSpec } from './series';
+import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
 import type { Lang } from '../../shared/api';
+import { localeOf } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
+import { num, obj, str, type Props } from '../../core/props';
 
-type Obj = Record<string, unknown>;
-const obj = (v: unknown): Obj => (typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Obj) : {});
-const str = (v: unknown, fallback: string): string => (typeof v === 'string' && v !== '' ? v : fallback);
-const num = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
 /** TradingView's dotted grid is sparser than lightweight-charts' dotted style. */
 const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 4 : tvStyle);
@@ -40,7 +39,7 @@ export interface ChartTheme {
 }
 
 /** Chart colours and scale settings from the layout's chartProperties. */
-export function chartTheme(chartProperties: Obj): ChartTheme {
+export function chartTheme(chartProperties: Props): ChartTheme {
   const pane = obj(chartProperties.paneProperties);
   const scales = obj(chartProperties.scalesProperties);
   const background = str(pane.background, '#ffffff');
@@ -83,39 +82,20 @@ export function chartTheme(chartProperties: Obj): ChartTheme {
   };
 }
 
+const SERIES_DEFINITIONS = {
+  Candlestick: CandlestickSeries,
+  Bar: BarSeries,
+  Line: LineSeries,
+  Area: AreaSeries,
+  Baseline: BaselineSeries,
+  Histogram: HistogramSeries,
+} satisfies { [K in SeriesKind]: SeriesDefinition<K> };
+
 function addSeries(chart: IChartApi, spec: SeriesSpec, pane: number, extra: DeepPartial<SeriesOptionsCommon>): ISeriesApi<SeriesType> {
-  switch (spec.kind) {
-    case 'Candlestick': {
-      const s = chart.addSeries(CandlestickSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-    case 'Bar': {
-      const s = chart.addSeries(BarSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-    case 'Line': {
-      const s = chart.addSeries(LineSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-    case 'Area': {
-      const s = chart.addSeries(AreaSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-    case 'Baseline': {
-      const s = chart.addSeries(BaselineSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-    case 'Histogram': {
-      const s = chart.addSeries(HistogramSeries, { ...spec.options, ...extra }, pane);
-      s.setData(spec.data);
-      return s;
-    }
-  }
+  // lightweight-charts' generics can't follow spec.kind across the union, so the definition is widened once here.
+  const s = chart.addSeries(SERIES_DEFINITIONS[spec.kind] as SeriesDefinition<SeriesType>, { ...spec.options, ...extra }, pane);
+  s.setData(spec.data);
+  return s;
 }
 
 function formatValue(v: number | null | undefined, format: PriceFormatSpec): string {
@@ -145,8 +125,7 @@ function inputsSummary(study: ParsedStudy): string {
 /** Time axis label of a drawing, like TradingView's "Mon 14 Sep '26": the date of the bar the point sits on. */
 function timeFormatter(lang: Lang, plan: ChartPlan): (p: DrawingPoint) => string {
   const intraday = isIntraday(plan.timeIndex.interval);
-  const locale = lang === 'da' ? 'da-DK' : 'en-US';
-  const fmt = new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
+  const fmt = new Intl.DateTimeFormat(localeOf(lang), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
   return (p) => {
     const t = plan.timeIndex.times[plan.timeIndex.logical(p)] ?? p.time;
     const d = new Date((t + (intraday ? timeZoneOffset(t, plan.chart.timezone) : 0)) * 1000);
@@ -249,7 +228,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, lang: Lang, visi
   const chart = createChart(holder, {
     ...theme.options,
     autoSize: true,
-    localization: { locale: lang === 'da' ? 'da-DK' : 'en-US' },
+    localization: { locale: localeOf(lang) },
     timeScale: { ...theme.options.timeScale, timeVisible: intraday, secondsVisible: plan.timeIndex.interval.unit === 'S' },
   });
 

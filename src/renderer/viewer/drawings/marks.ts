@@ -1,6 +1,7 @@
 import type { DrawingPoint } from '../../../core/layout';
 import { fillColor } from '../colors';
-import { drawBubble, drawText, fillPolygon, font, pnum, pstr, setStroke, strokeLine, type DrawContext, type Props } from './canvas';
+import { drawBubble, drawText, fillPolygon, font, pnum, pstr, setStroke, strokeLine, type DrawContext } from './canvas';
+import type { Props } from '../../../core/props';
 
 /** Plain text and anchored text: the point is the top-left corner of the text. */
 export function drawTextTool(dc: DrawContext, p: Props, points: DrawingPoint[]): void {

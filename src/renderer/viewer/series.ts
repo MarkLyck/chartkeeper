@@ -2,6 +2,7 @@ import type { LineWidth, SeriesDataItemTypeMap, SeriesPartialOptionsMap, Time, U
 import type { ParsedChart } from '../../core/layout';
 import type { Bar } from '../../core/model';
 import { fillColor, lwcLineStyle } from './colors';
+import { num, obj, str, type Props } from '../../core/props';
 
 export type SeriesKind = 'Candlestick' | 'Bar' | 'Line' | 'Area' | 'Baseline' | 'Histogram';
 
@@ -18,10 +19,6 @@ export interface MainSeriesSpec {
   fallbackFrom: number | null;
 }
 
-type Obj = Record<string, unknown>;
-const obj = (v: unknown): Obj => (typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Obj) : {});
-const str = (v: unknown, fallback: string): string => (typeof v === 'string' && v !== '' ? v : fallback);
-const num = (v: unknown, fallback: number): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
 
 export const ts = (t: number) => t as UTCTimestamp;
 export const lineWidth = (v: unknown, fallback = 1): LineWidth => Math.min(4, Math.max(1, Math.round(num(v, fallback)))) as LineWidth;
@@ -54,7 +51,7 @@ const PRICE_SOURCES: Record<string, (b: Bar) => number> = {
   ohlc4: (b) => (b[1] + b[2] + b[3] + b[4]) / 4,
   hlcc4: (b) => (b[2] + b[3] + 2 * b[4]) / 4,
 };
-const priceSource = (style: Obj) => PRICE_SOURCES[str(style.priceSource, 'close')] ?? PRICE_SOURCES.close!;
+const priceSource = (style: Props) => PRICE_SOURCES[str(style.priceSource, 'close')] ?? PRICE_SOURCES.close!;
 
 const decimals = (n: number): number => {
   const s = String(n);
@@ -75,7 +72,7 @@ export function guessPriceFormat(bars: readonly Bar[]): { precision: number; min
   return { precision, minMove: Number((10 ** -precision).toFixed(precision)) };
 }
 
-function candleOptions(style: Obj): SeriesPartialOptionsMap['Candlestick'] {
+function candleOptions(style: Props): SeriesPartialOptionsMap['Candlestick'] {
   const up = str(style.upColor, '#089981');
   const down = str(style.downColor, '#F23645');
   const drawBody = style.drawBody !== false;

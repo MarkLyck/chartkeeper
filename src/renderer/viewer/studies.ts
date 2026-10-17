@@ -2,17 +2,14 @@ import type { LineStyle, LineWidth } from 'lightweight-charts';
 import type { ParsedStudy, PlotDef } from '../../core/layout';
 import { fillColor, lwcLineStyle, withTransparency } from './colors';
 import { lineWidth, ts, type PriceFormatSpec, type SeriesSpec } from './series';
+import { num, obj, str, type Props } from '../../core/props';
 
-type Obj = Record<string, unknown>;
-const obj = (v: unknown): Obj => (typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Obj) : {});
-const str = (v: unknown, fallback: string): string => (typeof v === 'string' && v !== '' ? v : fallback);
-const num = (v: unknown): number | null => (typeof v === 'number' && Number.isFinite(v) ? v : null);
 
 export type Column = (number | null)[];
 
 /** TradingView sends "no value" as null, NaN or a 1e100-sized sentinel. */
 const value = (v: unknown): number | null => {
-  const n = num(v);
+  const n = num(v, null);
   return n === null || Math.abs(n) >= 1e99 ? null : n;
 };
 
@@ -64,13 +61,13 @@ const INVISIBLE_KINDS = new Set(['alertcondition', 'data', 'dataoffset']);
 const PART_KINDS = new Set(['colorer', 'ohlc_high', 'ohlc_low', 'ohlc_close', 'ohlc_colorer', 'wick_colorer', 'border_colorer', 'up_colorer', 'down_colorer', 'text_colorer']);
 
 /** TradingView `display` is a bit mask; bit 1 means "show on the chart pane". Missing means everything. */
-export const shownOnPane = (style: Obj): boolean => style.visible !== false && (style.display === undefined || (Number(style.display) & 1) !== 0);
+export const shownOnPane = (style: Props): boolean => style.visible !== false && (style.display === undefined || (Number(style.display) & 1) !== 0);
 
 function paletteColor(study: ParsedStudy, paletteId: string, raw: number | null, transparency: unknown): string | null {
   if (raw === null) return null;
   const metaPalette = obj(obj(study.metaInfo?.palettes)[paletteId]);
   const valToIndex = obj(metaPalette.valToIndex);
-  const index = num(valToIndex[String(raw)]) ?? raw;
+  const index = num(valToIndex[String(raw)], null) ?? raw;
   const entry = obj(obj(obj(obj(study.state.palettes)[paletteId]).colors)[String(index)]);
   return typeof entry.color === 'string' ? withTransparency(entry.color, transparency) : null;
 }
@@ -79,7 +76,7 @@ export function studyPriceFormat(study: ParsedStudy, main: PriceFormatSpec): Pri
   const format = obj(study.metaInfo?.format);
   if (format.type === 'volume') return { type: 'volume' };
   if (format.type === 'percent') return { type: 'percent' };
-  const precision = num(format.precision);
+  const precision = num(format.precision, null);
   if (format.type === 'price' && precision !== null) return { type: 'price', precision, minMove: Number((10 ** -precision).toFixed(precision)) };
   return main;
 }
@@ -98,7 +95,7 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
   const t = (i: number) => ts(times[i]!);
 
   if (plottype === 1 || plottype === 5) {
-    const base = num(obj(obj(study.metaInfo?.styles)[plot.id]).histogramBase) ?? 0;
+    const base = num(obj(obj(study.metaInfo?.styles)[plot.id]).histogramBase, 0);
     return {
       plotId: plot.id,
       title,
@@ -170,15 +167,15 @@ function bands(study: ParsedStudy): Band[] {
   const raw = Array.isArray(study.state.bands) ? study.state.bands : [];
   return raw
     .map(obj)
-    .filter((b) => b.visible !== false && num(b.value) !== null)
-    .map((b) => ({ price: num(b.value)!, color: str(b.color, '#787B86'), lineStyle: lwcLineStyle(b.linestyle), lineWidth: lineWidth(b.linewidth) }));
+    .filter((b) => b.visible !== false && num(b.value, null) !== null)
+    .map((b) => ({ price: num(b.value, null)!, color: str(b.color, '#787B86'), lineStyle: lwcLineStyle(b.linestyle), lineWidth: lineWidth(b.linewidth) }));
 }
 
 function bandValueById(study: ParsedStudy, id: string): number | null {
   const metaBands = Array.isArray(study.metaInfo?.bands) ? study.metaInfo.bands.map(obj) : [];
   const i = metaBands.findIndex((b) => b.id === id);
   const stateBands = Array.isArray(study.state.bands) ? study.state.bands.map(obj) : [];
-  return i < 0 ? null : num(stateBands[i]?.value);
+  return i < 0 ? null : num(stateBands[i]?.value, null);
 }
 
 function fills(study: ParsedStudy, columnsById: Map<string, Column>, linePlots: PlotSeries[]): FillPlan[] {
@@ -187,8 +184,8 @@ function fills(study: ParsedStudy, columnsById: Map<string, Column>, linePlots: 
 
   const bg = obj(st.bandsBackground);
   const stateBands = Array.isArray(st.bands) ? st.bands.map(obj) : [];
-  const b0 = num(stateBands[0]?.value);
-  const b1 = num(stateBands[1]?.value);
+  const b0 = num(stateBands[0]?.value, null);
+  const b1 = num(stateBands[1]?.value, null);
   if (bg.fillBackground === true && b0 !== null && b1 !== null) {
     out.push({ kind: 'between-prices', top: Math.max(b0, b1), bottom: Math.min(b0, b1), color: fillColor(str(bg.backgroundColor, '#9915ff'), bg.transparency) });
   }
@@ -219,8 +216,8 @@ function fills(study: ParsedStudy, columnsById: Map<string, Column>, linePlots: 
             gradient: {
               topColor: str(style.topColor, 'rgba(0,0,0,0)'),
               bottomColor: str(style.bottomColor, 'rgba(0,0,0,0)'),
-              topValue: num(style.topValue) ?? 0,
-              bottomValue: num(style.bottomValue) ?? 0,
+              topValue: num(style.topValue, 0),
+              bottomValue: num(style.bottomValue, 0),
             },
           }
         : { color: withTransparency(str(style.color, '#2962FF'), style.transparency) };
@@ -280,7 +277,7 @@ export function planStudyRender(study: ParsedStudy, rows: readonly (number | nul
 export function hasPineGraphics(graphics: unknown): boolean {
   if (graphics === null || graphics === undefined) return false;
   if (typeof graphics !== 'object') return Boolean(graphics);
-  const g = graphics as Obj;
+  const g = graphics as Props;
   if ('d' in g) {
     if (typeof g.d !== 'string' || g.d.trim() === '' || g.d.trim() === '{}') return false;
     try {

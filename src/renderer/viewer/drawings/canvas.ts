@@ -1,4 +1,5 @@
 import type { DrawingPoint } from '../../../core/layout';
+import { num, obj, str, type Props } from '../../../core/props';
 import { dashPattern } from '../colors';
 
 export interface Pt {
@@ -21,22 +22,12 @@ export interface DrawContext {
   priceStep: number;
 }
 
-export type Props = Record<string, unknown>;
 
 export const FONT_FAMILY = `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;
 
-export const pnum = (p: Props, key: string, fallback: number): number => {
-  const v = p[key];
-  return typeof v === 'number' && Number.isFinite(v) ? v : fallback;
-};
-export const pstr = (p: Props, key: string, fallback: string): string => {
-  const v = p[key];
-  return typeof v === 'string' && v !== '' ? v : fallback;
-};
-export const pobj = (p: Props, key: string): Props => {
-  const v = p[key];
-  return typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Props) : {};
-};
+export const pnum = (p: Props, key: string, fallback: number): number => num(p[key], fallback);
+export const pstr = (p: Props, key: string, fallback: string): string => str(p[key], fallback);
+export const pobj = (p: Props, key: string): Props => obj(p[key]);
 
 export function font(p: Props, sizeKey = 'fontsize', fallback = 14): string {
   const size = pnum(p, sizeKey, pnum(p, sizeKey === 'fontsize' ? 'fontSize' : 'fontsize', fallback));

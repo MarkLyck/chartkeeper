@@ -5,10 +5,8 @@ import { formatDateTime, restoreStepText, t, tn } from '../i18n';
 import { templateItemText, templateMissingText } from './changes';
 import { button, confirmDialog, details, errorBox, icons, notice, progressBar, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
-import type { Ctx, Screen } from './screen';
+import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { isIncomplete, layoutFacts, layoutsOf, newestFirst, snapshotDate, snapshotLines } from './snapshots';
-
-type Loadable<T> = { k: 'loading' } | { k: 'ok'; value: T } | { k: 'error'; error: AppError };
 
 interface Source {
   snapshot: SnapshotSummary;
@@ -24,7 +22,7 @@ type Step =
   | { k: 'done'; source: Source; outcome: RestoreOutcome }
   | { k: 'failed'; source: Source; error: AppError; mode: Mode };
 
-type Templates = null | { k: 'running' } | { k: 'ok'; value: TemplatesOutcome } | { k: 'error'; error: AppError };
+type Templates = null | Loadable<TemplatesOutcome>;
 
 const STEP_NUMBER: Record<Step['k'], 1 | 2 | 3> = { choose: 1, how: 2, running: 3, done: 3, failed: 3 };
 
@@ -89,22 +87,22 @@ export function restoreScreen(ctx: Ctx): Screen {
 
   function templatesSection(snap: SnapshotSummary): HTMLElement {
     const run = async () => {
-      templates = { k: 'running' };
+      templates = { k: 'loading' };
       render();
       const r = await ctx.api.restoreTemplates(snap.dir);
-      templates = r.ok ? { k: 'ok', value: r.value } : { k: 'error', error: r.error };
+      templates = loaded(r);
       render();
     };
     const tpl = templates;
     const result =
       tpl === null ? null
-      : tpl.k === 'running' ? spinner(t('restore.templatesRunning'))
+      : tpl.k === 'loading' ? spinner(t('restore.templatesRunning'))
       : tpl.k === 'error' ? errorBox(ctx, tpl.error)
       : templatesResult(tpl.value);
     return h('section', { class: 'card templates', attrs: { 'aria-labelledby': 'tpl-title' } },
       h('h2', { id: 'tpl-title' }, t('restore.templatesTitle')),
       h('p', { class: 'note' }, t('restore.templatesNote')),
-      button(t('restore.templatesButton'), () => void run(), { id: 'restore-templates', disabled: tpl?.k === 'running' || ctx.state().busy !== null }),
+      button(t('restore.templatesButton'), () => void run(), { id: 'restore-templates', disabled: tpl?.k === 'loading' || ctx.state().busy !== null }),
       result);
   }
 
@@ -121,7 +119,7 @@ export function restoreScreen(ctx: Ctx): Screen {
     set(how);
     const r = await ctx.api.restoreTargets();
     if (step !== how) return;
-    set({ ...how, targets: r.ok ? { k: 'ok', value: r.value } : { k: 'error', error: r.error } });
+    set({ ...how, targets: loaded(r) });
   }
 
   function slotsLine(tg: RestoreTargets): HTMLElement {

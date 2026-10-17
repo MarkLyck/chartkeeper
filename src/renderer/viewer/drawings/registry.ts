@@ -1,9 +1,10 @@
 import type { DrawingPoint } from '../../../core/layout';
-import { pstr, type DrawContext, type Props } from './canvas';
+import { pstr, type DrawContext } from './canvas';
 import { drawFibExtension, drawFibRetracement } from './fib';
 import { drawCrossLine, drawHorzLine, drawHorzRay, drawVertLine, polylineDrawer, segmentDrawer } from './lines';
 import { arrowMarkDrawer, bubbleDrawer, drawArrowMarker, drawCallout, drawFlag, drawNote, drawPriceNote, drawTextTool } from './marks';
 import { drawCircle, drawEllipse, drawParallelChannel, drawRectangle, drawTriangle, rangeDrawer, riskRewardDrawer } from './shapes';
+import type { Props } from '../../../core/props';
 
 export type AxisLabel = { axis: 'price'; price: number; color: string } | { axis: 'time'; point: DrawingPoint; color: string };
 

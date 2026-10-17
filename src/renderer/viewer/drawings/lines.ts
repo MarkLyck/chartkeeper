@@ -1,6 +1,7 @@
 import type { DrawingPoint } from '../../../core/layout';
 import { fillColor } from '../colors';
-import { arrowHead, drawText, extendSegment, font, pnum, pstr, setStroke, strokeLine, textAlongLine, type DrawContext, type Props, type Pt } from './canvas';
+import { arrowHead, drawText, extendSegment, font, pnum, pstr, setStroke, strokeLine, textAlongLine, type DrawContext, type Pt } from './canvas';
+import type { Props } from '../../../core/props';
 
 const lineColor = (p: Props) => pstr(p, 'linecolor', '#2962FF');
 const lineWidth = (p: Props) => pnum(p, 'linewidth', 1);

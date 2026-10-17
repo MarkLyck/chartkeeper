@@ -1,4 +1,9 @@
-import type { AppState, ChartKeeperApi, ProgressEvent } from '../../shared/api';
+import type { AppError, AppState, ChartKeeperApi, ProgressEvent, Result } from '../../shared/api';
+
+/** Something a screen asked the app process for. */
+export type Loadable<T> = { k: 'loading' } | { k: 'ok'; value: T } | { k: 'error'; error: AppError };
+
+export const loaded = <T>(r: Result<T>): Loadable<T> => (r.ok ? { k: 'ok', value: r.value } : { k: 'error', error: r.error });
 
 export type Route =
   | { name: 'home'; startSignIn?: boolean }

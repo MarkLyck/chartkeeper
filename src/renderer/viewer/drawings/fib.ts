@@ -1,6 +1,7 @@
 import type { DrawingPoint } from '../../../core/layout';
 import { fillColor } from '../colors';
-import { FONT_FAMILY, pnum, pobj, pstr, setStroke, strokeLine, drawText, type DrawContext, type Props } from './canvas';
+import { FONT_FAMILY, pnum, pobj, pstr, setStroke, strokeLine, drawText, type DrawContext } from './canvas';
+import type { Props } from '../../../core/props';
 
 export interface FibLevel {
   coeff: number;

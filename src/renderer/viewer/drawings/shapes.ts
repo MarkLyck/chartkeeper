@@ -1,6 +1,7 @@
 import type { DrawingPoint } from '../../../core/layout';
 import { fillColor } from '../colors';
-import { arrowHead, drawText, extendSegment, fillPolygon, font, pnum, pobj, pstr, setStroke, strokeLine, type DrawContext, type Props, type Pt } from './canvas';
+import { arrowHead, drawText, extendSegment, fillPolygon, font, pnum, pobj, pstr, setStroke, strokeLine, type DrawContext, type Pt } from './canvas';
+import type { Props } from '../../../core/props';
 
 const background = (p: Props, fallback: string) => fillColor(pstr(p, 'backgroundColor', fallback), p.transparency);
 const fills = (p: Props) => p.fillBackground !== false;

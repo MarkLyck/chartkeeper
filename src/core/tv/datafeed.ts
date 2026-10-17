@@ -78,8 +78,7 @@ const PINE_ENVELOPE = new Set(['text', 'pineId', 'pineVersion']);
  */
 export function studyRequest(study: ParsedStudy): StudyRequest {
   const meta = study.metaInfo;
-  const isPine = study.metaInfoId.startsWith('Script$') || meta?.isTVScript === true;
-  if (!isPine || !meta) return { id: study.id, createId: study.metaInfoId, inputs: studyInputs(study.inputs) };
+  if (!study.isPine || !meta) return { id: study.id, createId: study.metaInfoId, inputs: studyInputs(study.inputs) };
   const defs = Array.isArray(meta.inputs) ? (meta.inputs as Record<string, unknown>[]) : [];
   const text = defs.find((d) => d.id === 'text')?.defval;
   const pine = (meta.pine ?? {}) as Record<string, unknown>;

@@ -1,6 +1,7 @@
 import type { BackupStep } from '../core/backup';
 import type { RestoreStep } from '../core/restore';
 import type { AppError, Lang } from '../shared/api';
+import { localeOf } from '../shared/locale';
 import { fill, type ParamNames } from '../shared/template';
 
 const en = {
@@ -530,7 +531,7 @@ export function restoreStepText(step: RestoreStep): string {
   return DICTIONARIES[current][RESTORE_STEP_KEYS[step]];
 }
 
-const locale = () => (current === 'da' ? 'da-DK' : 'en-GB');
+const locale = () => localeOf(current);
 
 export function formatTime(d: Date): string {
   return new Intl.DateTimeFormat(locale(), { hour: '2-digit', minute: '2-digit' }).format(d);
