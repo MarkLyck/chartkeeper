@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cyclePositions, sinePoints, timeCycleStarts } from '../../src/renderer/viewer/drawings/cycles';
 import { elliottLabel } from '../../src/renderer/viewer/drawings/elliott';
 import { abcdLegs, cypherLegs, labelAbove, lineCrossSegment, trianglePatternShape, xabcdLegs } from '../../src/renderer/viewer/drawings/patterns';
 
@@ -115,5 +116,30 @@ describe('Elliott wave labels', () => {
     expect(impulse(0)).toMatchObject({ font: 24, circle: 36, bold: true });
     expect(impulse(14)).toMatchObject({ font: 11, bold: true });
     expect(elliottLabel('LineToolElliottCorrection', 7, 4)).toBeNull();
+  });
+});
+
+describe('cycles', () => {
+  it('repeats cyclic lines every period from the first point to the visible edge', () => {
+    expect(cyclePositions(10, 5, 0, 30)).toEqual([10, 15, 20, 25, 30]);
+    expect(cyclePositions(10, -4, 0, 30)).toEqual([10, 6, 2]);
+    expect(cyclePositions(10, 0, 0, 30)).toEqual([]);
+  });
+
+  it('starts time-cycle arcs every period on both sides of the points', () => {
+    expect(timeCycleStarts(10, 5, 0, 30)).toEqual([0, 5, 10, 15, 20, 25]);
+    expect(timeCycleStarts(10, 5, 3, 12)).toEqual([0, 5, 10]);
+  });
+
+  it('runs the sine line through both points, half a period apart, from the left edge', () => {
+    const a = { x: 130, y: 100 };
+    const b = { x: 180, y: 20 };
+    const pts = sinePoints(a, b, 400);
+    const at = (x: number) => pts.reduce((best, p) => (Math.abs(p.x - x) < Math.abs(best.x - x) ? p : best)).y;
+    expect(pts[0]).toEqual({ x: -70, y: 100 });
+    expect(at(130)).toBeCloseTo(100, 0);
+    expect(at(180)).toBeCloseTo(20, 0);
+    expect(at(230)).toBeCloseTo(100, 0);
+    expect(pts.at(-1)!.x).toBeGreaterThanOrEqual(400);
   });
 });
