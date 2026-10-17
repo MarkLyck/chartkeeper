@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TvContentSchema } from './tv/content';
 
 /**
  * On-disk snapshot format. One snapshot is one folder:
@@ -42,7 +43,7 @@ export const LayoutRecordSchema = z.object({
   description: z.string().default(''),
   lastModified: z.number().nullable(),
   /** The layout JSON (TradingView's `content`), parsed. */
-  content: looseObject,
+  content: TvContentSchema,
   /** TradingView's `study_meta_info_map`: study id -> plot/input definitions. */
   studyMetaInfoMap: z.record(z.string(), looseObject),
   /** The entry from the layout list, kept verbatim. */

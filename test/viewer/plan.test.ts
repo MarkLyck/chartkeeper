@@ -55,9 +55,8 @@ describe('planLayout on the reference snapshot', () => {
 
 describe('planLayout on a layout with problems', () => {
   function problemLayout(): { layout: ParsedLayout; data: Record<string, ChartData | null> } {
-    const content = clone(record.content) as { layout: string; charts: Record<string, unknown>[] };
-    const chart1 = content.charts[0] as { panes: { sources: Record<string, unknown>[] }[] };
-    const mainSources = chart1.panes[0]!.sources;
+    const content = clone(record.content);
+    const mainSources = content.charts[0]!.panes[0]!.sources;
     const trend = mainSources.find((s) => s.id === 'tl0001')!;
     mainSources.push(
       { ...clone(trend), id: 'gann1', type: 'LineToolGannFan' },
@@ -69,7 +68,7 @@ describe('planLayout on a layout with problems', () => {
       { type: 'Study', id: 'pine1', metaInfo: 'MASimple@tv-basicstudies-280', state: { inputs: { length: 10 }, styles: {}, visible: true } },
       { type: 'Study', id: 'off1', metaInfo: 'MASimple@tv-basicstudies-280', state: { inputs: { length: 30 }, styles: {}, visible: false } },
     );
-    const chart2 = clone(content.charts[0]!) as { chartId: string; panes: { sources: { id: string }[] }[] };
+    const chart2 = clone(content.charts[0]!);
     chart2.chartId = '2';
     for (const pane of chart2.panes) for (const src of pane.sources) if (src.id !== '_seriesId') src.id += '-2';
     content.charts.push(chart2);

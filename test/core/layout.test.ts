@@ -1,7 +1,8 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { countLayout, drawingSourceFromStored, LayoutParseError, parseLayout } from '../../src/core/layout';
+import { countLayout, parseLayout } from '../../src/core/layout';
+import { drawingSourceFromStored, LayoutParseError } from '../../src/core/tv/content';
 import { layoutSlots, parseLayoutJson, parseListEntry } from '../../src/core/tv/client';
 import { FIXTURES, referenceInAccount, referenceRecord } from '../fakes/fixtures';
 

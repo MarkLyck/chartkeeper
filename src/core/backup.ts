@@ -1,7 +1,8 @@
-import { countLayout, parseLayout } from './layout';
+import { parseLayout } from './layout';
 import type { DrawingBucket, DrawingsRecord, ManifestLayout } from './model';
-import { layoutDir, SnapshotWriter, type ManifestBody } from './snapshot';
+import { APP_NAME, layoutFiles, noExtras, SnapshotWriter, type ManifestBody } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
+import { chartIdOf } from './tv/content';
 import { fetchChartData, type SocketFactory } from './tv/datafeed';
 import { TvError, type TvErrorKind } from './tv/errors';
 
@@ -50,9 +51,8 @@ export async function captureLayout(client: TvClient, entry: LayoutListEntry) {
   const record = await client.getLayout(entry);
   const token = await client.chartToken(record.uid);
   const sizes = await client.drawingSizes(record.uid, token);
-  const chartIds = (record.content.charts as Record<string, unknown>[]).map((c, i) => String(c.chartId ?? i + 1));
   const buckets: Record<string, DrawingBucket> = {};
-  for (const chartId of new Set([...chartIds, ...sizes.chartIds, '_shared'])) buckets[chartId] = await client.drawingBucket(record.uid, chartId, token);
+  for (const chartId of new Set([...record.content.charts.map(chartIdOf), ...sizes.chartIds, '_shared'])) buckets[chartId] = await client.drawingBucket(record.uid, chartId, token);
   const reportedTotal = sizes.total;
   const drawings: DrawingsRecord = { buckets, reportedTotal };
   const fetched = Object.values(buckets).reduce((n, b) => n + Object.keys(b.sources).length, 0);
@@ -78,9 +78,9 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
   const writer = await SnapshotWriter.begin(opts.root, opts.now);
   const warnings: string[] = [];
   const layouts: ManifestLayout[] = [];
-  const extras = { studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 };
+  const extras = noExtras();
   const body = (): ManifestBody => ({
-    app: { name: 'ChartKeeper', version: opts.appVersion },
+    app: { name: APP_NAME, version: opts.appVersion },
     createdAt: (opts.now ?? new Date()).toISOString(),
     account: { username: client.username, plan: client.plan },
     layouts,
@@ -101,14 +101,11 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
 
     for (const entry of entries) {
       progress(++step, steps, 'layout', entry.name);
-      const { record, drawings, layout, token } = await captureLayout(client, entry);
-      firstToken ??= { uid: record.uid, token };
-      const counts = countLayout(layout);
-      const dir = layoutDir(record.uid);
-      await writer.writeJson(`${dir}/layout.json`, record);
-      await writer.writeJson(`${dir}/drawings.json`, drawings);
-      layouts.push({ uid: record.uid, name: record.name, dir, symbols: counts.symbols, charts: counts.charts, drawings: counts.drawings, studies: counts.studies, lastModified: record.lastModified, priceData: false });
-      parsedForPrices.push({ entry, dir, layout });
+      const captured = await captureLayout(client, entry);
+      firstToken ??= { uid: captured.record.uid, token: captured.token };
+      const manifestLayout = await writer.addLayout(captured);
+      layouts.push(manifestLayout);
+      parsedForPrices.push({ entry, dir: manifestLayout.dir, layout: captured.layout });
     }
 
     if (firstToken) {
@@ -154,7 +151,7 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
           try {
             const data = await fetchChartData(chart, studies, opts.socketFactory, { authToken: opts.authToken, bars: opts.bars, studyPauseMs: opts.pauseMs === undefined ? 500 : opts.pauseMs / 3 });
             if (data.bars.length === 0) throw new Error('no prices returned');
-            await writer.writeJson(`${dir}/data/chart-${chart.chartId}.json`, data);
+            await writer.writeJson(layoutFiles(dir).chartData(chart.chartId), data);
             for (const [id, s] of Object.entries(data.studies)) if (s.status === 'error') warnings.push(`"${entry.name}", ${chart.shortName}: indicator ${id} could not be calculated (${s.error}).`);
           } catch (e) {
             allCharts = false;

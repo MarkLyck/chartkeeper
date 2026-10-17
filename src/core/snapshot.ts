@@ -2,10 +2,12 @@ import { createHash } from 'node:crypto';
 import { existsSync, promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { z } from 'zod';
+import { countLayout, type ParsedLayout } from './layout';
 import {
   ChartDataSchema,
   DrawingBucketSchema,
   DrawingsRecordSchema,
+  FORMAT_VERSION,
   LayoutRecordSchema,
   ManifestSchema,
   type ChartData,
@@ -13,6 +15,7 @@ import {
   type DrawingsRecord,
   type LayoutRecord,
   type Manifest,
+  type ManifestLayout,
 } from './model';
 
 export const SNAPSHOTS_DIR = 'snapshots';
@@ -29,6 +32,16 @@ export function snapshotStamp(date: Date): string {
 export function layoutDir(uid: string): string {
   return `layouts/${uid.replace(/[^A-Za-z0-9_-]/g, '_')}`;
 }
+
+/** The files of one layout, relative to the snapshot folder. */
+export const layoutFiles = (dir: string) => ({
+  layout: `${dir}/layout.json`,
+  drawings: `${dir}/drawings.json`,
+  chartData: (chartId: string) => `${dir}/data/chart-${chartId}.json`,
+});
+
+export const APP_NAME = 'ChartKeeper';
+export const noExtras = (): Manifest['extras'] => ({ studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 });
 
 const sha256 = (data: string) => createHash('sha256').update(data).digest('hex');
 
@@ -92,14 +105,25 @@ export class SnapshotWriter {
     this.files[rel.split(path.sep).join('/')] = { sha256: sha256(text), bytes: Buffer.byteLength(text) };
   }
 
+  /** Writes one captured layout and returns its manifest entry (without price data). */
+  async addLayout(captured: { record: LayoutRecord; drawings: DrawingsRecord; layout: ParsedLayout }): Promise<ManifestLayout> {
+    const { record, drawings, layout } = captured;
+    const dir = layoutDir(record.uid);
+    const files = layoutFiles(dir);
+    await this.writeJson(files.layout, record);
+    await this.writeJson(files.drawings, drawings);
+    const counts = countLayout(layout);
+    return { uid: record.uid, name: record.name, dir, symbols: counts.symbols, charts: counts.charts, drawings: counts.drawings, studies: counts.studies, lastModified: record.lastModified, priceData: false };
+  }
+
   async finish(body: ManifestBody): Promise<string> {
-    return this.close({ ...body, formatVersion: 1, status: 'complete', files: this.files }, this.stamp);
+    return this.close({ ...body, formatVersion: FORMAT_VERSION, status: 'complete', files: this.files }, this.stamp);
   }
 
   /** Marks the run INCOMPLETE. Never throws: it runs while reporting another error. */
   async fail(body: ManifestBody, error: string): Promise<string> {
     try {
-      return await this.close({ ...body, formatVersion: 1, status: 'incomplete', error, files: this.files }, this.stamp + INCOMPLETE);
+      return await this.close({ ...body, formatVersion: FORMAT_VERSION, status: 'incomplete', error, files: this.files }, this.stamp + INCOMPLETE);
     } catch {
       return this.workDir;
     }
@@ -180,15 +204,15 @@ export class SnapshotReader {
   }
 
   layout(uid: string): Promise<LayoutRecord> {
-    return readParsed(path.join(this.dir, this.layoutEntry(uid).dir, 'layout.json'), LayoutRecordSchema);
+    return readParsed(path.join(this.dir, this.files(uid).layout), LayoutRecordSchema);
   }
 
   drawings(uid: string): Promise<DrawingsRecord> {
-    return readParsed(path.join(this.dir, this.layoutEntry(uid).dir, 'drawings.json'), DrawingsRecordSchema);
+    return readParsed(path.join(this.dir, this.files(uid).drawings), DrawingsRecordSchema);
   }
 
   async chartData(uid: string, chartId: string): Promise<ChartData | null> {
-    const file = path.join(this.dir, this.layoutEntry(uid).dir, 'data', `chart-${chartId}.json`);
+    const file = path.join(this.dir, this.files(uid).chartData(chartId));
     try {
       return await readParsed(file, ChartDataSchema);
     } catch (e) {
@@ -209,10 +233,10 @@ export class SnapshotReader {
     return JSON.parse(await fs.readFile(path.join(this.dir, rel), 'utf8'));
   }
 
-  private layoutEntry(uid: string) {
+  private files(uid: string) {
     const l = this.manifest.layouts.find((x) => x.uid === uid);
     if (!l) throw new Error(`Layout ${uid} is not in this backup.`);
-    return l;
+    return layoutFiles(l.dir);
   }
 
   /** Checks every file against the checksums in the manifest. Returns the files that changed or are missing. */

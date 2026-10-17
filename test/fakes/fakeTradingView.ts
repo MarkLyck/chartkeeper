@@ -1,10 +1,11 @@
+import type { TvContent } from '../../src/core/tv/content';
 import type { HttpRequest, HttpResponse, PageTransport, PageUser } from '../../src/core/tv/http';
 
 export interface FakeLayout {
   uid: string;
   id: number;
   name: string;
-  content: Record<string, unknown>;
+  content: TvContent;
   studyMeta: Record<string, unknown>;
   /** chart id ("1", "_shared") -> drawing id -> stored drawing DTO */
   storage: Record<string, Record<string, Record<string, unknown>>>;
@@ -70,7 +71,7 @@ export class FakeTradingView implements PageTransport {
         if (!target && this.layoutLimit !== null && this.layouts.size >= this.layoutLimit) return json(403, { detail: 'savedChartsLimit', code: 'limit' });
         const uid = target ?? `New${this.nextId}`;
         const existing = target ? this.layouts.get(target) : undefined;
-        const l: FakeLayout = existing ?? { uid, id: this.nextId++, name: f.name!, content: {}, studyMeta: {}, storage: {} };
+        const l: FakeLayout = existing ?? { uid, id: this.nextId++, name: f.name!, content: { charts: [] }, studyMeta: {}, storage: {} };
         l.name = f.name!;
         l.content = JSON.parse(f.content!);
         l.studyMeta = JSON.parse(f.study_meta_info_map ?? '{}');

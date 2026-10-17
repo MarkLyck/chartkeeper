@@ -1,10 +1,11 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { captureLayout } from './backup';
-import { countLayout, drawingSourceFromStored, isDrawingType, parseLayout, sameTicker, type LayoutCounts } from './layout';
+import { countLayout, parseLayout, type LayoutCounts } from './layout';
 import type { DrawingsRecord, LayoutRecord } from './model';
-import { layoutDir, SnapshotWriter, type SnapshotReader } from './snapshot';
+import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
+import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { TvError } from './tv/errors';
 
 export type RestoreStep = 'check' | 'create' | 'safetyCopy' | 'replace' | 'clearDrawings' | 'verify';
@@ -30,40 +31,23 @@ export interface RestoreResult {
   resumed: boolean;
 }
 
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
-
 /**
  * The layout content to send to TradingView: the backed-up content with every
  * drawing from the drawing storage put back into the pane it belongs to.
  * This is the format TradingView's own saver writes when its drawing storage
  * is unavailable, and its loader reads it back (see docs/INVESTIGATION.md).
  */
-export function contentWithDrawings(record: LayoutRecord, drawings: DrawingsRecord): Record<string, unknown> {
+export function contentWithDrawings(record: LayoutRecord, drawings: DrawingsRecord): TvContent {
   const content = structuredClone(record.content);
-  const charts = (content.charts as Record<string, unknown>[]).filter(isObj);
-  const sourcesOf = (pane: Record<string, unknown>) => (Array.isArray(pane.sources) ? (pane.sources as Record<string, unknown>[]) : (pane.sources = []) as Record<string, unknown>[]);
-  const present = new Set(charts.flatMap((c) => (c.panes as Record<string, unknown>[]).flatMap((p) => sourcesOf(p).filter((s) => isDrawingType(s.type)).map((s) => String(s.id)))));
-
-  const mainSymbol = (chart: Record<string, unknown>) => {
-    for (const pane of chart.panes as Record<string, unknown>[]) for (const s of sourcesOf(pane)) if (s.type === 'MainSeries' && isObj(s.state)) return String(s.state.symbol ?? '');
-    return '';
-  };
-  const targetPane = (chart: Record<string, unknown>, owner: unknown) => {
-    const panes = chart.panes as Record<string, unknown>[];
-    return panes.find((p) => sourcesOf(p).some((s) => s.id === owner)) ?? panes.find((p) => sourcesOf(p).some((s) => s.type === 'MainSeries')) ?? panes[0]!;
-  };
-
+  const present = new Set(content.charts.flatMap((c) => c.panes.flatMap((p) => p.sources.filter((s) => isDrawingType(s.type)).map((s) => s.id))));
   for (const [bucketId, bucket] of Object.entries(drawings.buckets)) {
     for (const [id, stored] of Object.entries(bucket.sources)) {
       const source = drawingSourceFromStored(id, stored);
-      if (present.has(String(source.id))) continue;
-      present.add(String(source.id));
-      const symbol = isObj(source.state) && typeof source.state.symbol === 'string' ? source.state.symbol : null;
-      const chart =
-        bucketId === '_shared'
-          ? (charts.find((c) => symbol !== null && sameTicker(mainSymbol(c), symbol)) ?? charts[0]!)
-          : (charts.find((c) => String(c.chartId) === bucketId) ?? charts[0]!);
-      sourcesOf(targetPane(chart, source.ownerSource)).push(source);
+      if (present.has(source.id)) continue;
+      present.add(source.id);
+      const at = placeDrawing(content, bucketId, source);
+      const { chart, pane } = at === 'shared' ? placeShared(content, source) : at;
+      content.charts[chart]!.panes[pane]!.sources.push(source);
     }
   }
   return content;
@@ -72,12 +56,8 @@ export function contentWithDrawings(record: LayoutRecord, drawings: DrawingsReco
 /** The symbol fields the save request carries, from the list entry or else the active chart's price series. */
 export function symbolFields(record: LayoutRecord): Record<string, string> {
   const e = record.listEntry;
-  const charts = record.content.charts as Record<string, unknown>[];
-  let series: Record<string, unknown> = {};
-  for (const pane of (charts[0]?.panes as Record<string, unknown>[]) ?? []) {
-    const main = (pane.sources as Record<string, unknown>[] | undefined)?.find((s) => s.type === 'MainSeries');
-    if (main && isObj(main.state)) series = main.state;
-  }
+  const first = record.content.charts[0];
+  const series: Record<string, unknown> = (first && mainSeriesOf(first)?.state) ?? {};
   const symbol = String(e.symbol ?? series.symbol ?? '');
   const exchange = symbol.includes(':') ? symbol.split(':')[0]! : '';
   const pick = (k: string, fallback: string) => (typeof e[k] === 'string' && e[k] ? String(e[k]) : fallback);
@@ -242,8 +222,7 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
 /** After "replace", the saved content holds every backed-up drawing, so the storage copies are removed to avoid duplicates. */
 async function clearStoredDrawings(client: TvClient, uid: string, record: LayoutRecord, buildTime: string | null) {
   const token = await client.chartToken(uid);
-  const chartIds = (record.content.charts as Record<string, unknown>[]).map((c, i) => String(c.chartId ?? i + 1));
-  for (const chartId of [...chartIds, '_shared']) {
+  for (const chartId of [...record.content.charts.map(chartIdOf), '_shared']) {
     const bucket = await client.drawingBucket(uid, chartId, token);
     const ids = Object.keys(bucket.sources);
     if (ids.length) await client.putDrawings(uid, chartId, token, Object.fromEntries(ids.map((id) => [id, null])), buildTime);
@@ -251,18 +230,14 @@ async function clearStoredDrawings(client: TvClient, uid: string, record: Layout
 }
 
 async function saveSafetyCopy(client: TvClient, target: LayoutListEntry, root: string, now: Date): Promise<string> {
-  const { record, drawings, layout } = await captureLayout(client, target);
+  const captured = await captureLayout(client, target);
   const writer = await SnapshotWriter.begin(path.join(root, 'safety-copies'), now);
-  const dir = layoutDir(record.uid);
-  await writer.writeJson(`${dir}/layout.json`, record);
-  await writer.writeJson(`${dir}/drawings.json`, drawings);
-  const counts = countLayout(layout);
   return writer.finish({
-    app: { name: 'ChartKeeper', version: 'safety-copy' },
+    app: { name: APP_NAME, version: 'safety-copy' },
     createdAt: now.toISOString(),
     account: { username: client.username, plan: client.plan },
-    layouts: [{ uid: record.uid, name: record.name, dir, symbols: counts.symbols, charts: counts.charts, drawings: counts.drawings, studies: counts.studies, lastModified: record.lastModified, priceData: false }],
-    extras: { studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 },
+    layouts: [await writer.addLayout(captured)],
+    extras: noExtras(),
     warnings: ['Safety copy taken just before ChartKeeper replaced this layout.'],
   });
 }

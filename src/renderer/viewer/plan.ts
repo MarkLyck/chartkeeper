@@ -1,4 +1,5 @@
-import { drawingsForChart, sameTicker, type ParsedChart, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
+import { drawingsForChart, type ParsedChart, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
+import { sameTicker } from '../../core/tv/content';
 import type { Bar, ChartData } from '../../core/model';
 import { DRAWING_KINDS } from './drawings/registry';
 import { guessPriceFormat, mainSeriesSpec, type MainSeriesSpec, type PriceFormatSpec } from './series';

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { DrawingBucket, LayoutRecord } from '../model';
+import { TvContentSchema } from './content';
 import { formatChanged, TvError } from './errors';
 import { PLAN_LAYOUT_LIMITS, TEMPLATE_TOOLS, urls } from './endpoints';
 import type { HttpResponse, PageUser, PoliteHttp } from './http';
@@ -120,7 +121,8 @@ export function parseLayoutJson(value: unknown, entry: LayoutListEntry): LayoutR
   if (!Array.isArray(c.charts)) throw formatChanged(`layout "${entry.name}" has no charts`, Object.keys(c).join(','));
   const inlineMeta = obj.safeParse(c.studyMetaInfoMap);
   const studyMetaInfoMap = { ...(inlineMeta.success ? inlineMeta.data : {}), ...parse(obj, meta, 'study meta info') } as Record<string, Record<string, unknown>>;
-  const { studyMetaInfoMap: _dropped, ...contentWithoutMeta } = c;
+  const { studyMetaInfoMap: _dropped, ...withoutMeta } = c;
+  const contentWithoutMeta = parse(TvContentSchema, withoutMeta, `layout "${entry.name}"`);
   return {
     uid: j.uid ?? entry.uid,
     id: j.id ?? entry.id,

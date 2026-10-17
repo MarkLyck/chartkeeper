@@ -4,12 +4,13 @@ import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { runBackup } from '../../src/core/backup';
 import { countLayout, parseLayout } from '../../src/core/layout';
-import { compareCounts, contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, symbolFields } from '../../src/core/restore';
+import { compareCounts, contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields } from '../../src/core/restore';
 import { listSnapshots, SnapshotReader } from '../../src/core/snapshot';
 import { TvClient } from '../../src/core/tv/client';
+import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
 import { PoliteHttp } from '../../src/core/tv/http';
 import { fakeDataSocket } from '../fakes/fakeDataSocket';
-import { FakeTradingView } from '../fakes/fakeTradingView';
+import { FakeTradingView, type FakeLayout } from '../fakes/fakeTradingView';
 import { referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
 const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
@@ -22,6 +23,61 @@ const backup = (extra: Partial<Parameters<typeof runBackup>[1]> = {}) =>
 beforeEach(async () => {
   root = await fs.mkdtemp(path.join(os.tmpdir(), 'chartkeeper-'));
   tv = new FakeTradingView().add(referenceInAccount('AbCd1234', 'Min AAPL'));
+});
+
+/**
+ * Two charts whose numeric chartIds are not their positions: chart 2 (AAPL)
+ * comes first, chart 1 (MSFT) second. Storage bucket "2" holds the AAPL
+ * drawings, bucket "1" one MSFT drawing.
+ */
+function numericChartIds(): FakeLayout {
+  const l = referenceInAccount('Num00001', 'Two charts');
+  const aapl = l.content.charts[0]!;
+  const msft = structuredClone(aapl);
+  aapl.chartId = 2;
+  msft.chartId = 1;
+  for (const pane of msft.panes) {
+    pane.sources = pane.sources.filter((s) => !isDrawingType(s.type));
+    for (const s of pane.sources) {
+      if (s.type === 'MainSeries') s.state = { ...s.state, symbol: 'NASDAQ:MSFT', shortName: 'MSFT' };
+      else s.id += '-msft';
+    }
+  }
+  l.content.charts.push(msft);
+  const msftLine = { type: 'LineToolHorzLine', id: 'msft1', ownerSource: '_seriesId', state: { linecolor: '#fff', symbol: 'NASDAQ:MSFT' }, points: [{ time_t: 1780000000, offset: 0, price: 400 }] };
+  l.storage = { '2': l.storage['1']!, '1': { msft1: { id: 'msft1', ownerSource: '_seriesId', state: msftLine, symbol: 'NASDAQ:MSFT' } }, _shared: l.storage._shared! };
+  return l;
+}
+
+const bucketsOf = (l: FakeLayout) => Object.fromEntries(Object.entries(l.storage).map(([k, v]) => [k, { sources: v, drawing_groups: {} }]));
+const drawingIdsIn = (content: TvContent, chart: number) => content.charts[chart]!.panes.flatMap((p) => p.sources.filter((s) => isDrawingType(s.type)).map((s) => s.id)).sort();
+
+describe('numeric chartIds', () => {
+  it('name each chart by its own chartId and put each bucket on that chart', () => {
+    const l = numericChartIds();
+    const layout = parseLayout({ ...referenceRecord(), content: l.content }, { buckets: bucketsOf(l), reportedTotal: null });
+    expect(layout.charts.map((c) => [c.chartId, c.symbol])).toEqual([['2', 'NASDAQ:AAPL'], ['1', 'NASDAQ:MSFT']]);
+    const onChart = (i: number) => layout.charts[i]!.panes.flatMap((p) => p.drawings.map((d) => d.id)).sort();
+    expect(onChart(1)).toEqual(['msft1']);
+    expect(onChart(0)).toEqual(expect.arrayContaining(Object.keys(l.storage['2']!)));
+  });
+
+  it('back up prices under the same chart id as the drawings, and restore each bucket onto its chart', async () => {
+    tv = new FakeTradingView().add(numericChartIds());
+    const r = await backup();
+    expect(r).toMatchObject({ ok: true, drawings: 12 });
+    const snap = await SnapshotReader.open((await listSnapshots(root))[0]!.dir);
+    expect(Object.keys((await snap.drawings('Num00001')).buckets).sort()).toEqual(['1', '2', '_shared']);
+    expect((await snap.chartData('Num00001', '2'))!.symbol).toBe('NASDAQ:AAPL');
+    expect((await snap.chartData('Num00001', '1'))!.symbol).toBe('NASDAQ:MSFT');
+
+    const restored = await restoreLayout(client(), snap, 'Num00001', { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'j.json')), buildTime: null });
+    expect(restored.check).toMatchObject({ ok: true, missingDrawings: [], extraDrawings: [] });
+    const saved = tv.layouts.get(restored.uid)!.content;
+    expect(saved.charts.map((c) => c.chartId)).toEqual([2, 1]);
+    expect(drawingIdsIn(saved, 1)).toEqual(['msft1']);
+    expect(drawingIdsIn(saved, 0)).toEqual(expect.arrayContaining(Object.keys(numericChartIds().storage['2']!)));
+  });
 });
 
 describe('backup', () => {
@@ -110,6 +166,20 @@ describe('restore', () => {
     const counts = countLayout(parseLayout({ ...rec, content }, null));
     expect(counts.drawings).toBe(11);
     expect(rec.content).toEqual(fake.content);
+  });
+
+  it('sends the stored content unchanged except for the re-inlined drawings', () => {
+    const fake = referenceInAccount();
+    const rec = { ...referenceRecord(), content: fake.content };
+    const drawings = { buckets: bucketsOf(fake), reportedTotal: null };
+    const stored = new Map(Object.values(fake.storage).flatMap((b) => Object.entries(b)).map(([id, dto]) => [id, drawingSourceFromStored(id, dto)]));
+    const sent = JSON.parse(saveForm(rec, drawings, 'Kopi').content!) as TvContent;
+    expect(sent.name).toBe('Kopi');
+    const inlined = sent.charts.flatMap((c) => c.panes.flatMap((p) => p.sources.filter((s) => stored.has(s.id))));
+    expect(inlined).toEqual([...stored.values()].filter((s) => inlined.some((i) => i.id === s.id)));
+    expect(inlined.map((s) => s.id).sort()).toEqual([...stored.keys()].sort());
+    for (const c of sent.charts) for (const p of c.panes) p.sources = p.sources.filter((s) => !stored.has(s.id));
+    expect(JSON.stringify(sent)).toBe(JSON.stringify({ ...fake.content, name: 'Kopi' }));
   });
 
   it('takes symbol fields from the list entry, or else from the price series', () => {

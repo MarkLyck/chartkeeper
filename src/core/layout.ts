@@ -1,4 +1,5 @@
 import type { DrawingBucket, DrawingsRecord, LayoutRecord } from './model';
+import { chartIdOf, drawingSourceFromStored, isDrawingType, isObj, LayoutParseError, mainSeriesOf, placeDrawing, sameTicker, type TvSource } from './tv/content';
 
 /**
  * A layout reduced to what people recognise on screen: charts, panes,
@@ -82,46 +83,21 @@ export interface ParsedDrawing {
   zorder: number;
   origin: DrawingOrigin;
   /** The complete source object, in the format TradingView keeps inside layout content. */
-  source: Record<string, unknown>;
+  source: TvSource;
 }
 
-export class LayoutParseError extends Error {}
-
-const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const str = (v: unknown, fallback = ''): string => (typeof v === 'string' ? v : fallback);
 const num = (v: unknown, fallback = 0): number => (typeof v === 'number' && Number.isFinite(v) ? v : fallback);
-
-export const isDrawingType = (type: unknown): type is string => typeof type === 'string' && type.startsWith('LineTool');
 
 const STUDY_TYPES = /^(Study|study_|StudyStrategy|study$)/;
 export const isStudyType = (type: unknown): boolean => typeof type === 'string' && STUDY_TYPES.test(type);
 
-/**
- * Turn one stored drawing (from content or from drawing storage) into the
- * content-source shape `{type, id, state, points, ...}`.
- *
- * The storage DTO is `{id, ownerSource, state, symbol?, ...}`. Its `state` is
- * the drawing's own serialized state, which is the content-source shape. We
- * also accept a DTO whose `state` holds only the properties, with `type` and
- * `points` next to it, because TradingView has used both layouts over time.
- */
-export function drawingSourceFromStored(id: string, stored: Record<string, unknown>): Record<string, unknown> {
-  const inner = stored.state;
-  if (isObj(inner) && isDrawingType(inner.type) && Array.isArray(inner.points)) {
-    return { ...inner, id: str(inner.id, id), ownerSource: inner.ownerSource ?? stored.ownerSource };
-  }
-  if (isDrawingType(stored.type) && Array.isArray(stored.points) && isObj(inner)) {
-    return { type: stored.type, id, state: inner, points: stored.points, zorder: stored.zorder ?? 0, ownerSource: stored.ownerSource };
-  }
-  throw new LayoutParseError(`Drawing ${id} has a format ChartKeeper does not recognise.`);
-}
-
-export function parseDrawing(source: Record<string, unknown>, origin: DrawingOrigin): ParsedDrawing {
-  const props = isObj(source.state) ? source.state : {};
+export function parseDrawing(source: TvSource, origin: DrawingOrigin): ParsedDrawing {
+  const props = source.state ?? {};
   const points = Array.isArray(source.points) ? source.points : [];
   return {
-    id: str(source.id),
-    type: str(source.type),
+    id: source.id,
+    type: source.type,
     points: points.filter(isObj).map((p) => ({ time: num(p.time_t), offset: num(p.offset), price: num(p.price) })),
     props,
     symbol: typeof props.symbol === 'string' ? props.symbol : null,
@@ -146,27 +122,27 @@ export function parseBucket(bucket: DrawingBucket, origin: DrawingOrigin): { dra
   return { drawings, problems };
 }
 
-function resolveMetaInfo(source: Record<string, unknown>, map: Record<string, Record<string, unknown>>): Record<string, unknown> | null {
+function resolveMetaInfo(source: TvSource, map: Record<string, Record<string, unknown>>): Record<string, unknown> | null {
   const m = source.metaInfo;
   if (isObj(m)) return m;
   if (typeof m === 'string') return map[m] ?? null;
   return null;
 }
 
-function metaInfoId(source: Record<string, unknown>, meta: Record<string, unknown> | null): string {
+function metaInfoId(source: TvSource, meta: Record<string, unknown> | null): string {
   if (typeof source.metaInfo === 'string') return source.metaInfo;
   if (meta) return str(meta.fullId) || str(meta.id);
   return '';
 }
 
-function parseStudy(source: Record<string, unknown>, map: Record<string, Record<string, unknown>>): ParsedStudy {
+function parseStudy(source: TvSource, map: Record<string, Record<string, unknown>>): ParsedStudy {
   const meta = resolveMetaInfo(source, map);
-  const state = isObj(source.state) ? source.state : {};
+  const state = source.state ?? {};
   const id = metaInfoId(source, meta);
   const plots = meta && Array.isArray(meta.plots) ? meta.plots.filter(isObj).map((p) => ({ id: str(p.id), type: str(p.type), ...(typeof p.target === 'string' ? { target: p.target } : {}) })) : [];
   const styles = isObj(state.styles) ? (state.styles as Record<string, Record<string, unknown>>) : {};
   return {
-    id: str(source.id),
+    id: source.id,
     metaInfoId: id,
     name: str(meta?.description, str(state.description, id)),
     shortName: str(meta?.shortDescription, str(meta?.description, id)),
@@ -184,32 +160,26 @@ function parseStudy(source: Record<string, unknown>, map: Record<string, Record<
 /** Parse TradingView's `content` JSON plus the drawing storage buckets of one layout. */
 export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | null): ParsedLayout {
   const content = record.content;
-  const rawCharts = Array.isArray(content.charts) ? content.charts.filter(isObj) : [];
-  if (rawCharts.length === 0) throw new LayoutParseError(`Layout "${record.name}" has no charts in it.`);
+  if (content.charts.length === 0) throw new LayoutParseError(`Layout "${record.name}" has no charts in it.`);
   const problems: string[] = [];
   const seen = new Set<string>();
 
-  const charts = rawCharts.map((chart, chartIndex): ParsedChart => {
-    const chartId = str(chart.chartId, String(chartIndex + 1));
-    const panes = (Array.isArray(chart.panes) ? chart.panes.filter(isObj) : []).map((pane, index): ParsedPane => {
-      const sources = Array.isArray(pane.sources) ? pane.sources.filter(isObj) : [];
-      const drawingsHere: ParsedDrawing[] = [];
-      for (const s of sources.filter((s) => isDrawingType(s.type))) {
-        const d = parseDrawing(s, 'content');
-        seen.add(d.id);
-        drawingsHere.push(d);
-      }
+  const charts = content.charts.map((chart, chartIndex): ParsedChart => {
+    const chartId = chartIdOf(chart, chartIndex);
+    const panes = chart.panes.map((pane, index): ParsedPane => {
+      const drawingsHere = pane.sources.filter((s) => isDrawingType(s.type)).map((s) => parseDrawing(s, 'content'));
+      for (const d of drawingsHere) seen.add(d.id);
       return {
         index,
         stretchFactor: num(pane.stretchFactor, 1000),
-        containsMainSeries: sources.some((s) => s.type === 'MainSeries'),
-        studies: sources.filter((s) => isStudyType(s.type)).map((s) => parseStudy(s, record.studyMetaInfoMap)),
+        containsMainSeries: pane.sources.some((s) => s.type === 'MainSeries'),
+        studies: pane.sources.filter((s) => isStudyType(s.type)).map((s) => parseStudy(s, record.studyMetaInfoMap)),
         drawings: drawingsHere,
       };
     });
-    const main = panes.length > 0 ? (chart.panes as Record<string, unknown>[]).flatMap((p) => (Array.isArray(p.sources) ? p.sources : [])).find((s) => isObj(s) && s.type === 'MainSeries') : undefined;
-    if (!isObj(main)) throw new LayoutParseError(`Chart ${chartId} in "${record.name}" has no price series.`);
-    const seriesState = isObj(main.state) ? main.state : {};
+    const main = mainSeriesOf(chart);
+    if (!main) throw new LayoutParseError(`Chart ${chartId} in "${record.name}" has no price series.`);
+    const seriesState = main.state ?? {};
     return {
       chartId,
       symbol: str(seriesState.symbol),
@@ -230,24 +200,13 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
     for (const d of parsed.drawings) {
       if (seen.has(d.id)) continue;
       seen.add(d.id);
-      if (bucketId === '_shared') {
-        sharedDrawings.push(d);
-        continue;
-      }
-      const chart = charts.find((c) => c.chartId === bucketId) ?? charts[0]!;
-      paneForOwner(chart, d.ownerSource).drawings.push(d);
+      const at = placeDrawing(content, bucketId, d.source);
+      if (at === 'shared') sharedDrawings.push(d);
+      else charts[at.chart]!.panes[at.pane]!.drawings.push(d);
     }
   }
 
   return { uid: record.uid, name: record.name, arrangement: str(content.layout, 's'), charts, sharedDrawings, problems };
-}
-
-function paneForOwner(chart: ParsedChart, owner: string | null): ParsedPane {
-  if (owner) {
-    const byStudy = chart.panes.find((p) => p.studies.some((s) => s.id === owner));
-    if (byStudy) return byStudy;
-  }
-  return chart.panes.find((p) => p.containsMainSeries) ?? chart.panes[0]!;
 }
 
 /** Drawings that belong on a chart: its own plus shared ones for the same symbol. */
@@ -255,12 +214,6 @@ export function drawingsForChart(layout: ParsedLayout, chart: ParsedChart): Pars
   const own = chart.panes.flatMap((p) => p.drawings);
   const shared = layout.sharedDrawings.filter((d) => d.symbol === null || d.symbol === chart.symbol || sameTicker(d.symbol, chart.symbol));
   return [...own, ...shared];
-}
-
-/** "BATS:AAPL" and "NASDAQ:AAPL" are the same company; TradingView shares drawings between them. */
-export function sameTicker(a: string, b: string): boolean {
-  const t = (s: string) => s.split(':').pop() ?? s;
-  return t(a) === t(b);
 }
 
 export interface LayoutCounts {
