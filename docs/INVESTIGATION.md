@@ -182,6 +182,110 @@ TradingView computed them. That is more faithful than recomputing indicators
 locally. Each subscription has a per-chart study limit, so ChartKeeper adds one
 study at a time and removes it after it completes.
 
+### The symbol string
+
+The chart page encodes the symbol as `"="` + JSON, with the keys of every
+object sorted. It builds the object from the series state:
+
+- `symbol`, and `currency-id` when the series has a currency.
+- `adjustment`: `"dividends"` when `dividendsAdjustment` is on, else `"splits"`.
+- `session` only for intraday intervals, and only when it is not `"regular"`.
+  Daily, weekly and monthly charts get no session. Every captured daily frame
+  omits it, including frames from layouts whose state says
+  `sessionId: "regular"`. The captured Range frame (interval `"1"`, regular
+  session) omits it too.
+
+Captured frames also show `"metric":"price"` on some loads. The chart page adds
+it only from the browser's own "last used metric" setting (local storage), not
+from the layout, so ChartKeeper leaves it out. A fresh signed-out browser sends
+no metric either.
+
+### Computed chart styles
+
+Renko (4), Kagi (5), Point & Figure (6), Line Break (7), Heikin Ashi (8) and
+Range (11) bars are computed by TradingView's servers. The chart page asks for
+them by wrapping the plain symbol in the style's study and inputs:
+
+```text
+> resolve_symbol [cs, "sds_sym_3", "={\"inputs\":{\"atrLength\":14,\"boxSize\":3,...},
+                  \"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"symbol\":\"NASDAQ:AAPL\"},
+                  \"type\":\"BarSetRenko@tv-prostudies-73!\"}"]
+> modify_series  [cs, "sds_1", "s2", "sds_sym_3", "D", ""]
+```
+
+- `inputs` are `state.<key>.inputs` of the main series: `renkoStyle`,
+  `kagiStyle`, `pnfStyle`, `pbStyle` (Line Break), `haStyle`, `rangeStyle`.
+- `type` is the style's study id plus `!`. The chart page takes the id from its
+  own build (`BarSetRenko@tv-prostudies-73`, `BarSetKagi@tv-prostudies-73`,
+  `BarSetPnF@tv-prostudies-73`, `BarSetPriceBreak@tv-prostudies-34`,
+  `BarSetHeikenAshi@tv-basicstudies-60`, `BarSetRange@tv-basicstudies-72`). The
+  layout also saves the id on the series source, outside `state`, but the chart
+  page does not read it back.
+- The interval is the chart's own interval string. The capture switched styles
+  in the order 4, 5, 6, 7, 11, 8. Range moved the chart to `"1"`, and Heikin
+  Ashi came back as `"1D"`, so `"1D"` is not specific to Heikin Ashi.
+
+ChartKeeper resolves this symbol for `sds_sym_1`, creates the series from it,
+and saves the bars with `computedStyle` set to the style id. The frames are in
+`test/fixtures/tv-computed-style-frames.json`. A live signed-out run on
+2026-10-17 returned bars for all six styles. For Renko, Kagi, Point & Figure,
+Line Break and Heikin Ashi, every bar older than the newest three had the same
+time and OHLC as the bars the chart page itself received for the gallery
+scenes. Range was not compared, because its bars are built from recent trades.
+
+Indicators on a chart in a computed style are calculated on the computed bars.
+Evidence:
+
+- Every `create_study` the chart page sends names `sds_1`, the main series, as
+  its parent (see the frames above and `fixture/ws.txt` in the capture).
+- When the style changes, the chart page sends only `resolve_symbol` and
+  `modify_series` for `sds_1`. The capture logged every sent frame that
+  mentions a series or a study. It shows no `create_study`, `modify_study` or
+  `remove_study`. The default chart page has Volume, Dividends, Splits and
+  Earnings studies on `sds_1` (`fixture/ws.txt`), so those studies stay on
+  `sds_1`, which now carries the computed bars.
+
+ChartKeeper also creates its studies on `sds_1`, which is the computed series.
+
+### Study-backed drawings
+
+Anchored VWAP (`LineToolAnchoredVWAP`) and Fixed Range Volume Profile
+(`LineToolFixedRangeVolumeProfile`) are drawings that TradingView computes on
+its servers. Each one is a hidden study on the main series. The line tool's
+own bundle (`line-tool-anchored-vwap`, `line-tool-volume-profile`) shows the
+inputs it sends:
+
+- Anchored VWAP: `AnchoredVWAP@tv-basicstudies-280` with the saved
+  `state.inputs` and `start_time` = the anchor bar's time in milliseconds.
+- Fixed Range Volume Profile: `VbPFixed@tv-basicstudies-280` with the saved
+  `state.inputs`, `first_bar_time` and `last_bar_time` = the two anchors in
+  milliseconds (earlier first), `subscribeRealtime` = whether the right anchor
+  is on the last bar, and `mapRightBoundaryToBarStartTime: true`.
+- The chart page builds both study ids from its own build, like the computed
+  styles.
+
+These studies work signed out. The capture placed both tools on a signed-out
+chart. It changed only the page's own sign-in check, not the connection, and
+both tools drew with server-computed values (`fix3/created2.png`). The chart
+page also does not count them against the plan's indicator limit
+(`setIsNonCountedStudyFn`). ChartKeeper adds them one at a time like other
+studies, so the limit does not apply in any case.
+
+ChartKeeper sends these requests for every such drawing on the chart's symbol.
+It saves the result in `drawingStudies`, keyed by drawing id, in the same
+shape as indicator values.
+
+A live signed-out run on 2026-10-17 (the drawings-positions gallery layout)
+returned values for both:
+
+- Anchored VWAP: 76 plot rows from the anchor bar on. The first row's VWAP is
+  293.388, the anchor price TradingView saved with the drawing.
+- Fixed Range Volume Profile: 37 plot rows (developing POC and value area) and
+  the histogram as Pine-style graphics (`ns.d` with `graphicsCmds.create.hhists`,
+  one row per price level with up and down volume). The lowest row starts at
+  302.93, the drawing's lower anchor price. ChartKeeper saves `ns` as
+  `graphics`.
+
 ## Terms of use
 
 TradingView's Terms of Use (https://www.tradingview.com/policies/), checked

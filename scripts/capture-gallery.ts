@@ -173,7 +173,7 @@ async function plainBars(spec: ChartSpec): Promise<Bar[]> {
   const key = `${spec.symbol}@${spec.interval}`;
   const hit = barCache.get(key);
   if (hit) return hit;
-  const chart = { chartId: '1', symbol: spec.symbol, shortName: spec.symbol, interval: spec.interval, style: 1, seriesState: {}, timezone: 'Etc/UTC', chartProperties: {}, panes: [] };
+  const chart = { chartId: '1', symbol: spec.symbol, shortName: spec.symbol, interval: spec.interval, style: 1, seriesState: {}, timezone: 'Etc/UTC', chartProperties: {}, timeScale: null, seriesZorder: 0, panes: [] };
   const data = await fetchChartData(chart, [], nodeSocketFactory, { authToken: null, bars: DATA_BARS });
   if (data.bars.length < 50) throw new Error(`Only ${data.bars.length} bars for ${key}`);
   barCache.set(key, data.bars);
@@ -474,7 +474,7 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
       const key = log.lastSeries;
       if (!key) throw new Error('No main series frames were recorded');
       computedSeries = log.seriesSpec(key);
-      data = { chartId: chart.chartId, symbol: chart.symbol, interval: chart.interval, fetchedAt: new Date().toISOString(), bars: log.seriesBars(key), studies: {} };
+      data = { chartId: chart.chartId, symbol: chart.symbol, interval: chart.interval, fetchedAt: new Date().toISOString(), bars: log.seriesBars(key), computedStyle: style.id, studies: {} };
       if (!computedSeries?.includes('BarSet')) throw new Error(`Expected a computed series for style ${style.name}, TradingView resolved ${computedSeries}`);
     } else {
       data = await fetchChartData(chart, studies, nodeSocketFactory, { authToken: null, bars: DATA_BARS });

@@ -1,5 +1,5 @@
 import type { ChartData, StudyValues } from '../model';
-import type { ParsedChart, ParsedStudy } from '../layout';
+import type { ParsedChart, ParsedDrawing, ParsedStudy } from '../layout';
 import { DATA_SOCKET, ORIGIN } from './endpoints';
 
 /** Websocket frames: `~m~<length>~m~<payload>`, several per message. */
@@ -95,12 +95,87 @@ export function studyRequest(study: ParsedStudy): StudyRequest {
   return { id: study.id, createId: PINE_STUDY, inputs };
 }
 
+const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** Daily, weekly and monthly intervals ("D", "1D", "W", "3M", ...). TradingView sends no session for them. */
+const DWM_INTERVAL = /^\d*[DWM]$/;
+/** The session TradingView assumes when the symbol asks for none. */
+const DEFAULT_SESSION = 'regular';
+
+/**
+ * Chart styles whose bars TradingView computes on its servers from the symbol's bars:
+ * style id -> where the series state keeps the style's inputs, and the study that builds the bars.
+ * The chart page takes the study ids from its own build, not from the saved layout.
+ */
+const COMPUTED_STYLES: Record<number, { stateKey: string; studyId: string }> = {
+  4: { stateKey: 'renkoStyle', studyId: 'BarSetRenko@tv-prostudies-73' },
+  5: { stateKey: 'kagiStyle', studyId: 'BarSetKagi@tv-prostudies-73' },
+  6: { stateKey: 'pnfStyle', studyId: 'BarSetPnF@tv-prostudies-73' },
+  7: { stateKey: 'pbStyle', studyId: 'BarSetPriceBreak@tv-prostudies-34' },
+  8: { stateKey: 'haStyle', studyId: 'BarSetHeikenAshi@tv-basicstudies-60' },
+  11: { stateKey: 'rangeStyle', studyId: 'BarSetRange@tv-basicstudies-72' },
+};
+
+const sortKeys = (v: unknown): unknown =>
+  isRecord(v) ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v;
+
+/**
+ * The symbol string `resolve_symbol` gets for the chart's main series, built like the chart
+ * page builds it: "=" + JSON with every object's keys sorted. A computed style wraps the plain
+ * symbol with the style's study and inputs, so TradingView sends the computed bars.
+ */
+export function seriesSymbol(chart: ParsedChart): string {
+  const state = chart.seriesState;
+  const symbol: Record<string, unknown> = { symbol: chart.symbol, adjustment: state.dividendsAdjustment === true ? 'dividends' : 'splits' };
+  if (typeof state.currencyId === 'string') symbol['currency-id'] = state.currencyId;
+  const session = typeof state.session === 'string' ? state.session : state.sessionId;
+  if (typeof session === 'string' && session !== DEFAULT_SESSION && !DWM_INTERVAL.test(chart.interval)) symbol.session = session;
+  const computed = COMPUTED_STYLES[chart.style];
+  if (!computed) return '=' + JSON.stringify(sortKeys(symbol));
+  const styleState = state[computed.stateKey];
+  const inputs = isRecord(styleState) && isRecord(styleState.inputs) ? styleState.inputs : {};
+  return '=' + JSON.stringify(sortKeys({ symbol, type: `${computed.studyId}!`, inputs }));
+}
+
+/**
+ * Drawings TradingView draws from a hidden study it computes on the main series. The chart page
+ * sends the drawing's saved inputs with its anchor times filled in, in milliseconds.
+ */
+const STUDY_DRAWINGS: Record<string, { studyId: string; points: number; inputs: (saved: Record<string, unknown>, times: number[], lastBarTime: number) => Record<string, unknown> }> = {
+  LineToolAnchoredVWAP: {
+    studyId: 'AnchoredVWAP@tv-basicstudies-280',
+    points: 1,
+    inputs: (saved, [anchor]) => ({ ...saved, start_time: anchor! * 1000 }),
+  },
+  LineToolFixedRangeVolumeProfile: {
+    studyId: 'VbPFixed@tv-basicstudies-280',
+    points: 2,
+    inputs: (saved, [from, to], lastBarTime) => ({
+      ...saved,
+      first_bar_time: from! * 1000,
+      last_bar_time: to! * 1000,
+      subscribeRealtime: to! >= lastBarTime,
+      mapRightBoundaryToBarStartTime: true,
+    }),
+  },
+};
+
+/** The `create_study` call the chart page sends for a study-backed drawing, given the chart's last bar time. */
+export function drawingStudyRequest(d: ParsedDrawing, lastBarTime: number): StudyRequest {
+  const tool = STUDY_DRAWINGS[d.type];
+  if (!tool) throw new Error(`${d.type} is not computed by TradingView.`);
+  if (d.points.length !== tool.points) throw new Error(`The drawing has ${d.points.length} anchor points; TradingView needs ${tool.points}.`);
+  const saved = isRecord(d.props.inputs) ? d.props.inputs : {};
+  const times = d.points.map((p) => p.time).sort((a, b) => a - b);
+  return { id: d.id, createId: tool.studyId, inputs: tool.inputs(saved, times, lastBarTime) };
+}
+
 /**
  * Fetch prices and indicator values for one chart of a layout.
  *
- * Opens one websocket, loads the series, then adds the layout's indicators one
- * at a time (each plan has a per-chart indicator limit), removing each after
- * it completes. Indicators TradingView refuses are recorded as errors, not
+ * Opens one websocket, loads the series, then adds the layout's indicators and
+ * study-backed drawings one at a time (each plan has a per-chart indicator
+ * limit), removing each after it completes. Indicators TradingView refuses are recorded as errors, not
  * dropped, so the viewer can say why it can't show them.
  */
 export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[], factory: SocketFactory, opts: FetchChartOptions): Promise<ChartData> {
@@ -197,37 +272,48 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
     ws.send(msg('set_auth_token', [opts.authToken ?? 'unauthorized_user_token']));
     ws.send(msg('chart_create_session', [cs, '']));
     ws.send(msg('switch_timezone', [cs, chart.timezone || 'Etc/UTC']));
-    const symbolSpec: Record<string, unknown> = { adjustment: 'splits', symbol: chart.symbol };
-    if (typeof chart.seriesState.session === 'string') symbolSpec.session = chart.seriesState.session;
-    else if (typeof chart.seriesState.sessionId === 'string') symbolSpec.session = chart.seriesState.sessionId;
-    if (typeof chart.seriesState.currencyId === 'string') symbolSpec['currency-id'] = chart.seriesState.currencyId;
-    ws.send(msg('resolve_symbol', [cs, 'sds_sym_1', '=' + JSON.stringify(symbolSpec)]));
+    ws.send(msg('resolve_symbol', [cs, 'sds_sym_1', seriesSymbol(chart)]));
     await waitFor('symbol');
     ws.send(msg('create_series', [cs, 'sds_1', 's1', 'sds_sym_1', chart.interval, opts.bars, '']));
     await waitFor('series');
 
-    const studyResults: Record<string, StudyValues> = {};
-    for (const s of studies) {
+    /**
+     * Studies hang off sds_1, the main series. In a computed style that series is the computed
+     * one, as on the chart page, so indicators are calculated on the Renko/Heikin Ashi/... bars.
+     */
+    const runStudy = async (metaInfoId: string, request: () => StudyRequest): Promise<StudyValues> => {
       let req: StudyRequest;
       try {
-        req = studyRequest(s);
+        req = request();
       } catch (e) {
-        studyResults[s.id] = { status: 'error', metaInfoId: s.metaInfoId, error: (e as Error).message };
-        continue;
+        return { status: 'error', metaInfoId, error: (e as Error).message };
       }
       const sid = randomId('st_');
-      opts.log?.(`  indicator ${s.metaInfoId}`);
+      opts.log?.(`  indicator ${metaInfoId}`);
       ws.send(msg('create_study', [cs, sid, 'st1', 'sds_1', req.createId, req.inputs]));
+      let result: StudyValues;
       try {
         await waitFor(`study:${sid}`);
         const rows = [...(studyRows.get(sid)?.values() ?? [])].sort((a, b) => (a[0] ?? 0) - (b[0] ?? 0));
-        studyResults[s.id] = { status: 'ok', metaInfoId: s.metaInfoId, rows, ...(studyGraphics.has(sid) ? { graphics: studyGraphics.get(sid) } : {}) };
+        result = { status: 'ok', metaInfoId, rows, ...(studyGraphics.has(sid) ? { graphics: studyGraphics.get(sid) } : {}) };
       } catch (e) {
         if (failure) throw failure;
-        studyResults[s.id] = { status: 'error', metaInfoId: s.metaInfoId, error: (e as Error).message };
+        result = { status: 'error', metaInfoId, error: (e as Error).message };
       }
       ws.send(msg('remove_study', [cs, sid]));
       if (opts.studyPauseMs) await new Promise((r) => setTimeout(r, opts.studyPauseMs));
+      return result;
+    };
+
+    const studyResults: Record<string, StudyValues> = {};
+    for (const s of studies) studyResults[s.id] = await runStudy(s.metaInfoId, () => studyRequest(s));
+
+    const lastBarTime = Math.max(0, ...bars.keys());
+    const drawingStudies: Record<string, StudyValues> = {};
+    for (const d of chart.panes.flatMap((p) => p.drawings)) {
+      const tool = STUDY_DRAWINGS[d.type];
+      if (!tool || (d.symbol !== null && d.symbol !== chart.symbol)) continue;
+      drawingStudies[d.id] = await runStudy(tool.studyId, () => drawingStudyRequest(d, lastBarTime));
     }
 
     return {
@@ -236,7 +322,9 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
       interval: chart.interval,
       fetchedAt: new Date().toISOString(),
       bars: [...bars.values()].sort((a, b) => a[0] - b[0]),
+      ...(chart.style in COMPUTED_STYLES ? { computedStyle: chart.style } : {}),
       studies: studyResults,
+      ...(Object.keys(drawingStudies).length ? { drawingStudies } : {}),
     };
   } finally {
     ws.onclose = null;

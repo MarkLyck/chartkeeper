@@ -26,7 +26,8 @@ describe('colours', () => {
     expect(lwcLineStyle(undefined)).toBe(0);
     expect(dashPattern(0, 2)).toEqual([]);
     expect(dashPattern(2, 2)).toEqual([10, 12]);
-    expect(dashPattern(1, 1)).toEqual([1, 2]);
+    expect(dashPattern(1, 1)).toEqual([1, 3]);
+    expect(dashPattern(3, 1)).toEqual([6, 6]);
   });
 });
 
@@ -122,6 +123,19 @@ describe('time index', () => {
     const hourly = new TimeIndex([0, 3600, 7200], '60');
     expect(hourly.indexOf(5000)).toBe(1);
     expect(hourly.indexOf(7200 + 5 * 3600)).toBe(7);
+  });
+
+  it('counts only session bars past the last intraday bar, rounding up to the next bar', () => {
+    // Hourly bars 13:30-19:30 UTC on Thursday 17 and Friday 18 September 2026.
+    const thu = Date.UTC(2026, 8, 17) / 1000;
+    const slots = [13.5, 14.5, 15.5, 16.5, 17.5, 18.5, 19.5].map((h) => h * 3600);
+    const times = [thu, thu + DAY].flatMap((d) => slots.map((s) => d + s));
+    const index = new TimeIndex(times, '60');
+    const last = times.length - 1;
+    const monday = thu + 4 * DAY;
+    expect(index.indexOf(monday + 10.5 * 3600)).toBe(last + 1); // before Monday's open: Monday's first bar
+    expect(index.indexOf(monday + 14.5 * 3600)).toBe(last + 2);
+    expect(index.indexOf(monday + 15 * 3600)).toBe(last + 3); // between bars: the next one
   });
 
   it('labels intervals like the chart header', () => {

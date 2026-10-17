@@ -1,4 +1,5 @@
 import type { DrawingPoint } from '../../../core/layout';
+import type { Bar, StudyValues } from '../../../core/model';
 import { num, obj, str, type Props } from '../../../core/props';
 import { dashPattern } from '../colors';
 
@@ -14,14 +15,28 @@ export interface DrawContext {
   height: number;
   pt(p: DrawingPoint): Pt;
   y(price: number): number;
+  /** Price at a y coordinate, the inverse of `y`. */
+  price(y: number): number;
+  /** x coordinate of a bar position (whole or fractional, may lie outside the bars). */
+  x(logical: number): number;
   barSpacing: number;
   /** Bar position of a point; differences give bar counts. */
   logical(p: DrawingPoint): number;
+  /** Bar position of a time, as `logical` places points. */
+  logicalOfTime(time: number): number;
+  /** The chart's bars, oldest first: bar `i` sits at bar position `i`. */
+  bars: readonly Bar[];
   formatPrice(price: number): string;
   /** Smallest price step of the symbol, for tools that store distances in ticks. */
   priceStep: number;
+  /** True on a dark chart background. */
+  dark: boolean;
+  background: string;
+  /** TradingView's own values for a study-backed drawing (Anchored VWAP, Fixed Range Volume Profile), when the backup has them. */
+  drawingStudy(drawingId: string): StudyValues | undefined;
+  /** The chart's time zone (IANA name), for dates and times shown in labels. */
+  timeZone: string;
 }
-
 
 export const FONT_FAMILY = `-apple-system, BlinkMacSystemFont, 'Trebuchet MS', Roboto, Ubuntu, sans-serif`;
 
@@ -152,28 +167,6 @@ export function drawText(ctx: CanvasRenderingContext2D, text: string, x: number,
   ctx.textBaseline = 'middle';
   m.lines.forEach((line, i) => ctx.fillText(line, bx + pad, by + pad + m.lineHeight * (i + 0.5)));
   return { x: bx, y: by, w: m.w, h: m.h };
-}
-
-/** Rounded box with a small tail pointing down at `anchor`, used by balloons, comments and price labels. */
-export function drawBubble(ctx: CanvasRenderingContext2D, text: string, anchor: Pt, o: TextOptions & { background: string; border: string | null }): void {
-  const m = measureText(ctx, text, { ...o, padding: o.padding ?? 6 });
-  const tail = 8;
-  const x = anchor.x - 10;
-  const y = anchor.y - tail - m.h;
-  ctx.setLineDash([]);
-  ctx.beginPath();
-  ctx.roundRect(x, y, m.w, m.h, 4);
-  ctx.moveTo(anchor.x - 4, y + m.h);
-  ctx.lineTo(anchor.x, anchor.y);
-  ctx.lineTo(anchor.x + 4, y + m.h);
-  ctx.fillStyle = o.background;
-  ctx.fill();
-  if (o.border) {
-    ctx.strokeStyle = o.border;
-    ctx.lineWidth = 1;
-    ctx.stroke();
-  }
-  drawText(ctx, text, x, y, { ...o, background: null, border: null, padding: o.padding ?? 6 });
 }
 
 /** Text drawn along a line, kept upright; vertLabelsAlign "top" puts it above the line, "bottom" below. */

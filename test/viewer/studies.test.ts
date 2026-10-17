@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ParsedStudy, PlotDef } from '../../src/core/layout';
-import { alignRows, hasPineGraphics, planStudyRender } from '../../src/renderer/viewer/studies';
+import { alignRows, hasPineGraphics, legendInputs, planStudyRender, studyScaleMargins, volumeText } from '../../src/renderer/viewer/studies';
 
 function study(over: { plots: PlotDef[]; styles?: Record<string, Record<string, unknown>>; state?: Record<string, unknown>; meta?: Record<string, unknown> }): ParsedStudy {
   const state = { styles: over.styles ?? {}, ...over.state };
@@ -159,5 +159,87 @@ describe('hasPineGraphics', () => {
   it('detects labels, boxes and tables', () => {
     expect(hasPineGraphics({ d: JSON.stringify({ graphicsCmds: { create: { labels: [{ id: 1 }] } } }), indexes: [] })).toBe(true);
     expect(hasPineGraphics({ dwglabels: { 1: { t: 'x' } } })).toBe(true);
+  });
+});
+
+describe('volumeText', () => {
+  it('writes volume like TradingView, with a narrow space before the unit and trailing zeros dropped', () => {
+    expect(volumeText(64358283)).toBe('64.36 M');
+    expect(volumeText(2_000_000)).toBe('2 M');
+    expect(volumeText(464230)).toBe('464.23 K');
+    expect(volumeText(950)).toBe('950');
+    expect(volumeText(-1500)).toBe('−1.5 K');
+  });
+});
+
+describe('a histogram with per-column colours', () => {
+  it("paints its price axis label in the last column's colour without transparency, like Volume in TradingView", () => {
+    const s = study({
+      plots: [
+        { id: 'vol', type: 'line' },
+        { id: 'vol_color', type: 'colorer', target: 'vol' },
+      ],
+      styles: { vol: { plottype: 5, color: '#2962ff', transparency: 50 } },
+      state: { palettes: { volumePalette: { colors: { 0: { color: '#26a69a' }, 1: { color: '#ef5350' } } } } },
+      meta: { plots: [{ id: 'vol', type: 'line' }, { id: 'vol_color', type: 'colorer', target: 'vol', palette: 'volumePalette' }] },
+    });
+    const vol = planStudyRender(s, [[100, 5, 0], [200, 7, 1]], [100, 200], [100, 200]).series[0]!;
+    expect(vol.spec.options).toMatchObject({ color: 'rgba(239, 83, 80, 1)', priceLineColor: 'rgba(239, 83, 80, 1)' });
+    expect(vol.spec.data.map((d) => ('color' in d ? d.color : null))).toEqual(['rgba(38, 166, 154, 0.5)', 'rgba(239, 83, 80, 0.5)']);
+  });
+});
+
+describe('studyScaleMargins', () => {
+  const pane = { top: 0.1, bottom: 0.08 };
+  const named = (metaInfoId: string, meta: Record<string, unknown> = {}): ParsedStudy => ({ ...study({ plots: [], meta }), metaInfoId });
+
+  it('puts Volume on the bottom edge: its own pane keeps only the top margin, as an overlay it takes the lowest quarter', () => {
+    expect(studyScaleMargins(named('Volume@tv-basicstudies-280'), false, pane)).toEqual({ top: 0.1, bottom: 0 });
+    expect(studyScaleMargins(named('Volume@tv-basicstudies-280'), true, pane)).toEqual({ top: 0.75, bottom: 0 });
+  });
+
+  it("keeps the pane's margins for other indicators unless their definition sets overlay margins", () => {
+    expect(studyScaleMargins(named('RSI@tv-basicstudies-280'), false, pane)).toEqual(pane);
+    expect(studyScaleMargins(named('X@tv-basicstudies-1', { overlayScaleMargins: { top: 0.5, bottom: 0.1 } }), true, pane)).toEqual({ top: 0.5, bottom: 0.1 });
+  });
+});
+
+describe('legendInputs', () => {
+  const withInputs = (metaInfoId: string, inputs: Record<string, unknown>, metaInputs: Record<string, unknown>[], styles: Record<string, Record<string, unknown>> = {}): ParsedStudy => ({
+    ...study({ plots: [], styles, meta: { inputs: metaInputs } }),
+    metaInfoId,
+    inputs,
+  });
+
+  it('lists inputs in the order of the indicator definition, as TradingView does ("Stoch RSI 3 3 14 14 close")', () => {
+    const s = withInputs('StochasticRSI@tv-basicstudies-280', { D: 3, K: 3, 'RSI Length': 14, 'RSI Source': 'close', 'Stochastic Length': 14 }, [
+      { id: 'K', display: 15 },
+      { id: 'D', display: 15 },
+      { id: 'RSI Length', display: 15 },
+      { id: 'Stochastic Length', display: 15 },
+      { id: 'RSI Source', display: 15 },
+    ]);
+    expect(legendInputs(s)).toEqual(['3', '3', '14', '14', 'close']);
+  });
+
+  it('skips inputs hidden from the legend and shows option titles ("Pivots Traditional Auto 15")', () => {
+    const s = withInputs('PivotPointsStandard@tv-basicstudies-280', { kind: 'Traditional', lookBack: 15, pivTimeFrame: 'Auto', showHistoricalPivots: true }, [
+      { id: 'kind', display: 15, optionsTitles: { DeMark: 'DM' } },
+      { id: 'showHistoricalPivots', display: 0 },
+      { id: 'pivTimeFrame', display: 15 },
+      { id: 'lookBack', display: 15 },
+    ]);
+    expect(legendInputs(s)).toEqual(['Traditional', 'Auto', '15']);
+    expect(legendInputs({ ...s, inputs: { ...s.inputs, kind: 'DeMark' } })[0]).toBe('DM');
+  });
+
+  it("shows Volume's MA length only while the MA is drawn", () => {
+    const meta = [
+      { id: 'length', display: 15 },
+      { id: 'col_prev_close', display: 0 },
+    ];
+    const inputs = { col_prev_close: false, length: 20 };
+    expect(legendInputs(withInputs('Volume@tv-basicstudies-280', inputs, meta, { vol_ma: { display: 0, visible: false } }))).toEqual([]);
+    expect(legendInputs(withInputs('Volume@tv-basicstudies-280', inputs, meta, { vol_ma: { display: 15, visible: true } }))).toEqual(['20']);
   });
 });

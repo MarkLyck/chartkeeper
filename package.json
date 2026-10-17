@@ -21,6 +21,7 @@
     "test:compat": "vitest run --config vitest.compat.config.mts",
     "test:e2e": "node scripts/build.mjs --test-fake && vitest run --config vitest.e2e.config.mts",
     "viewer:compare": "tsx scripts/viewer-compare.ts",
+    "gallery:compare": "tsx scripts/gallery-compare.ts",
     "screenshots": "tsx scripts/readme-screenshots.ts",
     "dist": "npm run build && electron-builder --publish never"
   },
@@ -31,11 +32,12 @@
     "electron": "^44.9.0",
     "electron-builder": "^26.15.3",
     "esbuild": "^0.28.2",
+    "font-awesome": "4.7.0",
+    "lightweight-charts": "^5.2.1",
     "playwright-core": "^1.64.1",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vitest": "^5.0.5",
-    "lightweight-charts": "^5.2.1",
     "zod": "^4.6.7"
   },
   "allowScripts": {
