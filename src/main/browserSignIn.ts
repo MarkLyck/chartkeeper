@@ -25,6 +25,7 @@ export interface BrowserSignInOptions {
   timeoutMs?: number;
   pollMs?: number;
   extraArgs?: string[];
+  onSpawn?: (child: ChildProcess) => void;
 }
 
 export class SignInCancelled extends Error {
@@ -50,6 +51,7 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
     [`--user-data-dir=${opts.profileDir}`, '--remote-debugging-pipe', '--no-first-run', '--no-default-browser-check', '--new-window', ...(opts.extraArgs ?? []), opts.startUrl],
     { stdio: ['ignore', 'ignore', 'ignore', 'pipe', 'pipe'] },
   );
+  opts.onSpawn?.(child);
   const cdp = new PipeCdp(child);
   try {
     return await new Promise<CdpCookie[]>((resolve, reject) => {

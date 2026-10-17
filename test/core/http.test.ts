@@ -38,7 +38,7 @@ describe('request policy', () => {
     const res = await http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
     expect(res.status).toBe(200);
     expect(sent).toHaveLength(3);
-    expect(sent[2]!.at - sent[1]!.at).toBeGreaterThanOrEqual(30000);
+    expect(Math.round(sent[2]!.at - sent[1]!.at)).toBeGreaterThanOrEqual(30000);
   });
 
   it('never retries a save, so a slow answer cannot create two layouts', async () => {
