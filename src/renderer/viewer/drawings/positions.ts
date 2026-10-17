@@ -3,6 +3,7 @@ import type { Props } from '../../../core/props';
 import { fillColor } from '../colors';
 import { drawText, font, pnum, pstr, setStroke, strokeLine, type DrawContext } from './canvas';
 import { kind, type DrawingKind } from './kind';
+import { VOLUME_KINDS } from './volume';
 
 /**
  * Long/short position. Stop and target are stored as distances in ticks
@@ -42,4 +43,5 @@ export function riskRewardDrawer(side: 'long' | 'short') {
 export const POSITION_KINDS: Readonly<Record<string, DrawingKind>> = {
   LineToolRiskRewardLong: kind(1, riskRewardDrawer('long')),
   LineToolRiskRewardShort: kind(1, riskRewardDrawer('short')),
+  ...VOLUME_KINDS,
 };
