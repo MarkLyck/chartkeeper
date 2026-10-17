@@ -143,7 +143,8 @@ export function restoreScreen(ctx: Ctx): Screen {
 
     const tg = c.targets.value;
     const target = tg.layouts.find((l) => l.uid === c.targetUid) ?? null;
-    const start = button(t('restore.start'), () => void begin(c, target), { kind: 'primary', big: true, id: 'restore-start' });
+    let typedName = '';
+    const start = button(t('restore.start'), () => void begin(c, target, typedName), { kind: 'primary', big: true, id: 'restore-start' });
     const hint = h('p', { class: 'match-hint', id: 'confirm-name-hint', attrs: { 'aria-live': 'polite' } });
     const nameInput = h('input', {
       type: 'text', id: 'confirm-name', class: 'text-input', autocomplete: 'off', spellcheck: false,
@@ -152,6 +153,7 @@ export function restoreScreen(ctx: Ctx): Screen {
     });
     const sync = () => {
       const typed = nameInput.value;
+      typedName = typed;
       const matches = target !== null && sameLayoutName(typed, target.name);
       start.disabled = c.mode === 'new' ? !tg.free : !matches;
       hint.textContent = target && typed.trim() ? (matches ? t('restore.nameMatches') : t('restore.nameMismatch')) : '';
@@ -194,7 +196,8 @@ export function restoreScreen(ctx: Ctx): Screen {
     return els;
   }
 
-  async function begin(c: Extract<Step, { k: 'how' }>, target: { uid: string; name: string } | null) {
+  /** `typedName` is what he typed to confirm a replace; the app process checks it against the layout's name again. */
+  async function begin(c: Extract<Step, { k: 'how' }>, target: { uid: string; name: string } | null, typedName: string) {
     const base = { snapshotDir: c.source.snapshot.dir, uid: c.source.layout.uid };
     let req: RestoreRequest;
     if (c.mode === 'replace') {
@@ -207,7 +210,7 @@ export function restoreScreen(ctx: Ctx): Screen {
         danger: true,
       });
       if (!ok) return;
-      req = { ...base, mode: 'replace', targetUid: target.uid, confirmedName: target.name };
+      req = { ...base, mode: 'replace', targetUid: target.uid, confirmedName: typedName };
     } else req = { ...base, mode: 'new' };
 
     set({ k: 'running', source: c.source, label: t('restoreStep.check') });

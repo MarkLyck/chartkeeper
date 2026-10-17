@@ -19,7 +19,6 @@ const TvChartShape = z.looseObject({ chartId: z.union([z.string(), z.number()]).
 const TvContentShape = z.looseObject({ charts: z.array(TvChartShape) });
 
 export type TvSource = z.infer<typeof TvSourceShape>;
-export type TvPane = z.infer<typeof TvPaneShape>;
 export type TvChart = z.infer<typeof TvChartShape>;
 export type TvContent = z.infer<typeof TvContentShape>;
 
@@ -76,7 +75,7 @@ export function drawingSourceFromStored(id: string, stored: Record<string, unkno
   return source;
 }
 
-export interface Placement {
+interface Placement {
   chart: number;
   pane: number;
 }

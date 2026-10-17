@@ -65,7 +65,8 @@ export class Tasks {
     if (!s.dailyBackup || this.status.busy) return;
     const now = new Date();
     const lastSuccess = this.store.lastSuccessAt ? new Date(this.store.lastSuccessAt) : null;
-    const lastAttempt = this.store.lastBackup ? new Date(this.store.lastBackup.at) : null;
+    // Only the schedule's own attempts count here: a failed manual click doesn't push the daily backup back.
+    const lastAttempt = this.store.lastScheduledAttemptAt ? new Date(this.store.lastScheduledAttemptAt) : null;
     if (!isBackupDue(now, s.dailyHour, lastSuccess, lastAttempt)) return;
     if (!(await hasSessionCookie())) {
       const today = now.toISOString().slice(0, 10);
@@ -75,6 +76,7 @@ export class Tasks {
       }
       return;
     }
+    await this.store.update({ lastScheduledAttemptAt: now.toISOString() });
     await this.backup(true);
   }
 

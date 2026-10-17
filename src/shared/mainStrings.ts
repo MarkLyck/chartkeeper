@@ -16,7 +16,7 @@ const en = {
   restoredWord: 'restored',
 } as const;
 
-export type MainStringKey = keyof typeof en;
+type MainStringKey = keyof typeof en;
 
 const da: Record<MainStringKey, string> = {
   backupDoneTitle: 'Backup gennemført',

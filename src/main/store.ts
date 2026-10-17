@@ -16,6 +16,8 @@ const StateSchema = z.object({
   settings: SettingsSchema,
   lastBackup: z.object({ at: z.string(), ok: z.boolean(), dir: z.string() }).nullable(),
   lastSuccessAt: z.string().nullable().default(null),
+  /** When the daily schedule last tried; a failure here waits 3 hours before the schedule tries again. */
+  lastScheduledAttemptAt: z.string().nullable().default(null),
   /** Day (YYYY-MM-DD) we last told the user a scheduled backup couldn't run because they're signed out. */
   signInNoticeDay: z.string().nullable().default(null),
 });
@@ -37,7 +39,7 @@ export class Store {
   ) {}
 
   static async open(file: string, defaults: Settings): Promise<Store> {
-    let state: StoredState = { settings: defaults, lastBackup: null, lastSuccessAt: null, signInNoticeDay: null };
+    let state: StoredState = { settings: defaults, lastBackup: null, lastSuccessAt: null, lastScheduledAttemptAt: null, signInNoticeDay: null };
     try {
       const raw = JSON.parse(await fs.readFile(file, 'utf8'));
       const parsed = StateSchema.safeParse({ ...raw, settings: { ...defaults, ...raw.settings } });
@@ -57,6 +59,9 @@ export class Store {
   get lastSuccessAt() {
     return this.state.lastSuccessAt;
   }
+  get lastScheduledAttemptAt() {
+    return this.state.lastScheduledAttemptAt;
+  }
   get signInNoticeDay() {
     return this.state.signInNoticeDay;
   }
@@ -64,7 +69,7 @@ export class Store {
   private writing: Promise<void> = Promise.resolve();
 
   /** Applies the change at once; writes to disk one at a time, newest state last. */
-  update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup']; lastSuccessAt?: string | null; signInNoticeDay?: string | null }): Promise<void> {
+  update(patch: { settings?: Partial<Settings>; lastBackup?: StoredState['lastBackup']; lastSuccessAt?: string | null; lastScheduledAttemptAt?: string | null; signInNoticeDay?: string | null }): Promise<void> {
     this.state = StateSchema.parse({ ...this.state, ...patch, settings: { ...this.state.settings, ...patch.settings } });
     const snapshot = JSON.stringify(this.state, null, 2);
     this.writing = this.writing.catch(() => undefined).then(() => writePrivate(this.file, snapshot));

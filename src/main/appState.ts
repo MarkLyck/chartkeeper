@@ -10,7 +10,7 @@ import { hasSessionCookie } from './tvSession';
 
 export type Task = NonNullable<AppState['busy']>;
 
-export function toAppError(e: unknown): AppError {
+function toAppError(e: unknown): AppError {
   if (e instanceof TvError) {
     log(`error ${e.kind}: ${e.message} ${e.detail}`);
     return { kind: e.kind, message: e.message, params: e.params };

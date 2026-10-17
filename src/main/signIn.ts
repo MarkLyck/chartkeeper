@@ -42,7 +42,10 @@ export async function signIn(account: TvAccount, parent: BrowserWindow | null): 
 async function signInWithAppWindow(parent: BrowserWindow | null): Promise<SessionCookie[]> {
   const partition = 'signin-temporary';
   const s = session.fromPartition(partition);
+  s.setPermissionRequestHandler((_wc, _permission, cb) => cb(false));
   const w = new BrowserWindow({ width: 520, height: 760, title: 'TradingView', parent: parent ?? undefined, webPreferences: { partition, contextIsolation: true, sandbox: true } });
+  // Sign-in pages stay in this one window; nothing opens new windows from it.
+  w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   await w.loadURL(urls.signIn);
   try {
     return await new Promise<SessionCookie[]>((resolve, reject) => {

@@ -14,6 +14,7 @@ import { FakeTradingView } from '../fakes/fakeTradingView';
 import { referenceInAccount } from '../fakes/fixtures';
 
 vi.mock('electron', () => ({ app: { getVersion: () => 'test', getPath: () => os.tmpdir() } }));
+vi.mock('../../src/main/tvSession', () => ({ hasSessionCookie: async () => true, countOnChartPage: async () => null }));
 
 const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
 let tv: FakeTradingView;
@@ -85,5 +86,42 @@ describe('reporting a backup', () => {
     expect(first.ok).toBe(true);
     expect(second).toMatchObject({ ok: false, error: { kind: 'busy' } });
     expect(notices).toHaveLength(1);
+  });
+});
+
+describe('the daily schedule', () => {
+  it('still runs the daily backup after a failed manual backup', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(2026, 9, 17, 18, 30));
+      signedIn = false;
+      await tasks.backup(false);
+      expect(store.lastBackup).toMatchObject({ ok: false });
+      signedIn = true;
+      vi.setSystemTime(new Date(2026, 9, 17, 18, 45));
+      await tasks.scheduledCheck();
+      expect(store.lastBackup).toMatchObject({ ok: true });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('waits three hours after its own failed attempt', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date(2026, 9, 17, 18, 30));
+      signedIn = false;
+      await tasks.scheduledCheck();
+      const failedAt = store.lastBackup!.at;
+      signedIn = true;
+      vi.setSystemTime(new Date(2026, 9, 17, 19, 30));
+      await tasks.scheduledCheck();
+      expect(store.lastBackup!.at).toBe(failedAt);
+      vi.setSystemTime(new Date(2026, 9, 17, 21, 31));
+      await tasks.scheduledCheck();
+      expect(store.lastBackup).toMatchObject({ ok: true });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

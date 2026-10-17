@@ -200,7 +200,9 @@ async function main() {
     await page.click('#restore-next');
     await page.waitForSelector('#mode-new');
     await page.click('#restore-start');
-    await page.waitForSelector('.result-success');
+    // Saved but not confirmed on the chart is amber, never the green "verified" result.
+    await page.waitForSelector('.result-warning');
+    expect((await page.$$('.result-success')).length === 0, `[${lang}] an unchecked restore is shown as verified`);
     expect((await page.$$('.verify .cell-warn')).length === 2, `[${lang}] an unchecked chart page does not say "could not check" for drawings and indicators`);
     await shot(page, 'restore-unchecked');
 
@@ -232,7 +234,7 @@ async function main() {
     await page.waitForSelector('.result-warning');
     expect((await page.$$('.verify .cell-warn')).length === 2, `[${lang}] a mismatch does not mark the saved and shown drawings`);
     const replaceReq = (await calls(page)).filter((c) => c.method === 'restore').at(-1)?.args[0] as { mode: string; confirmedName?: string } | undefined;
-    expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'Novo Nordisk – dagligt', `[${lang}] replace request did not carry the confirmed name`);
+    expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'novo nordisk - dagligt', `[${lang}] replace request did not carry the name he typed`);
     await shot(page, 'restore-mismatch');
     await page.close();
 
