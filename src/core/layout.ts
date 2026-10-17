@@ -28,6 +28,8 @@ export interface ParsedChart {
   seriesState: Record<string, unknown>;
   timezone: string;
   chartProperties: Record<string, unknown>;
+  /** TradingView's saved view: pixels per bar, and empty bars right of the last bar. Null when the layout has none. */
+  timeScale: { barSpacing: number; rightOffset: number } | null;
   panes: ParsedPane[];
 }
 
@@ -182,6 +184,8 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
     const main = mainSeriesOf(chart);
     if (!main) throw new LayoutParseError(`Chart ${chartId} in "${record.name}" has no price series.`);
     const seriesState = obj(main.state);
+    const ts = obj(chart.timeScale);
+    const barSpacing = num(ts.m_barSpacing, null);
     return {
       chartId,
       symbol: anyStr(seriesState.symbol),
@@ -191,6 +195,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
       seriesState,
       timezone: anyStr(chart.timezone, 'Etc/UTC'),
       chartProperties: isObj(chart.chartProperties) ? chart.chartProperties : {},
+      timeScale: barSpacing !== null && barSpacing > 0 ? { barSpacing, rightOffset: num(ts.m_rightOffset, 0) } : null,
       panes,
     };
   });

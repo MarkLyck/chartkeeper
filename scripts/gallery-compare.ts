@@ -2,8 +2,8 @@
  * Measures the offline viewer against TradingView's own rendering of every
  * scene in test/fixtures/gallery, in headless Chromium, without network.
  *
- * For each scene it renders the snapshot at the captured pixel size, visible
- * range and price range, then scores:
+ * For each scene it renders the snapshot at the captured pixel size and main
+ * price range (the time scale comes from the layout, as in TradingView), then scores:
  *   - each drawing: the pixels it adds over the drawing-free chart, TradingView vs viewer;
  *   - each pane of the drawing-free chart (series and indicators): foreground pixels;
  *   - the full chart, for the report.
@@ -64,6 +64,8 @@ export interface DrawingScore {
 export interface PaneScore extends MaskScore {
   scene: string;
   pane: number;
+  /** Plot area of the pane in the viewer render. */
+  rect: Rect | null;
   /** "style:<id>" for a main pane without indicators, "indicator:<name>" for each indicator in the pane. */
   keys: string[];
   failure: string | null;
@@ -177,7 +179,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
   const input: SceneInput = {
     layout,
     data,
-    options: { visibleRange: chartMeta.visibleRange, ...(chartMeta.priceRange ? { priceRange: chartMeta.priceRange } : {}), notShownPanel: false },
+    options: { ...(chartMeta.priceRange ? { priceRange: chartMeta.priceRange } : {}), notShownPanel: false },
   };
   await page.evaluate((i) => (window as any).ck.load(i), JSON.parse(json(input)));
   const shoot = async (only: string[] | null) => {
@@ -245,7 +247,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
       const f = check(s.f1, t);
       return f && `${k} ${f}`;
     });
-    return { scene: meta.scene, pane: i, keys, ...s, failure: failures.filter(Boolean).join('; ') || null };
+    return { scene: meta.scene, pane: i, rect: info.rect, keys, ...s, failure: failures.filter(Boolean).join('; ') || null };
   });
 
   const drawnStudies = new Set(full.info.rendered.flatMap((r) => r.studies));
@@ -255,7 +257,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
       const key = studyKey(study.metaInfoId);
       const reason = INDICATOR_THRESHOLDS[key]?.reason;
       const zero = { f1: 0, precision: 0, recall: 0, tvPixels: 0, viewerPixels: 0 };
-      panes.push({ scene: meta.scene, pane: -1, keys: [`indicator:${key}`], ...zero, failure: reason ? null : 'indicator not drawn' });
+      panes.push({ scene: meta.scene, pane: -1, rect: null, keys: [`indicator:${key}`], ...zero, failure: reason ? null : 'indicator not drawn' });
     }
   }
 

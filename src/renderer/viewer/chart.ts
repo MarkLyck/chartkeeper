@@ -287,9 +287,17 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
   updateLegends(last);
   chart.subscribeCrosshairMove((param) => updateLegends(param.logical ?? last));
 
+  const saved = plan.chart.timeScale;
   const applyRange = () => {
-    const range = visibleRange ? { from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) } : { from: last - 150, to: last + 10 };
-    chart.timeScale().setVisibleLogicalRange(range);
+    if (visibleRange) {
+      chart.timeScale().setVisibleLogicalRange({ from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) });
+    } else if (saved) {
+      // TradingView reopens a layout at its saved bar spacing, with the last bar `rightOffset` bars from the right edge.
+      chart.timeScale().applyOptions({ barSpacing: saved.barSpacing, rightOffset: saved.rightOffset });
+      chart.timeScale().scrollToPosition(saved.rightOffset, false);
+    } else {
+      chart.timeScale().setVisibleLogicalRange({ from: last - 150, to: last + 10 });
+    }
     if (priceRange && mainSeries) {
       // An explicit range spans the whole pane, so the autoscale margins must not shrink it.
       mainSeries.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0, bottom: 0 } });
