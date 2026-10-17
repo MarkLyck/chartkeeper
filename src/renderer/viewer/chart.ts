@@ -21,7 +21,7 @@ import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
 import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
 import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
-import { legendInputs, opaque, studyScaleMargins } from './studies';
+import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
@@ -174,19 +174,26 @@ function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
   };
 }
 
-/** TradingView's legend writes negatives with a minus sign and volume units after a space ("64.36 M"). */
-const legendNumber = (text: string) => text.replace(/^-/, '\u2212').replace(/(\d)([KMB])$/, '$1 $2');
+/** TradingView's legend writes negatives with a minus sign and volume like its price axis. */
+const legendNumber = (v: number | null | undefined, format: PriceFormatSpec) =>
+  format.type === 'volume' && typeof v === 'number' ? volumeText(v) : formatValue(v, format).replace(/^-/, '\u2212');
 
 /** One row per indicator: its name, its inputs in a lighter colour, then each plot's value in the plot's colour at that bar. */
 function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): Legend {
   const el = legendBox(theme);
   el.style.top = `${top}px`;
   el.style.lineHeight = '24px';
+  el.style.left = '9px';
   const rows = studies.map((s) => {
     const row = document.createElement('div');
     const values = document.createElement('span');
+    values.style.marginLeft = '3px';
+    const title = span(s.study.shortName);
+    title.style.marginRight = '3px';
     const inputs = legendInputs(s.study);
-    row.append(span(s.study.shortName), ...(inputs.length ? [span(inputs.join(' '), withTransparency(theme.textColor, 35))] : []), values);
+    const args = span(inputs.join(' '), withTransparency(theme.textColor, 35));
+    args.style.wordSpacing = '1.25px';
+    row.append(title, ...(inputs.length ? [args] : []), values);
     el.append(row);
     return { s, values, plots: s.render.series.filter((p) => p.inLegend) };
   });
@@ -194,7 +201,7 @@ function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): L
     el,
     update(i) {
       for (const { s, values, plots } of rows) {
-        values.replaceChildren(...plots.map((p) => span(legendNumber(formatValue(p.values[i], s.priceFormat)), opaque(p.barColors?.[i] ?? p.color))));
+        values.replaceChildren(...plots.map((p) => span(legendNumber(p.values[i], s.priceFormat), opaque(p.barColors?.[i] ?? p.color))));
       }
     },
   };
@@ -255,7 +262,8 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     for (const ps of pane.studies) {
       let first: ISeriesApi<SeriesType> | null = null;
       for (const plot of ps.render.series) {
-        const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat: ps.priceFormat });
+        const priceFormat = ps.priceFormat.type === 'volume' ? { type: 'custom' as const, formatter: volumeText, minMove: 1 } : ps.priceFormat;
+        const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat });
         first ??= s;
       }
       const overlay = ps.priceScaleId !== 'right';

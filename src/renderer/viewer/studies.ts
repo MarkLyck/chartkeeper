@@ -110,6 +110,13 @@ function paletteColor(study: ParsedStudy, paletteId: string, raw: number | null,
   return typeof entry.color === 'string' ? withTransparency(entry.color, transparency) : null;
 }
 
+/** TradingView's volume numbers, on the price axis and in the legend: "464.23 K", "2 M", with a narrow space and a minus sign. */
+export function volumeText(v: number): string {
+  const abs = Math.abs(v);
+  const [div, unit] = abs >= 1e9 ? [1e9, '\u202fB'] : abs >= 1e6 ? [1e6, '\u202fM'] : abs >= 1e3 ? [1e3, '\u202fK'] : [1, ''];
+  return `${Number((v / div).toFixed(2))}${unit}`.replace('-', '\u2212');
+}
+
 export interface ScaleMargins {
   top: number;
   bottom: number;
@@ -153,6 +160,8 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
 
   if (plottype === 1 || plottype === 5) {
     const base = num(obj(obj(study.metaInfo?.styles)[plot.id]).histogramBase, 0);
+    // Every column carries its colour, so the series colour only paints the price axis label: opaque, in the last column's colour, as TradingView does.
+    const labelColor = opaque(colors?.findLast((c) => c !== null) ?? color);
     return {
       plotId: plot.id,
       title,
@@ -161,11 +170,8 @@ function plotSeries(study: ParsedStudy, plot: PlotDef, values: Column, colors: (
       values,
       spec: {
         kind: 'Histogram',
-        options: { ...common, color, base },
-        data: values.map((v, i) => {
-          const c = pointColor(i);
-          return v === null ? { time: t(i) } : { time: t(i), value: v, ...(c ? { color: c } : {}) };
-        }),
+        options: { ...common, color: labelColor, priceLineColor: labelColor, base },
+        data: values.map((v, i) => (v === null ? { time: t(i) } : { time: t(i), value: v, color: pointColor(i) ?? color })),
       },
     };
   }

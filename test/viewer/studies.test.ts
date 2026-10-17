@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ParsedStudy, PlotDef } from '../../src/core/layout';
-import { alignRows, hasPineGraphics, legendInputs, planStudyRender, studyScaleMargins } from '../../src/renderer/viewer/studies';
+import { alignRows, hasPineGraphics, legendInputs, planStudyRender, studyScaleMargins, volumeText } from '../../src/renderer/viewer/studies';
 
 function study(over: { plots: PlotDef[]; styles?: Record<string, Record<string, unknown>>; state?: Record<string, unknown>; meta?: Record<string, unknown> }): ParsedStudy {
   const state = { styles: over.styles ?? {}, ...over.state };
@@ -159,6 +159,33 @@ describe('hasPineGraphics', () => {
   it('detects labels, boxes and tables', () => {
     expect(hasPineGraphics({ d: JSON.stringify({ graphicsCmds: { create: { labels: [{ id: 1 }] } } }), indexes: [] })).toBe(true);
     expect(hasPineGraphics({ dwglabels: { 1: { t: 'x' } } })).toBe(true);
+  });
+});
+
+describe('volumeText', () => {
+  it('writes volume like TradingView, with a narrow space before the unit and trailing zeros dropped', () => {
+    expect(volumeText(64358283)).toBe('64.36 M');
+    expect(volumeText(2_000_000)).toBe('2 M');
+    expect(volumeText(464230)).toBe('464.23 K');
+    expect(volumeText(950)).toBe('950');
+    expect(volumeText(-1500)).toBe('−1.5 K');
+  });
+});
+
+describe('a histogram with per-column colours', () => {
+  it("paints its price axis label in the last column's colour without transparency, like Volume in TradingView", () => {
+    const s = study({
+      plots: [
+        { id: 'vol', type: 'line' },
+        { id: 'vol_color', type: 'colorer', target: 'vol' },
+      ],
+      styles: { vol: { plottype: 5, color: '#2962ff', transparency: 50 } },
+      state: { palettes: { volumePalette: { colors: { 0: { color: '#26a69a' }, 1: { color: '#ef5350' } } } } },
+      meta: { plots: [{ id: 'vol', type: 'line' }, { id: 'vol_color', type: 'colorer', target: 'vol', palette: 'volumePalette' }] },
+    });
+    const vol = planStudyRender(s, [[100, 5, 0], [200, 7, 1]], [100, 200], [100, 200]).series[0]!;
+    expect(vol.spec.options).toMatchObject({ color: 'rgba(239, 83, 80, 1)', priceLineColor: 'rgba(239, 83, 80, 1)' });
+    expect(vol.spec.data.map((d) => ('color' in d ? d.color : null))).toEqual(['rgba(38, 166, 154, 0.5)', 'rgba(239, 83, 80, 0.5)']);
   });
 });
 
