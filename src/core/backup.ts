@@ -1,6 +1,6 @@
 import { parseLayout } from './layout';
-import type { DrawingBucket, DrawingsRecord, ManifestLayout } from './model';
-import { APP_NAME, layoutFiles, noExtras, SnapshotWriter, type ManifestBody } from './snapshot';
+import type { DrawingBucket, DrawingsRecord, DrawingTemplatesFile, ManifestLayout, ScriptsIndex, StudyTemplatesFile, ThemesFile } from './model';
+import { APP_NAME, layoutFiles, noExtras, SNAPSHOT_FILES, SnapshotWriter, type ManifestBody } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf } from './tv/content';
 import { fetchChartData, type SocketFactory } from './tv/datafeed';
@@ -92,7 +92,7 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
   try {
     progress(0, 1, 'list');
     const entries = await client.listLayouts();
-    await writer.writeJson('account.json', { username: client.username, plan: client.plan, layoutList: entries.map((e) => e.raw) });
+    await writer.writeJson(SNAPSHOT_FILES.account, { username: client.username, plan: client.plan, layoutList: entries.map((e) => e.raw) });
     const steps = entries.length * (opts.includePrices ? 2 : 1) + 4;
     let step = 0;
 
@@ -112,25 +112,25 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
       progress(++step, steps, 'userDrawings');
       const user = await client.userDrawings(firstToken.uid, firstToken.token);
       extras.userDrawings = Object.keys(user.sources).length;
-      await writer.writeJson('user-drawings.json', user);
+      await writer.writeJson(SNAPSHOT_FILES.userDrawings, user);
     }
 
     progress(++step, steps, 'studyTemplates');
     const studyTemplates = await client.studyTemplates();
     extras.studyTemplates = studyTemplates.length;
-    await writer.writeJson('templates/study-templates.json', { templates: studyTemplates });
+    await writer.writeJson(SNAPSHOT_FILES.studyTemplates, { templates: studyTemplates } satisfies StudyTemplatesFile);
 
     progress(++step, steps, 'drawingTemplates');
     const tools = await client.drawingTemplates();
     extras.drawingTemplates = Object.values(tools).reduce((n, t) => n + Object.keys(t).length, 0);
-    await writer.writeJson('templates/drawing-templates.json', { tools });
+    await writer.writeJson(SNAPSHOT_FILES.drawingTemplates, { tools } satisfies DrawingTemplatesFile);
     const themes = await client.themes();
     extras.themes = Object.keys(themes).length;
-    await writer.writeJson('templates/themes.json', { themes });
+    await writer.writeJson(SNAPSHOT_FILES.themes, { themes } satisfies ThemesFile);
 
     progress(++step, steps, 'scripts');
     const scripts = await client.pineScripts();
-    const index = [];
+    const index: ScriptsIndex['scripts'] = [];
     const used = new Set<string>();
     for (const s of scripts) {
       let file = `scripts/${safeFileName(s.name)}.pine`;
@@ -140,7 +140,7 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
       index.push({ id: s.id, name: s.name, version: s.version, file, meta: s.meta });
     }
     extras.scripts = scripts.length;
-    await writer.writeJson('scripts/index.json', { scripts: index });
+    await writer.writeJson(SNAPSHOT_FILES.scriptsIndex, { scripts: index } satisfies ScriptsIndex);
 
     if (opts.includePrices) {
       for (const { entry, dir, layout } of parsedForPrices) {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { captureLayout } from './backup';
 import { countLayout, parseLayout, type LayoutCounts } from './layout';
 import type { DrawingsRecord, LayoutRecord } from './model';
-import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader } from './snapshot';
+import { APP_NAME, noExtras, SNAPSHOT_FILES, SnapshotWriter, type SnapshotReader } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
 import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { TvError } from './tv/errors';
@@ -251,15 +251,12 @@ export interface TemplateRestoreResult {
 export async function restoreTemplates(client: TvClient, snapshot: SnapshotReader): Promise<TemplateRestoreResult> {
   const added: string[] = [];
   const skipped: string[] = [];
-  const read = async <T>(rel: string, empty: T): Promise<T> => {
-    try {
-      return (await snapshot.readJson(rel)) as T;
-    } catch {
-      skipped.push(`${rel} (not in this backup)`);
-      return empty;
-    }
+  const read = async <T>(file: Promise<T | null>, rel: string, empty: T): Promise<T> => {
+    const v = await file;
+    if (v === null) skipped.push(`${rel} (not in this backup)`);
+    return v ?? empty;
   };
-  const studies = (await read<{ templates: Record<string, unknown>[] }>('templates/study-templates.json', { templates: [] })).templates;
+  const studies = (await read(snapshot.studyTemplates(), SNAPSHOT_FILES.studyTemplates, { templates: [] })).templates;
   const existingStudies = new Set((await client.studyTemplates()).map((t) => String(t.name)));
   for (const t of studies) {
     const n = String(t.name);
@@ -269,7 +266,7 @@ export async function restoreTemplates(client: TvClient, snapshot: SnapshotReade
       added.push(`Indicator template "${n}"`);
     }
   }
-  const tools = (await read<{ tools: Record<string, Record<string, unknown>> }>('templates/drawing-templates.json', { tools: {} })).tools;
+  const tools = (await read(snapshot.drawingTemplates(), SNAPSHOT_FILES.drawingTemplates, { tools: {} })).tools;
   for (const [tool, templates] of Object.entries(tools)) {
     const existing = new Set(await client.drawingTemplateNames(tool));
     for (const [n, content] of Object.entries(templates)) {
@@ -280,7 +277,7 @@ export async function restoreTemplates(client: TvClient, snapshot: SnapshotReade
       }
     }
   }
-  const themes = (await read<{ themes: Record<string, unknown> }>('templates/themes.json', { themes: {} })).themes;
+  const themes = (await read(snapshot.themes(), SNAPSHOT_FILES.themes, { themes: {} })).themes;
   const existingThemes = new Set(Object.keys(await client.themes()));
   for (const [n, content] of Object.entries(themes)) {
     if (existingThemes.has(n)) skipped.push(`Theme "${n}"`);

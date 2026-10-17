@@ -3,11 +3,9 @@ import { appendFileSync, mkdirSync, statSync, renameSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { runBackup } from '../core/backup';
-import { diffNamed, diffSnapshots } from '../core/diff';
-import { parseBucket, parseLayout, type ParsedLayout } from '../core/layout';
-import type { ChartData } from '../core/model';
 import { restoreLayout, RestoreJournal, restoreTemplates } from '../core/restore';
 import { cleanupInterrupted, listSnapshots, SnapshotReader } from '../core/snapshot';
+import { compareSnapshots, openLayout } from '../core/snapshotView';
 import { TvClient } from '../core/tv/client';
 import { nodeSocketFactory } from '../core/tv/datafeed';
 import { urls } from '../core/tv/endpoints';
@@ -200,53 +198,6 @@ function notify(ok: boolean, detail: string) {
   n.show();
 }
 
-async function loadLayout(snapshotDir: string, uid: string) {
-  const reader = await SnapshotReader.open(snapshotDir);
-  const record = await reader.layout(uid);
-  const drawings = await reader.drawings(uid);
-  const layout = parseLayout(record, drawings);
-  // Drawings synced to all layouts belong on every chart of their symbol.
-  const synced = await reader.userDrawings();
-  if (synced) {
-    const seen = new Set([...layout.charts.flatMap((c) => c.panes.flatMap((p) => p.drawings.map((d) => d.id))), ...layout.sharedDrawings.map((d) => d.id)]);
-    const parsed = parseBucket(synced, 'user');
-    layout.problems.push(...parsed.problems);
-    layout.sharedDrawings.push(...parsed.drawings.filter((d) => !seen.has(d.id)));
-  }
-  const data: Record<string, ChartData | null> = {};
-  for (const c of layout.charts) data[c.chartId] = await reader.chartData(uid, c.chartId);
-  return { layout, data };
-}
-
-async function snapshotLayouts(dir: string): Promise<{ reader: SnapshotReader; layouts: Map<string, ParsedLayout> }> {
-  const reader = await SnapshotReader.open(dir);
-  const layouts = new Map<string, ParsedLayout>();
-  for (const l of reader.manifest.layouts) layouts.set(l.uid, parseLayout(await reader.layout(l.uid), await reader.drawings(l.uid)));
-  return { reader, layouts };
-}
-
-async function compare(olderDir: string, newerDir: string) {
-  const a = await snapshotLayouts(olderDir);
-  const b = await snapshotLayouts(newerDir);
-  const read = async (r: SnapshotReader, rel: string, pick: (v: any) => Record<string, unknown>) => {
-    try {
-      return pick(await r.readJson(rel));
-    } catch {
-      return {};
-    }
-  };
-  const flatTools = (v: { tools: Record<string, Record<string, unknown>> }) => Object.fromEntries(Object.entries(v.tools).flatMap(([tool, t]) => Object.entries(t).map(([n, c]) => [`${n} (${tool.replace('LineTool', '')})`, c])));
-  const studyT = (v: { templates: { name: string; content: unknown }[] }) => Object.fromEntries(v.templates.map((t) => [t.name, t.content]));
-  const scripts = (v: { scripts: { name: string; version: string }[] }) => Object.fromEntries(v.scripts.map((s) => [s.name, s.version]));
-  const other = [
-    ...diffNamed('Drawing template', await read(a.reader, 'templates/drawing-templates.json', flatTools), await read(b.reader, 'templates/drawing-templates.json', flatTools)),
-    ...diffNamed('Indicator template', await read(a.reader, 'templates/study-templates.json', studyT), await read(b.reader, 'templates/study-templates.json', studyT)),
-    ...diffNamed('Theme', await read(a.reader, 'templates/themes.json', (v) => v.themes), await read(b.reader, 'templates/themes.json', (v) => v.themes)),
-    ...diffNamed('Pine script', await read(a.reader, 'scripts/index.json', scripts), await read(b.reader, 'scripts/index.json', scripts)),
-  ];
-  return { layouts: diffSnapshots(a.layouts, b.layouts), other };
-}
-
 async function doRestore(req: RestoreRequest) {
   const c = await client();
   const reader = await SnapshotReader.open(req.snapshotDir);
@@ -305,8 +256,8 @@ function registerIpc() {
     ...(await listSnapshots(store.settings.backupFolder)).map((s) => ({ ...s, safetyCopy: false })),
     ...(await listSnapshots(path.join(store.settings.backupFolder, 'safety-copies'))).map((s) => ({ ...s, safetyCopy: true })),
   ]);
-  ipcMain.handle(IPC.loadLayout, (_e, dir: string, uid: string) => guarded(() => loadLayout(dir, uid)));
-  ipcMain.handle(IPC.compare, (_e, a: string, b: string) => guarded(() => compare(a, b)));
+  ipcMain.handle(IPC.loadLayout, (_e, dir: string, uid: string) => guarded(async () => openLayout(await SnapshotReader.open(dir), uid)));
+  ipcMain.handle(IPC.compare, (_e, a: string, b: string) => guarded(async () => compareSnapshots(await SnapshotReader.open(a), await SnapshotReader.open(b))));
   ipcMain.handle(IPC.restoreTargets, () =>
     guarded(async () => {
       const c = await client();

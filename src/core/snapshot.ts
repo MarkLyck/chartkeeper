@@ -7,15 +7,23 @@ import {
   ChartDataSchema,
   DrawingBucketSchema,
   DrawingsRecordSchema,
+  DrawingTemplatesFileSchema,
   FORMAT_VERSION,
   LayoutRecordSchema,
   ManifestSchema,
+  ScriptsIndexSchema,
+  StudyTemplatesFileSchema,
+  ThemesFileSchema,
   type ChartData,
   type DrawingBucket,
   type DrawingsRecord,
+  type DrawingTemplatesFile,
   type LayoutRecord,
   type Manifest,
   type ManifestLayout,
+  type ScriptsIndex,
+  type StudyTemplatesFile,
+  type ThemesFile,
 } from './model';
 
 export const SNAPSHOTS_DIR = 'snapshots';
@@ -32,6 +40,15 @@ export function snapshotStamp(date: Date): string {
 export function layoutDir(uid: string): string {
   return `layouts/${uid.replace(/[^A-Za-z0-9_-]/g, '_')}`;
 }
+
+export const SNAPSHOT_FILES = {
+  account: 'account.json',
+  userDrawings: 'user-drawings.json',
+  studyTemplates: 'templates/study-templates.json',
+  drawingTemplates: 'templates/drawing-templates.json',
+  themes: 'templates/themes.json',
+  scriptsIndex: 'scripts/index.json',
+} as const;
 
 /** The files of one layout, relative to the snapshot folder. */
 export const layoutFiles = (dir: string) => ({
@@ -192,6 +209,16 @@ async function readParsed<T>(file: string, schema: z.ZodType<T>): Promise<T> {
   return schema.parse(JSON.parse(await fs.readFile(file, 'utf8')));
 }
 
+/** Like readParsed, but null when the file is not there. */
+async function readOptional<T>(file: string, schema: z.ZodType<T>): Promise<T | null> {
+  try {
+    return await readParsed(file, schema);
+  } catch (e) {
+    if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null;
+    throw e;
+  }
+}
+
 /** Reads one snapshot's files on demand. */
 export class SnapshotReader {
   constructor(
@@ -211,26 +238,32 @@ export class SnapshotReader {
     return readParsed(path.join(this.dir, this.files(uid).drawings), DrawingsRecordSchema);
   }
 
-  async chartData(uid: string, chartId: string): Promise<ChartData | null> {
-    const file = path.join(this.dir, this.files(uid).chartData(chartId));
-    try {
-      return await readParsed(file, ChartDataSchema);
-    } catch (e) {
-      if ((e as NodeJS.ErrnoException).code === 'ENOENT') return null;
-      throw e;
-    }
+  chartData(uid: string, chartId: string): Promise<ChartData | null> {
+    return readOptional(path.join(this.dir, this.files(uid).chartData(chartId)), ChartDataSchema);
   }
 
   async userDrawings(): Promise<DrawingBucket | null> {
     try {
-      return await readParsed(path.join(this.dir, 'user-drawings.json'), DrawingBucketSchema);
+      return await readParsed(path.join(this.dir, SNAPSHOT_FILES.userDrawings), DrawingBucketSchema);
     } catch {
       return null;
     }
   }
 
-  async readJson(rel: string): Promise<unknown> {
-    return JSON.parse(await fs.readFile(path.join(this.dir, rel), 'utf8'));
+  studyTemplates(): Promise<StudyTemplatesFile | null> {
+    return readOptional(path.join(this.dir, SNAPSHOT_FILES.studyTemplates), StudyTemplatesFileSchema);
+  }
+
+  drawingTemplates(): Promise<DrawingTemplatesFile | null> {
+    return readOptional(path.join(this.dir, SNAPSHOT_FILES.drawingTemplates), DrawingTemplatesFileSchema);
+  }
+
+  themes(): Promise<ThemesFile | null> {
+    return readOptional(path.join(this.dir, SNAPSHOT_FILES.themes), ThemesFileSchema);
+  }
+
+  scriptsIndex(): Promise<ScriptsIndex | null> {
+    return readOptional(path.join(this.dir, SNAPSHOT_FILES.scriptsIndex), ScriptsIndexSchema);
   }
 
   private files(uid: string) {

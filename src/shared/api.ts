@@ -1,8 +1,8 @@
 import type { BackupProgress } from '../core/backup';
-import type { LayoutDiff } from '../core/diff';
-import type { ParsedLayout } from '../core/layout';
-import type { ChartData, Manifest } from '../core/model';
+import type { Manifest } from '../core/model';
 import type { RestoreCheck, RestoreStep } from '../core/restore';
+import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';
+export type { LoadedLayout } from '../core/snapshotView';
 import type { TvErrorKind } from '../core/tv/errors';
 
 /**
@@ -60,12 +60,6 @@ export interface BackupOutcome {
   error: AppError | null;
 }
 
-export interface LoadedLayout {
-  layout: ParsedLayout;
-  /** chartId -> prices and indicator values, or null when none were saved. */
-  data: Record<string, ChartData | null>;
-}
-
 export interface TvLayoutInfo {
   uid: string;
   name: string;
@@ -92,10 +86,7 @@ export interface RestoreOutcome {
   resumed: boolean;
 }
 
-export interface CompareOutcome {
-  layouts: LayoutDiff[];
-  other: { kind: 'added' | 'removed' | 'changed'; subject: string; detail: string }[];
-}
+export type CompareOutcome = SnapshotComparison;
 
 export type ProgressEvent = { kind: 'backup'; progress: BackupProgress } | { kind: 'restore'; step: RestoreStep; name?: string };
 

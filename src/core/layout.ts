@@ -157,8 +157,11 @@ function parseStudy(source: TvSource, map: Record<string, Record<string, unknown
   };
 }
 
-/** Parse TradingView's `content` JSON plus the drawing storage buckets of one layout. */
-export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | null): ParsedLayout {
+/**
+ * Parse TradingView's `content` JSON plus the drawing storage buckets of one
+ * layout. Drawings synced to all layouts (`userDrawings`) join the shared ones.
+ */
+export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | null, userDrawings: DrawingBucket | null = null): ParsedLayout {
   const content = record.content;
   if (content.charts.length === 0) throw new LayoutParseError(`Layout "${record.name}" has no charts in it.`);
   const problems: string[] = [];
@@ -204,6 +207,11 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
       if (at === 'shared') sharedDrawings.push(d);
       else charts[at.chart]!.panes[at.pane]!.drawings.push(d);
     }
+  }
+  if (userDrawings) {
+    const parsed = parseBucket(userDrawings, 'user');
+    problems.push(...parsed.problems);
+    sharedDrawings.push(...parsed.drawings.filter((d) => !seen.has(d.id)));
   }
 
   return { uid: record.uid, name: record.name, arrangement: str(content.layout, 's'), charts, sharedDrawings, problems };

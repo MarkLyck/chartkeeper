@@ -10,8 +10,8 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { build } from 'esbuild';
 import { chromium, type Page } from 'playwright-core';
-import { parseLayout } from '../src/core/layout';
-import { ChartDataSchema, DrawingsRecordSchema, LayoutRecordSchema, ManifestSchema } from '../src/core/model';
+import { SnapshotReader } from '../src/core/snapshot';
+import { openLayout } from '../src/core/snapshotView';
 import type { PreviewFixture } from '../src/renderer/mockApi';
 import type { Lang } from '../src/shared/api';
 
@@ -20,18 +20,8 @@ const OUT = path.join(ROOT, '.test-output/ui');
 const SNAP = path.join(ROOT, 'test/fixtures/reference-snapshot');
 
 export async function readFixture(): Promise<PreviewFixture> {
-  const json = async (rel: string) => JSON.parse(await fs.readFile(path.join(SNAP, rel), 'utf8'));
-  const manifest = ManifestSchema.parse(await json('manifest.json'));
-  const dir = manifest.layouts[0]!.dir;
-  const record = LayoutRecordSchema.parse(await json(`${dir}/layout.json`));
-  const drawings = DrawingsRecordSchema.parse(await json(`${dir}/drawings.json`));
-  const layout = parseLayout(record, drawings);
-  const data: PreviewFixture['data'] = {};
-  for (const chart of layout.charts) {
-    const file = path.join(SNAP, dir, 'data', `chart-${chart.chartId}.json`);
-    data[chart.chartId] = await fs.readFile(file, 'utf8').then((s) => ChartDataSchema.parse(JSON.parse(s)), () => null);
-  }
-  return { layout, data, manifest };
+  const reader = await SnapshotReader.open(SNAP);
+  return { ...(await openLayout(reader, reader.manifest.layouts[0]!.uid)), manifest: reader.manifest };
 }
 
 export async function buildSite(fixture: PreviewFixture, out = OUT): Promise<string> {

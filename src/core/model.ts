@@ -114,13 +114,17 @@ export const ManifestSchema = z.object({
 export type Manifest = z.infer<typeof ManifestSchema>;
 
 export const StudyTemplatesFileSchema = z.object({ templates: z.array(looseObject) });
+export type StudyTemplatesFile = z.infer<typeof StudyTemplatesFileSchema>;
 export const DrawingTemplatesFileSchema = z.object({
   /** LineTool name -> template name -> template content */
   tools: z.record(z.string(), z.record(z.string(), z.unknown())),
 });
+export type DrawingTemplatesFile = z.infer<typeof DrawingTemplatesFileSchema>;
 export const ThemesFileSchema = z.object({ themes: z.record(z.string(), z.unknown()) });
+export type ThemesFile = z.infer<typeof ThemesFileSchema>;
 export const ScriptsIndexSchema = z.object({
   scripts: z.array(
     z.object({ id: z.string(), name: z.string(), version: z.string(), file: z.string(), meta: looseObject }),
   ),
 });
+export type ScriptsIndex = z.infer<typeof ScriptsIndexSchema>;

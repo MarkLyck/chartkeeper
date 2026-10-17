@@ -15,6 +15,7 @@ import { countLayout, parseLayout, type ParsedLayout } from '../src/core/layout'
 import { DRAWING_KINDS } from '../src/renderer/viewer/drawings/registry';
 import type { ChartData } from '../src/core/model';
 import { SnapshotReader } from '../src/core/snapshot';
+import { openLayout } from '../src/core/snapshotView';
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, '.test-output');
@@ -37,10 +38,7 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 async function main() {
   const lang = process.argv.includes('--lang') ? process.argv[process.argv.indexOf('--lang') + 1] : 'en';
   const ref: Reference = JSON.parse(await fs.readFile(path.join(FIXTURES, 'tradingview-reference.json'), 'utf8'));
-  const reader = await SnapshotReader.open(path.join(FIXTURES, 'reference-snapshot'));
-  const layout = parseLayout(await reader.layout(ref.uid), await reader.drawings(ref.uid));
-  const data: Record<string, ChartData | null> = {};
-  for (const c of layout.charts) data[c.chartId] = await reader.chartData(ref.uid, c.chartId);
+  const { layout, data } = await openLayout(await SnapshotReader.open(path.join(FIXTURES, 'reference-snapshot')), ref.uid);
 
   const bundle = await build({
     entryPoints: [path.join(ROOT, 'src/renderer/viewer/harness.ts')],
