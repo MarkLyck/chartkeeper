@@ -329,7 +329,8 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 28 : 4) });
     if (host && pane.drawings.length) {
       // Only the main series has a TradingView z-order to sort drawings against; in indicator panes drawings stay on top.
-      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
+      const logScale = scales.find((s) => s.series === host)?.scale.mode === 'log';
+      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, logScale, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
       host.attachPrimitive(drawings);
       chart.panes()[index]?.attachPrimitive(drawings.belowSeries());
     }

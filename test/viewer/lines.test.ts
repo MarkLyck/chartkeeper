@@ -72,20 +72,21 @@ describe('extended lines', () => {
 });
 
 describe('flat top/bottom and disjoint channel', () => {
-  const [p0, p1, p2] = [at(100, 298.27), at(200, 309.76), at(100, 292.52)];
+  // Screen points; on a linear scale height follows price, so TradingView's prices stand in for heights.
+  const [a, b, c] = [{ x: 100, y: 298.27 }, { x: 200, y: 309.76 }, { x: 100, y: 292.52 }];
 
   it('levels the flat line at point 3', () => {
-    expect(secondLine('flat', p0, p1, p2).map((p) => [p.time, p.price])).toEqual([
-      [100, 292.52],
-      [200, 292.52],
+    expect(secondLine('flat', a, b, c)).toEqual([
+      { x: 100, y: 292.52 },
+      { x: 200, y: 292.52 },
     ]);
   });
 
   it('mirrors the first line from point 3 under point 2', () => {
-    const [q0, q1] = secondLine('disjoint', p0, p1, p2);
-    expect([q0.time, q1.time]).toEqual([100, 200]);
-    expect(q0.price).toBeCloseTo(304.01);
-    expect(q1.price).toBe(292.52);
+    const [q0, q1] = secondLine('disjoint', a, b, c);
+    expect([q0.x, q1.x]).toEqual([100, 200]);
+    expect(q0.y).toBeCloseTo(304.01);
+    expect(q1.y).toBe(292.52);
   });
 });
 

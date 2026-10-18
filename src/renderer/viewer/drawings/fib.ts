@@ -152,16 +152,25 @@ export function parseFibLevels(props: Props, layout: readonly LevelField[] = LEV
   return out;
 }
 
+/**
+ * Moves `from` by `coeff` times the move from `a` to `b`: in prices, or in log prices for TradingView's
+ * "levels based on log scale" on a log scale, where 0.5 is the geometric middle.
+ */
+const step = (log: boolean, from: number, a: number, b: number, coeff: number) => (log ? from * (b / a) ** coeff : from + (b - a) * coeff);
+
+/** Whether a fib tool spaces its levels in log prices: only on a log scale, and only when the user asked for it. */
+export const logLevels = (props: Props, logScale: boolean) => logScale && props.fibLevelsBasedOnLogScale === true;
+
 /** Retracement: coefficient 0 sits at the second point's price and 1 at the first, unless `reverse` swaps them. */
-export function fibRetracementLevels(props: Props, start: number, end: number, layout: LevelLayout = LEVEL_LAYOUT.retracement): PricedLevel[] {
+export function fibRetracementLevels(props: Props, start: number, end: number, layout: LevelLayout = LEVEL_LAYOUT.retracement, log = false): PricedLevel[] {
   const reverse = props.reverse === true;
-  return parseFibLevels(props, layout).map((l) => ({ ...l, price: reverse ? start + (end - start) * l.coeff : end - (end - start) * l.coeff }));
+  return parseFibLevels(props, layout).map((l) => ({ ...l, price: reverse ? step(log, start, start, end, l.coeff) : step(log, end, end, start, l.coeff) }));
 }
 
 /** Trend-based extension: the move from point 1 to point 2, projected from point 3. */
-export function fibExtensionLevels(props: Props, p1: number, p2: number, p3: number, layout: LevelLayout = LEVEL_LAYOUT.retracement): PricedLevel[] {
+export function fibExtensionLevels(props: Props, p1: number, p2: number, p3: number, layout: LevelLayout = LEVEL_LAYOUT.retracement, log = false): PricedLevel[] {
   const sign = props.reverse === true ? -1 : 1;
-  return parseFibLevels(props, layout).map((l) => ({ ...l, price: p3 + sign * (p2 - p1) * l.coeff }));
+  return parseFibLevels(props, layout).map((l) => ({ ...l, price: step(log, p3, p1, p2, sign * l.coeff) }));
 }
 
 /** Level label: "0.618 (283.35)", "61.80%", or " (283.35)" with prices only. */
@@ -268,7 +277,7 @@ export function drawFibRetracement(dc: DrawContext, props: Props, points: Drawin
   const [p0, p1] = points as [DrawingPoint, DrawingPoint];
   const a = dc.pt(p0);
   const b = dc.pt(p1);
-  const h = horizontalLevels(props, fibRetracementLevels(props, p0.price, p1.price), a.x, b.x, drawing);
+  const h = horizontalLevels(props, fibRetracementLevels(props, p0.price, p1.price, LEVEL_LAYOUT.retracement, logLevels(props, dc.logScale)), a.x, b.x, drawing);
   if ((h.x1 > dc.width && !h.extendLeft) || (h.x2 < 0 && !h.extendRight)) return;
   const texts = placeLevelTexts(dc, props, h);
   fillAndStrokeLevels(dc, props, h, lineCutouts(texts, props));
@@ -279,7 +288,7 @@ export function drawFibRetracement(dc: DrawContext, props: Props, points: Drawin
 export function drawFibExtension(dc: DrawContext, props: Props, points: DrawingPoint[], drawing: ParsedDrawing): void {
   const [p0, p1, p2] = points as [DrawingPoint, DrawingPoint, DrawingPoint];
   const [a, b, c] = [dc.pt(p0), dc.pt(p1), dc.pt(p2)];
-  const h = horizontalLevels(props, fibExtensionLevels(props, p0.price, p1.price, p2.price, LEVEL_LAYOUT.extension), b.x, c.x, drawing);
+  const h = horizontalLevels(props, fibExtensionLevels(props, p0.price, p1.price, p2.price, LEVEL_LAYOUT.extension, logLevels(props, dc.logScale)), b.x, c.x, drawing);
   const texts = placeLevelTexts(dc, props, h);
   drawTrendline(dc, props, a, b);
   fillAndStrokeLevels(dc, props, h, lineCutouts(texts, props));

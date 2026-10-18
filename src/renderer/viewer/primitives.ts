@@ -73,6 +73,8 @@ export interface DrawingsEnv {
   priceStep: number;
   /** TradingView's own values for study-backed drawings, by drawing id. */
   drawingStudies: Readonly<Record<string, StudyValues>>;
+  /** True when the pane's price scale is logarithmic. */
+  logScale: boolean;
   /** z-order of the series the drawings are attached to: TradingView draws lower drawings under it. */
   seriesZorder: number;
   timeZone: string;
@@ -169,6 +171,7 @@ export class DrawingsPrimitive extends BasePrimitive {
         bars: this.denv.bars,
         formatPrice: this.denv.formatPrice,
         priceStep: this.denv.priceStep,
+        logScale: this.denv.logScale,
         dark: this.denv.dark,
         background: this.denv.background,
         drawingStudy: (id) => this.denv.drawingStudies[id],
