@@ -10,7 +10,13 @@ export interface TradingViewSaved {
 /** TradingView's loader rejected the layout. Never retried: this is the failure the compat test exists to find. */
 export class LoadRejected extends Error {}
 
-const CHART_URL = 'https://www.tradingview.com/chart/?symbol=NASDAQ%3AAAPL&interval=D';
+/** The chart page at a symbol and interval, as opening a saved layout starts on that layout's own symbol. */
+const chartUrl = (at: ChartAt) => `https://www.tradingview.com/chart/?symbol=${encodeURIComponent(at.symbol)}&interval=${encodeURIComponent(at.interval)}`;
+
+export interface ChartAt {
+  symbol: string;
+  interval: string;
+}
 
 export const launchChromium = (): Promise<Browser> => chromium.launch({ executablePath: chromium.executablePath() });
 
@@ -21,13 +27,17 @@ export const launchChromium = (): Promise<Browser> => chromium.launch({ executab
 export class SignedOutChart {
   private constructor(private readonly page: Page) {}
 
-  /** Opening the page is the only step retried: it fails on slow or flaky networks, not on layout content. */
-  static async open(browser: Browser, log: (msg: string) => void = () => undefined, attempts = 3): Promise<SignedOutChart> {
+  /**
+   * Opening the page is the only step retried: it fails on slow or flaky networks, not on layout content.
+   * Open it at the layout's symbol: loading a layout over a chart of another symbol sometimes leaves its
+   * drawings tagged with the old symbol (seen with TSX:JX drawings over NASDAQ:AAPL).
+   */
+  static async open(browser: Browser, log: (msg: string) => void = () => undefined, at: ChartAt = { symbol: 'NASDAQ:AAPL', interval: 'D' }, attempts = 3): Promise<SignedOutChart> {
     let lastError: unknown;
     for (let attempt = 1; attempt <= attempts; attempt++) {
       const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
       try {
-        await page.goto(CHART_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.goto(chartUrl(at), { waitUntil: 'domcontentloaded', timeout: 60000 });
         await page.waitForFunction(() => (window as any).TradingViewApi?.activeChart && (window as any).TradingViewApi?._chartWidgetCollection, null, { timeout: 60000 });
         await page.waitForTimeout(4000);
         return new SignedOutChart(page);

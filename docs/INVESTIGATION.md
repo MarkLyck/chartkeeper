@@ -394,3 +394,12 @@ These were derived from source code, not observed with a real account:
    refuses, signing in with email and password works.
 
 `npm run test:live` (see README) checks 1 to 3 against a test account.
+
+Observed, not explained: loading a TSX:JX layout with `loadLayoutState` into a
+signed-out chart that showed NASDAQ:AAPL left every drawing's `state.symbol`
+as `NASDAQ:AAPL` in 2 of 5 runs (2026-10-18), while the main series showed
+TSX:JX. Opening the page at the layout's own symbol, as opening a saved layout
+does, kept `TSX:JX` in 6 of 6 runs, so `npm run test:compat` opens each layout
+that way. Switching layouts inside TradingView over a chart of another symbol
+may hit the same race; it would affect the original layout as much as a
+restored one.
