@@ -6,7 +6,8 @@ import path from 'node:path';
 const root = path.resolve(__dirname, '..');
 const run = (script: string, ...args: string[]) => execFileSync(process.execPath, [path.join(root, 'node_modules/tsx/dist/cli.mjs'), path.join(root, 'scripts', script), ...args], { stdio: 'inherit', cwd: root });
 run('ui-preview.ts');
-run('gallery-compare.ts', 'advanced', 'advanced-dark', '--no-fail');
+const sideBySide: Record<string, string> = { advanced: 'advanced-vs-tradingview', 'advanced-dark': 'advanced-dark-vs-tradingview', 'replica-tsxv-weekly-log': 'replica-vs-tradingview' };
+run('gallery-compare.ts', ...Object.keys(sideBySide), '--no-fail');
 
 const out = path.join(root, 'docs/screenshots');
 mkdirSync(out, { recursive: true });
@@ -19,5 +20,5 @@ const pick: Record<string, string> = {
   'restore-done': 'restore-success',
 };
 for (const [name, source] of Object.entries(pick)) copyFileSync(path.join(root, '.test-output/ui', `${source}.png`), path.join(out, `${name}.png`));
-for (const scene of ['advanced', 'advanced-dark']) copyFileSync(path.join(root, '.test-output/gallery-compare', scene, 'side-by-side.png'), path.join(out, `${scene}-vs-tradingview.png`));
+for (const [scene, name] of Object.entries(sideBySide)) copyFileSync(path.join(root, '.test-output/gallery-compare', scene, 'side-by-side.png'), path.join(out, `${name}.png`));
 console.log('wrote', out);

@@ -101,6 +101,30 @@ Pane `sources` hold:
 - Drawings, when they are stored in the content:
   `{type: "LineToolTrendLine", id, state: {linecolor, linewidth, ...}, points: [{time_t, offset, price, interval}], zorder, ownerSource, linkKey}`.
 
+### Price scales
+
+Each pane lists its price scales in `rightAxisesState` and `leftAxisesState`
+(`[{state, sources: [<source id>, ...]}]`, TradingView's spelling) and
+`overlayPriceScales` (`{<source id>: state}`). Observed on TSX:JX 1W
+(2026-10-18) by calling `getMainSourcePriceScale().setMode()`,
+`setAutoScale(false)` and `setVisiblePriceRange()` and saving:
+
+- `m_isLog`, `m_isPercentage`, `m_isIndexedTo100`, `m_isInverted` hold the
+  mode. Percentage and indexed-to-100 leave `m_isLog` as it was. The main
+  series repeats the flags in `priceAxisProperties`.
+- With autoscale off, `m_priceRange` `{m_minValue, m_maxValue}` is the range
+  between the top and bottom margins (`m_topMargin`, `m_bottomMargin`), in the
+  mode's units: `log10(price + 0.0001) + 4` on a log scale (`logFormula`),
+  percent on a percentage scale, prices otherwise. A visible range of
+  300 to 4,000 on a log scale saved 6.567 to 7.490.
+- lightweight-charts uses the same modes and log formula, but its
+  `setVisibleRange` takes these internal units while `getVisibleRange` returns
+  prices.
+- On a log scale TradingView draws drawings on screen between their points.
+  Fib retracement and extension levels stay in prices unless
+  `fibLevelsBasedOnLogScale` is on; a disjoint channel mirrors its first line
+  on screen.
+
 ## Drawings ("line tools") storage
 
 Source: bundle `16242.*.js`, modules `355502` (`getChartStorage`), `628770`
