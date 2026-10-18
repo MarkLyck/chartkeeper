@@ -1,0 +1,77 @@
+{
+  "scene": "drawings-gann",
+  "description": "Gann tools: Gann box, Gann square (saved by TradingView as Gann square fixed), Gann square fixed, Gann fan.",
+  "uid": "drawings-gann",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:20:05.530Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 235.47495636270403,
+        "to": 360.69370454662
+      },
+      "tradingView": {
+        "drawings": 4,
+        "shapes": 4,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolGannSquare",
+      "type": "LineToolGannSquare",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolGannComplex",
+      "type": "LineToolGannFixed",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolGannFixed",
+      "type": "LineToolGannFixed",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolGannFan",
+      "type": "LineToolGannFan",
+      "image": "isolated/c1d04.png"
+    }
+  ]
+}

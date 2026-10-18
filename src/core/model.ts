@@ -74,8 +74,19 @@ export const ChartDataSchema = z.object({
   interval: z.string(),
   fetchedAt: z.string(),
   bars: z.array(BarSchema),
+  /**
+   * Set when `bars` are the bars TradingView computed for this chart style
+   * (Renko 4, Kagi 5, Point & Figure 6, Line Break 7, Heikin Ashi 8, Range 11)
+   * instead of the symbol's plain bars.
+   */
+  computedStyle: z.number().optional(),
   /** Keyed by the study's source id in the layout. */
   studies: z.record(z.string(), StudyValuesSchema),
+  /**
+   * Values TradingView computed for study-backed drawings (Anchored VWAP, Fixed Range
+   * Volume Profile), keyed by the drawing's id. The volume profile arrives as `graphics`.
+   */
+  drawingStudies: z.record(z.string(), StudyValuesSchema).optional(),
 });
 export type ChartData = z.infer<typeof ChartDataSchema>;
 

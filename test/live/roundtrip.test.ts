@@ -6,9 +6,12 @@
  *
  * The first run opens a browser window to sign in (session saved to
  * .test-output/live-session.json, readable only by you). Environment:
- *   TV_TEST_LAYOUT   name of the layout to use (default: the first one)
- *   TV_TEST_CLEANUP  set to 1 to delete the restored copy afterwards
- * The account needs a free layout slot.
+ *   TV_SESSION_COOKIES  the session cookies as JSON (the contents of
+ *                       live-session.json); used instead of the file, e.g. in CI
+ *   TV_TEST_LAYOUT      name of the layout to use (default: the first one)
+ *   TV_TEST_CLEANUP     set to 1 to delete the restored copy afterwards
+ * The account needs a free layout slot. In CI (CI is set) without a session
+ * the suite is skipped, because nobody can sign in there.
  */
 import { existsSync, promises as fs } from 'node:fs';
 import os from 'node:os';
@@ -26,12 +29,16 @@ import { isTradingViewHost, SESSION_COOKIE, urls } from '../../src/core/tv/endpo
 import { pageFetch, pageUser, PoliteHttp, type PageTransport } from '../../src/core/tv/http';
 import { findBrowser } from '../../src/main/browsers';
 import { signInWithBrowser, type CdpCookie } from '../../src/main/browserSignIn';
+import { storedSession } from './session';
 
 const OUT = path.resolve(__dirname, '../../.test-output');
 const SESSION = path.join(OUT, 'live-session.json');
 
+const sessionAvailable = Boolean(process.env.TV_SESSION_COOKIES?.trim()) || existsSync(SESSION);
+
 async function session(): Promise<CdpCookie[]> {
-  if (existsSync(SESSION)) return JSON.parse(await fs.readFile(SESSION, 'utf8'));
+  const stored = storedSession(process.env.TV_SESSION_COOKIES, existsSync(SESSION) ? { text: await fs.readFile(SESSION, 'utf8'), name: SESSION } : null);
+  if (stored) return stored;
   const browser = findBrowser() ?? { name: 'Chromium', path: chromium.executablePath() };
   const isTv = (c: { domain: string }) => isTradingViewHost(c.domain);
   const cookies = await signInWithBrowser({ browserPath: browser.path, profileDir: path.join(os.tmpdir(), `ck-live-${Date.now()}`), startUrl: urls.signIn, isSignedIn: (cs) => cs.some((c) => c.name === SESSION_COOKIE && isTv(c)), keep: isTv });
@@ -64,10 +71,11 @@ async function countOnPage(page: Page, uid: string) {
   });
 }
 
-describe('live round trip on tradingview.com', () => {
+describe.skipIf(Boolean(process.env.CI) && !sessionAvailable)('live round trip on tradingview.com', () => {
   let page: Page;
   let close: () => Promise<void>;
   let client: TvClient;
+  let restoredUid: string | null = null;
   const root = path.join(OUT, 'live-roundtrip');
 
   beforeAll(async () => {
@@ -79,13 +87,23 @@ describe('live round trip on tradingview.com', () => {
     await page.goto(urls.home);
     const t = transportFor(page);
     const user = await t.user();
-    if (!user) throw new Error(`Not signed in. Delete ${SESSION} and run again.`);
+    if (!user) throw new Error(process.env.TV_SESSION_COOKIES ? 'The session in TV_SESSION_COOKIES has expired. Sign in again with `npm run test:live` and update the secret.' : `Not signed in. Delete ${SESSION} and run again.`);
     client = new TvClient(new PoliteHttp(t), user);
     close = () => browser.close();
     await fs.rm(root, { recursive: true, force: true });
   });
 
-  afterAll(async () => close?.());
+  // Runs even when the round trip fails, so CI runs never fill the test account's layout slots.
+  afterAll(async () => {
+    try {
+      if (restoredUid && process.env.TV_TEST_CLEANUP === '1') {
+        const res = await transportFor(page).send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/delete/', json: { uid: [restoredUid] } });
+        expect(res.status, `delete the restored copy ${restoredUid}`).toBe(200);
+      }
+    } finally {
+      await close?.();
+    }
+  });
 
   it('backs up the whole account, restores one layout as a new layout, and the two match', async () => {
     const backup = await runBackup(client, { root, appVersion: 'live-test', includePrices: true, bars: 300, authToken: (await transportFor(page).user())!.authToken, socketFactory: nodeSocketFactory });
@@ -101,6 +119,7 @@ describe('live round trip on tradingview.com', () => {
     expect(studyErrors, 'every indicator, including Pine ones, was calculated').toEqual([]);
 
     const restored = await restoreLayout(client, reader, source.uid, { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'journal.json')), buildTime: await transportFor(page).buildTime() });
+    restoredUid = restored.uid;
     expect(restored.check.missingDrawings).toEqual([]);
     expect(restored.check.verdict).toBe('shown-unchecked');
 
@@ -116,9 +135,5 @@ describe('live round trip on tradingview.com', () => {
     expect(onPage.drawings, 'drawings TradingView shows').toBe(expected.drawings);
     expect(onPage.studies, 'indicators TradingView shows').toBeGreaterThanOrEqual(expected.studies);
 
-    if (process.env.TV_TEST_CLEANUP === '1') {
-      const res = await transportFor(page).send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/delete/', json: { uid: [restored.uid] } });
-      expect(res.status).toBe(200);
-    }
   });
 });

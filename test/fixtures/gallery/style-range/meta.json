@@ -1,0 +1,63 @@
+{
+  "scene": "style-range",
+  "description": "Range chart (style 11), bars computed by TradingView, with a trend line and a horizontal line.",
+  "uid": "style-range",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:24:48.004Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 11,
+        "name": "Range"
+      },
+      "barsSource": "tradingview",
+      "computedSeries": "={\"inputs\":{\"phantomBars\":false,\"range\":10},\"symbol\":{\"adjustment\":\"splits\",\"currency-id\":\"USD\",\"metric\":\"price\",\"symbol\":\"NASDAQ:AAPL\"},\"type\":\"BarSetRange@tv-basicstudies-72!\"}",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1792108800,
+        "to": 1793577600
+      },
+      "priceRange": {
+        "from": 342.7460558926587,
+        "to": 344.4174301341766
+      },
+      "tradingView": {
+        "drawings": 2,
+        "shapes": 2,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d02.png"
+    }
+  ]
+}

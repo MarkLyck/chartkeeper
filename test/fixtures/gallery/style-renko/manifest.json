@@ -1,0 +1,50 @@
+{
+  "app": {
+    "name": "ChartKeeper",
+    "version": "gallery"
+  },
+  "createdAt": "2026-10-17T21:27:23.000Z",
+  "account": {
+    "username": "gallery",
+    "plan": null
+  },
+  "layouts": [
+    {
+      "uid": "style-renko",
+      "name": "style-renko",
+      "dir": "layouts/style-renko",
+      "symbols": [
+        "NASDAQ:AAPL"
+      ],
+      "charts": 1,
+      "drawings": 2,
+      "studies": 0,
+      "lastModified": 1792272443,
+      "priceData": true
+    }
+  ],
+  "extras": {
+    "studyTemplates": 0,
+    "drawingTemplates": 0,
+    "themes": 0,
+    "scripts": 0,
+    "userDrawings": 0
+  },
+  "warnings": [],
+  "formatVersion": 1,
+  "status": "complete",
+  "files": {
+    "layouts/style-renko/layout.json": {
+      "sha256": "a93ac1dbcf402e77807b481c4af3405e4fc507f416503d2a09e412cee4c64954",
+      "bytes": 40662
+    },
+    "layouts/style-renko/drawings.json": {
+      "sha256": "6f480a3067c479c2eb4ff7eb317139d1c896a9ba3a25d73c2c68f81a2062341b",
+      "bytes": 45
+    },
+    "layouts/style-renko/data/chart-1.json": {
+      "sha256": "faf6dd15e5ca49ac4846c91991358c1c293193325e9cac3b98ae3916eff41b20",
+      "bytes": 11867
+    }
+  }
+}

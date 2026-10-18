@@ -1,0 +1,84 @@
+{
+  "scene": "drawings-fibs-time",
+  "description": "Fibonacci time and circle tools: trend-based fib time, fib circles, fib spiral, speed resistance arcs, fib time zone.",
+  "uid": "drawings-fibs-time",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:19:51.230Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:MSFT",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 329.4554653448423,
+        "to": 575.8306683189471
+      },
+      "tradingView": {
+        "drawings": 5,
+        "shapes": 5,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendBasedFibTime",
+      "type": "LineToolTrendBasedFibTime",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolFibCircles",
+      "type": "LineToolFibCircles",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolFibSpiral",
+      "type": "LineToolFibSpiral",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolFibSpeedResistanceArcs",
+      "type": "LineToolFibSpeedResistanceArcs",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolFibTimeZone",
+      "type": "LineToolFibTimeZone",
+      "image": "isolated/c1d05.png"
+    }
+  ]
+}

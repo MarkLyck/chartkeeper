@@ -9,6 +9,9 @@ import { fromCdp, importCookies, type SessionCookie } from './tvSession';
 
 const isTv = (c: { domain?: string }) => isTradingViewHost(c.domain ?? '');
 
+/** The throwaway session of the in-app sign-in window. */
+export const SIGNIN_PARTITION = 'signin-temporary';
+
 /** A browser that quits this soon after starting couldn't run (e.g. a sandboxed snap package); try the next one. */
 const QUICK_EXIT_MS = 8000;
 
@@ -66,11 +69,10 @@ export function isSignInPopup(url: string): boolean {
  * window; Google may still refuse sign-in in an app window, which it decides itself.
  */
 async function signInWithAppWindow(parent: BrowserWindow | null): Promise<SessionCookie[]> {
-  const partition = 'signin-temporary';
-  const s = session.fromPartition(partition);
+  const s = session.fromPartition(SIGNIN_PARTITION);
   s.setPermissionRequestHandler((_wc, _permission, cb) => cb(false));
   s.setUserAgent(s.getUserAgent().replace(/ (Electron|chartkeeper)\/\S+/gi, ''));
-  const options = { width: 520, height: 760, title: 'TradingView', webPreferences: { partition, contextIsolation: true, sandbox: true } };
+  const options = { width: 520, height: 760, title: 'TradingView', webPreferences: { partition: SIGNIN_PARTITION, contextIsolation: true, sandbox: true } };
   const w = new BrowserWindow({ ...options, parent: parent ?? undefined });
   const guard = (contents: Electron.WebContents) =>
     contents.setWindowOpenHandler(({ url }) => (isSignInPopup(url) ? { action: 'allow', overrideBrowserWindowOptions: { ...options, width: 500, height: 640, parent: w } } : { action: 'deny' }));

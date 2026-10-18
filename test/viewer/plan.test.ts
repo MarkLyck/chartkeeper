@@ -62,7 +62,7 @@ describe('planLayout on a layout with problems', () => {
     const mainSources = content.charts[0]!.panes[0]!.sources;
     const trend = mainSources.find((s) => s.id === 'tl0001')!;
     mainSources.push(
-      { ...clone(trend), id: 'gann1', type: 'LineToolGannFan' },
+      { ...clone(trend), id: 'unknown1', type: 'LineToolNotARealTool' },
       { ...clone(trend), id: 'hidden1', state: { ...(trend.state as object), visible: false } },
       { ...clone(trend), id: 'short1', points: [(trend.points as unknown[])[0]] },
       { ...clone(trend), id: 'msft1', state: { ...(trend.state as object), symbol: 'NASDAQ:MSFT' } },
@@ -111,7 +111,7 @@ describe('planLayout on a layout with problems', () => {
     expect(chart1.rendered.drawings).toContain('tl0001');
     expect(chart1.rendered.drawings).toContain('sharedAapl');
     expect(chart1.rendered.studies).toContain('pine1');
-    expect(reasonOf(plan, 'gann1')).toBe('unknown-drawing');
+    expect(reasonOf(plan, 'unknown1')).toBe('unknown-drawing');
     expect(reasonOf(plan, 'hidden1')).toBe('hidden');
     expect(reasonOf(plan, 'short1')).toBe('too-few-points');
     expect(reasonOf(plan, 'msft1')).toBe('other-symbol');
@@ -133,5 +133,24 @@ describe('planLayout on a layout with problems', () => {
     const plan = planLayout(layout, data);
     expect(plan.notShown.find((n) => n.id === 'hidden1')).toMatchObject({ name: 'Trend line', message: 'Hidden in TradingView' });
     expect(plan.notShown.find((n) => n.id === 'nodata1')!.message).toBe('No values were saved for this indicator');
+  });
+});
+
+describe('planLayout on study-backed drawings', () => {
+  function withVolumeProfile(stored: boolean) {
+    const content = clone(record.content);
+    const sources = content.charts[0]!.panes[0]!.sources;
+    const trend = sources.find((s) => s.id === 'tl0001')!;
+    sources.push({ ...clone(trend), id: 'frvp1', type: 'LineToolFixedRangeVolumeProfile' });
+    const layout = parseLayout({ ...record, content }, null);
+    const drawingStudies: ChartData['drawingStudies'] = stored ? { frvp1: { status: 'ok', metaInfoId: 'VbPFixed@tv-basicstudies-280', rows: [] } } : undefined;
+    return planLayout(layout, { 1: { ...chartData, ...(drawingStudies ? { drawingStudies } : {}) } });
+  }
+
+  it('notes that a volume profile is computed locally only when the backup lacks TradingView values', () => {
+    expect(withVolumeProfile(false).notShown.map((n) => [n.id, n.partial, n.reason.code])).toEqual([['frvp1', true, 'computed-locally']]);
+    const stored = withVolumeProfile(true);
+    expect(stored.notShown).toEqual([]);
+    expect(stored.charts[0]!.rendered.drawings).toContain('frvp1');
   });
 });

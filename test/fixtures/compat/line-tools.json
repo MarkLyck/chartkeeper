@@ -1,0 +1,6175 @@
+{
+ "tradingViewBuild": "2026-10-16T17:55:37",
+ "generatedAt": "2026-10-17T20:22:53.819Z",
+ "unsupportedSignedOut": {
+  "LineToolImage": "loaded without error, but TradingView dropped the drawing",
+  "LineToolAnchoredVWAP": "TradingView's loader rejected \"LineToolAnchoredVWAP\": TypeError: Cannot read properties of undefined (reading 'fullId')",
+  "LineToolFibTimeZone": "TradingView's loader rejected \"LineToolFibTimeZone\": TypeError: Cannot read properties of undefined (reading 'value')",
+  "LineToolFixedRangeVolumeProfile": "TradingView's loader rejected \"LineToolFixedRangeVolumeProfile\": TypeError: Cannot read properties of undefined (reading 'fullId')"
+ },
+ "pointCountChanged": {
+  "LineToolTextAbsolute": {
+   "sent": 1,
+   "kept": 0
+  },
+  "LineToolNoteAbsolute": {
+   "sent": 1,
+   "kept": 0
+  },
+  "LineToolElliottImpulse": {
+   "sent": 6,
+   "kept": 7
+  },
+  "LineToolElliottTriangle": {
+   "sent": 6,
+   "kept": 7
+  },
+  "LineToolElliottTripleCombo": {
+   "sent": 6,
+   "kept": 7
+  },
+  "LineToolElliottCorrection": {
+   "sent": 4,
+   "kept": 5
+  },
+  "LineToolElliottDoubleCombo": {
+   "sent": 4,
+   "kept": 5
+  }
+ },
+ "tools": {
+  "LineToolBrush": {
+   "type": "LineToolBrush",
+   "id": "fxBrush",
+   "state": {
+    "linecolor": "#00bcd4",
+    "backgroundColor": "rgba(0, 188, 212, 0.2)",
+    "transparency": 80,
+    "smooth": 5,
+    "fillBackground": false,
+    "linewidth": 2,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxBrush"
+  },
+  "LineToolHighlighter": {
+   "type": "LineToolHighlighter",
+   "id": "fxHighlighte",
+   "state": {
+    "linecolor": "rgba(242, 54, 69, 0.2)",
+    "transparency": 80,
+    "smooth": 5,
+    "width": 20,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxHighlighte",
+   "sharingMode": 1
+  },
+  "LineToolText": {
+   "type": "LineToolText",
+   "id": "fxText",
+   "state": {
+    "color": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.25)",
+    "borderColor": "#707070",
+    "backgroundTransparency": 70,
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "fillBackground": false,
+    "drawBorder": false,
+    "wordWrap": false,
+    "wordWrapWidth": 200,
+    "text": "Text",
+    "anchored": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxText",
+   "sharingMode": 1
+  },
+  "LineToolTextAbsolute": {
+   "type": "LineToolTextAbsolute",
+   "id": "fxTextAbsolu",
+   "state": {
+    "color": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.25)",
+    "borderColor": "#707070",
+    "backgroundTransparency": 70,
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "fillBackground": false,
+    "drawBorder": false,
+    "wordWrap": false,
+    "wordWrapWidth": 200,
+    "text": "TextAbsolute",
+    "anchored": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTextAbsolu",
+   "sharingMode": 1,
+   "positionPercents": {
+    "x": 0.5,
+    "y": 0.5
+   }
+  },
+  "LineToolNote": {
+   "type": "LineToolNote",
+   "id": "fxNote",
+   "state": {
+    "textColor": "#0F0F0F",
+    "backgroundColor": "#ffffff",
+    "backgroundTransparency": 0,
+    "borderColor": "#EBEBEB",
+    "markerColor": "#2962FF",
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "drawBackground": true,
+    "drawBorder": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "text": "Note",
+    "anchored": false
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxNote"
+  },
+  "LineToolTextNote": {
+   "type": "LineToolTextNote",
+   "id": "fxTextNote",
+   "state": {
+    "lineColor": "#0F0F0F",
+    "backgroundColor": "#ffffff",
+    "borderColor": "#EBEBEB",
+    "textColor": "#0F0F0F",
+    "drawBackground": true,
+    "drawBorder": false,
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "text": "TextNote"
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTextNote",
+   "sharingMode": 1
+  },
+  "LineToolNoteAbsolute": {
+   "type": "LineToolNoteAbsolute",
+   "id": "fxNoteAbsolu",
+   "state": {
+    "textColor": "#0F0F0F",
+    "backgroundColor": "#ffffff",
+    "backgroundTransparency": 0,
+    "borderColor": "#EBEBEB",
+    "markerColor": "#2962FF",
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "drawBackground": true,
+    "drawBorder": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "text": "NoteAbsolute",
+    "anchored": true
+   },
+   "points": [],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxNoteAbsolu",
+   "sharingMode": 1,
+   "positionPercents": {
+    "x": 0.5,
+    "y": 0.5
+   }
+  },
+  "LineToolSignpost": {
+   "type": "LineToolSignpost",
+   "id": "fxSignpost",
+   "state": {
+    "plateColor": "#2962FF",
+    "showImage": false,
+    "emoji": "🙂",
+    "fontSize": 12,
+    "bold": false,
+    "italic": false,
+    "text": "Signpost",
+    "position": 50,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxSignpost"
+  },
+  "LineToolCallout": {
+   "type": "LineToolCallout",
+   "id": "fxCallout",
+   "state": {
+    "color": "#ffffff",
+    "backgroundColor": "rgba(0, 151, 167, 0.7)",
+    "bordercolor": "#0097A7",
+    "transparency": 50,
+    "linewidth": 2,
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "wordWrap": false,
+    "wordWrapWidth": 200,
+    "text": "Callout",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxCallout",
+   "sharingMode": 1,
+   "barOffset": 0
+  },
+  "LineToolBalloon": {
+   "type": "LineToolBalloon",
+   "id": "fxBalloon",
+   "state": {
+    "color": "#ffffff",
+    "backgroundColor": "rgba(156, 39, 176, 0.7)",
+    "borderColor": "rgba(156, 39, 176, 0)",
+    "fontsize": 14,
+    "transparency": 30,
+    "text": "Balloon",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxBalloon"
+  },
+  "LineToolComment": {
+   "type": "LineToolComment",
+   "id": "fxComment",
+   "state": {
+    "color": "#ffffff",
+    "backgroundColor": "#2962FF",
+    "borderColor": "#2962FF",
+    "fontsize": 16,
+    "transparency": 0,
+    "text": "Comment",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxComment",
+   "sharingMode": 1
+  },
+  "LineToolArrowMarkUp": {
+   "type": "LineToolArrowMarkUp",
+   "id": "fxArrowMarkU",
+   "state": {
+    "color": "#089981",
+    "arrowColor": "#089981",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "showLabel": true,
+    "text": "ArrowMarkUp",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrowMarkU"
+  },
+  "LineToolArrowMarkDown": {
+   "type": "LineToolArrowMarkDown",
+   "id": "fxArrowMarkD",
+   "state": {
+    "color": "#CC2F3C",
+    "arrowColor": "#CC2F3C",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "showLabel": true,
+    "text": "ArrowMarkDown",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrowMarkD",
+   "sharingMode": 1
+  },
+  "LineToolArrowMarkLeft": {
+   "type": "LineToolArrowMarkLeft",
+   "id": "fxArrowMarkL",
+   "state": {
+    "color": "#2962FF",
+    "arrowColor": "#2962FF",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "showLabel": true,
+    "text": "ArrowMarkLeft",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrowMarkL",
+   "sharingMode": 1
+  },
+  "LineToolArrowMarkRight": {
+   "type": "LineToolArrowMarkRight",
+   "id": "fxArrowMarkR",
+   "state": {
+    "color": "#2962FF",
+    "arrowColor": "#2962FF",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "showLabel": true,
+    "text": "ArrowMarkRight",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrowMarkR",
+   "sharingMode": 1
+  },
+  "LineToolPriceLabel": {
+   "type": "LineToolPriceLabel",
+   "id": "fxPriceLabel",
+   "state": {
+    "color": "#ffffff",
+    "backgroundColor": "#2962FF",
+    "borderColor": "#2962FF",
+    "fontWeight": "bold",
+    "fontsize": 14,
+    "transparency": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPriceLabel"
+  },
+  "LineToolPriceNote": {
+   "type": "LineToolPriceNote",
+   "id": "fxPriceNote",
+   "state": {
+    "lineColor": "#2962FF",
+    "textColor": "#2962FF",
+    "priceLabelBackgroundColor": "#2962FF",
+    "priceLabelBorderColor": "#2962FF",
+    "priceLabelTextColor": "#ffffff",
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "priceLabelFontSize": 12,
+    "priceLabelBold": false,
+    "priceLabelItalic": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "text": "PriceNote"
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPriceNote"
+  },
+  "LineToolArrowMarker": {
+   "type": "LineToolArrowMarker",
+   "id": "fxArrowMarke",
+   "state": {
+    "backgroundColor": "#1E53E5",
+    "textColor": "#1E53E5",
+    "bold": true,
+    "italic": false,
+    "fontsize": 16,
+    "text": "ArrowMarker",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrowMarke",
+   "sharingMode": 1
+  },
+  "LineToolFlagMark": {
+   "type": "LineToolFlagMark",
+   "id": "fxFlagMark",
+   "state": {
+    "flagColor": "#318757",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFlagMark"
+  },
+  "LineToolTable": {
+   "type": "LineToolTable",
+   "id": "fxTable",
+   "state": {
+    "backgroundColor": "#ffffff",
+    "borderColor": "#DBDBDB",
+    "textColor": "#0F0F0F",
+    "fontSize": 14,
+    "horzAlign": "left",
+    "anchored": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTable"
+  },
+  "LineToolVertLine": {
+   "type": "LineToolVertLine",
+   "id": "fxVertLine",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLine": false,
+    "showTime": true,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "middle",
+    "textOrientation": "horizontal",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "text": "VertLine",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxVertLine"
+  },
+  "LineToolHorzLine": {
+   "type": "LineToolHorzLine",
+   "id": "fxHorzLine",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "showPrice": true,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "middle",
+    "text": "HorzLine",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxHorzLine"
+  },
+  "LineToolCrossLine": {
+   "type": "LineToolCrossLine",
+   "id": "fxCrossLine",
+   "state": {
+    "linecolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "showPrice": true,
+    "showTime": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxCrossLine"
+  },
+  "LineToolHorzRay": {
+   "type": "LineToolHorzRay",
+   "id": "fxHorzRay",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "showPrice": true,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "top",
+    "text": "HorzRay",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxHorzRay"
+  },
+  "LineToolTrendLine": {
+   "type": "LineToolTrendLine",
+   "id": "fxTrendLine",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": false,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": false,
+    "showPercentPriceRange": false,
+    "showPipsPriceRange": false,
+    "showBarsRange": false,
+    "showDateTimeRange": false,
+    "showDistance": false,
+    "showAngle": false,
+    "statsPosition": 2,
+    "text": "TrendLine",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTrendLine"
+  },
+  "LineToolInfoLine": {
+   "type": "LineToolInfoLine",
+   "id": "fxInfoLine",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": true,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": true,
+    "showPercentPriceRange": true,
+    "showPipsPriceRange": true,
+    "showBarsRange": true,
+    "showDateTimeRange": true,
+    "showDistance": true,
+    "showAngle": true,
+    "statsPosition": 1,
+    "text": "InfoLine",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxInfoLine",
+   "sharingMode": 1
+  },
+  "LineToolTrendAngle": {
+   "type": "LineToolTrendAngle",
+   "id": "fxTrendAngle",
+   "state": {
+    "linecolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": false,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": false,
+    "showPercentPriceRange": false,
+    "showPipsPriceRange": false,
+    "showBarsRange": false,
+    "extendRight": false,
+    "extendLeft": false,
+    "statsPosition": 2,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTrendAngle",
+   "angle": 0,
+   "distance": 0
+  },
+  "LineToolArrow": {
+   "type": "LineToolArrow",
+   "id": "fxArrow",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 1,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": false,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": false,
+    "showPercentPriceRange": false,
+    "showPipsPriceRange": false,
+    "showBarsRange": false,
+    "showDateTimeRange": false,
+    "showDistance": false,
+    "showAngle": false,
+    "statsPosition": 2,
+    "text": "Arrow",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArrow",
+   "sharingMode": 1
+  },
+  "LineToolRay": {
+   "type": "LineToolRay",
+   "id": "fxRay",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLeft": false,
+    "extendRight": true,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": false,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": false,
+    "showPercentPriceRange": false,
+    "showPipsPriceRange": false,
+    "showBarsRange": false,
+    "showDateTimeRange": false,
+    "showDistance": false,
+    "showAngle": false,
+    "statsPosition": 2,
+    "text": "Ray",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRay",
+   "sharingMode": 1
+  },
+  "LineToolExtended": {
+   "type": "LineToolExtended",
+   "id": "fxExtended",
+   "state": {
+    "linecolor": "#2962FF",
+    "textcolor": "#2962FF",
+    "linewidth": 2,
+    "linestyle": 0,
+    "extendLeft": true,
+    "extendRight": true,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "bottom",
+    "fontsize": 14,
+    "bold": false,
+    "italic": false,
+    "alwaysShowStats": false,
+    "showMiddlePoint": false,
+    "showPriceLabels": false,
+    "showPriceRange": false,
+    "showPercentPriceRange": false,
+    "showPipsPriceRange": false,
+    "showBarsRange": false,
+    "showDateTimeRange": false,
+    "showDistance": false,
+    "showAngle": false,
+    "statsPosition": 2,
+    "text": "Extended",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxExtended",
+   "sharingMode": 1
+  },
+  "LineToolParallelChannel": {
+   "type": "LineToolParallelChannel",
+   "id": "fxParallelCh",
+   "state": {
+    "level1": {
+     "color": "#2962FF",
+     "visible": false,
+     "coeff": -0.25,
+     "lineStyle": 0,
+     "lineWidth": 1
+    },
+    "level2": {
+     "color": "#2962FF",
+     "visible": true,
+     "coeff": 0,
+     "lineStyle": 0,
+     "lineWidth": 2
+    },
+    "level3": {
+     "color": "#2962FF",
+     "visible": false,
+     "coeff": 0.25,
+     "lineStyle": 0,
+     "lineWidth": 1
+    },
+    "level4": {
+     "color": "#2962FF",
+     "visible": true,
+     "coeff": 0.5,
+     "lineStyle": 2,
+     "lineWidth": 1
+    },
+    "level5": {
+     "color": "#2962FF",
+     "visible": false,
+     "coeff": 0.75,
+     "lineStyle": 0,
+     "lineWidth": 1
+    },
+    "level6": {
+     "color": "#2962FF",
+     "visible": true,
+     "coeff": 1,
+     "lineStyle": 0,
+     "lineWidth": 2
+    },
+    "level7": {
+     "color": "#2962FF",
+     "visible": false,
+     "coeff": 1.25,
+     "lineStyle": 0,
+     "lineWidth": 1
+    },
+    "labelTextColor": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.2)",
+    "extendLeft": false,
+    "extendRight": false,
+    "fillBackground": true,
+    "transparency": 80,
+    "labelVisible": false,
+    "labelHorzAlign": "left",
+    "labelVertAlign": "bottom",
+    "labelFontSize": 14,
+    "labelBold": false,
+    "labelItalic": false,
+    "version": 2,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "labelText": ""
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxParallelCh",
+   "version": 2
+  },
+  "LineToolDisjointAngle": {
+   "type": "LineToolDisjointAngle",
+   "id": "fxDisjointAn",
+   "state": {
+    "linecolor": "#089981",
+    "backgroundColor": "rgba(8, 153, 129, 0.2)",
+    "textcolor": "#089981",
+    "labelTextColor": "#089981",
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": true,
+    "transparency": 20,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "showPrices": false,
+    "showPriceRange": false,
+    "showDateTimeRange": false,
+    "showBarsRange": false,
+    "labelVisible": false,
+    "labelHorzAlign": "left",
+    "labelVertAlign": "bottom",
+    "labelFontSize": 14,
+    "labelBold": false,
+    "labelItalic": false,
+    "labelText": "",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxDisjointAn"
+  },
+  "LineToolFlatBottom": {
+   "type": "LineToolFlatBottom",
+   "id": "fxFlatBottom",
+   "state": {
+    "linecolor": "#FF9800",
+    "backgroundColor": "rgba(255, 152, 0, 0.2)",
+    "textcolor": "#FF9800",
+    "labelTextColor": "#FF9800",
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": true,
+    "transparency": 20,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "showPrices": false,
+    "showPriceRange": false,
+    "showDateTimeRange": false,
+    "showBarsRange": false,
+    "labelVisible": false,
+    "labelHorzAlign": "left",
+    "labelVertAlign": "bottom",
+    "labelFontSize": 14,
+    "labelBold": false,
+    "labelItalic": false,
+    "labelText": "",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFlatBottom"
+  },
+  "LineToolPitchfork": {
+   "type": "LineToolPitchfork",
+   "id": "fxPitchfork",
+   "state": {
+    "median": {
+     "color": "#F23645",
+     "visible": true,
+     "linestyle": 0,
+     "linewidth": 2
+    },
+    "level0": [
+     0.25,
+     "#ffb74d",
+     false,
+     0,
+     2
+    ],
+    "level1": [
+     0.382,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level2": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.618,
+     "#089981",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.75,
+     "#00bcd4",
+     false,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.5,
+     "#9c27b0",
+     false,
+     0,
+     2
+    ],
+    "level7": [
+     1.75,
+     "#e91e63",
+     false,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#F77C80",
+     false,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "style": 0,
+    "extendLines": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPitchfork",
+   "sharingMode": 1
+  },
+  "LineToolSchiffPitchfork": {
+   "type": "LineToolSchiffPitchfork",
+   "id": "fxSchiffPitc",
+   "state": {
+    "median": {
+     "color": "#F23645",
+     "visible": true,
+     "linestyle": 0,
+     "linewidth": 2
+    },
+    "level0": [
+     0.25,
+     "#ffb74d",
+     false,
+     0,
+     2
+    ],
+    "level1": [
+     0.382,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level2": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.618,
+     "#089981",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.75,
+     "#00bcd4",
+     false,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.5,
+     "#9c27b0",
+     false,
+     0,
+     2
+    ],
+    "level7": [
+     1.75,
+     "#e91e63",
+     false,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#F77C80",
+     false,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "style": 1,
+    "extendLines": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxSchiffPitc",
+   "sharingMode": 1
+  },
+  "LineToolSchiffPitchfork2": {
+   "type": "LineToolSchiffPitchfork2",
+   "id": "fxSchiffPitc",
+   "state": {
+    "median": {
+     "color": "#F23645",
+     "visible": true,
+     "linestyle": 0,
+     "linewidth": 2
+    },
+    "level0": [
+     0.25,
+     "#ffb74d",
+     false,
+     0,
+     2
+    ],
+    "level1": [
+     0.382,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level2": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.618,
+     "#089981",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.75,
+     "#00bcd4",
+     false,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.5,
+     "#9c27b0",
+     false,
+     0,
+     2
+    ],
+    "level7": [
+     1.75,
+     "#e91e63",
+     false,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#F77C80",
+     false,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "style": 3,
+    "extendLines": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxSchiffPitc",
+   "sharingMode": 1
+  },
+  "LineToolInsidePitchfork": {
+   "type": "LineToolInsidePitchfork",
+   "id": "fxInsidePitc",
+   "state": {
+    "median": {
+     "color": "#F23645",
+     "visible": true,
+     "linestyle": 0,
+     "linewidth": 2
+    },
+    "level0": [
+     0.25,
+     "#ffb74d",
+     false,
+     0,
+     2
+    ],
+    "level1": [
+     0.382,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level2": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.618,
+     "#089981",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.75,
+     "#00bcd4",
+     false,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.5,
+     "#9c27b0",
+     false,
+     0,
+     2
+    ],
+    "level7": [
+     1.75,
+     "#e91e63",
+     false,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#F77C80",
+     false,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "style": 2,
+    "extendLines": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxInsidePitc",
+   "sharingMode": 1
+  },
+  "LineToolPitchfan": {
+   "type": "LineToolPitchfan",
+   "id": "fxPitchfan",
+   "state": {
+    "median": {
+     "color": "#F23645",
+     "visible": true,
+     "linestyle": 0,
+     "linewidth": 2
+    },
+    "level0": [
+     0.25,
+     "#ffb74d",
+     false,
+     0,
+     2
+    ],
+    "level1": [
+     0.382,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level2": [
+     0.5,
+     "#00bcd4",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.618,
+     "#089981",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.75,
+     "#00bcd4",
+     false,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.5,
+     "#9c27b0",
+     false,
+     0,
+     2
+    ],
+    "level7": [
+     1.75,
+     "#e91e63",
+     false,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#F77C80",
+     false,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPitchfan",
+   "sharingMode": 1
+  },
+  "LineToolGannSquare": {
+   "type": "LineToolGannSquare",
+   "id": "fxGannSquare",
+   "state": {
+    "color": "rgba(21, 56, 153, 0.8)",
+    "fans": {
+     "color": "#9C9C9C",
+     "visible": false
+    },
+    "hlevel1": [
+     0,
+     "#808080",
+     true
+    ],
+    "hlevel2": [
+     0.25,
+     "#FF9800",
+     true
+    ],
+    "hlevel3": [
+     0.382,
+     "#00bcd4",
+     true
+    ],
+    "hlevel4": [
+     0.5,
+     "#4caf50",
+     true
+    ],
+    "hlevel5": [
+     0.618,
+     "#089981",
+     true
+    ],
+    "hlevel6": [
+     0.75,
+     "#2962FF",
+     true
+    ],
+    "hlevel7": [
+     1,
+     "#808080",
+     true
+    ],
+    "vlevel1": [
+     0,
+     "#808080",
+     true
+    ],
+    "vlevel2": [
+     0.25,
+     "#FF9800",
+     true
+    ],
+    "vlevel3": [
+     0.382,
+     "#00bcd4",
+     true
+    ],
+    "vlevel4": [
+     0.5,
+     "#4caf50",
+     true
+    ],
+    "vlevel5": [
+     0.618,
+     "#089981",
+     true
+    ],
+    "vlevel6": [
+     0.75,
+     "#2962FF",
+     true
+    ],
+    "vlevel7": [
+     1,
+     "#808080",
+     true
+    ],
+    "linewidth": 2,
+    "linestyle": 0,
+    "showTopLabels": true,
+    "showBottomLabels": true,
+    "showLeftLabels": true,
+    "showRightLabels": true,
+    "fillHorzBackground": true,
+    "horzTransparency": 80,
+    "fillVertBackground": true,
+    "vertTransparency": 80,
+    "reverse": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxGannSquare"
+  },
+  "LineToolGannComplex": {
+   "type": "LineToolGannComplex",
+   "id": "fxGannComple",
+   "state": {
+    "reverse": false,
+    "showLabels": true,
+    "labelsStyle": {
+     "fontSize": 12,
+     "bold": false,
+     "italic": false
+    },
+    "arcsBackground": {
+     "fillBackground": true,
+     "transparency": 80
+    },
+    "levels": [
+     [
+      2,
+      "#808080",
+      true
+     ],
+     [
+      2,
+      "#FF9800",
+      true
+     ],
+     [
+      2,
+      "#00bcd4",
+      true
+     ],
+     [
+      2,
+      "#4caf50",
+      true
+     ],
+     [
+      2,
+      "#089981",
+      true
+     ],
+     [
+      2,
+      "#808080",
+      true
+     ]
+    ],
+    "fanlines": [
+     {
+      "color": "#B39DDB",
+      "visible": false,
+      "width": 2,
+      "x": 8,
+      "y": 1
+     },
+     {
+      "color": "#F23645",
+      "visible": false,
+      "width": 2,
+      "x": 5,
+      "y": 1
+     },
+     {
+      "color": "#808080",
+      "visible": false,
+      "width": 2,
+      "x": 4,
+      "y": 1
+     },
+     {
+      "color": "#FF9800",
+      "visible": false,
+      "width": 2,
+      "x": 3,
+      "y": 1
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 1
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 1
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 2
+     },
+     {
+      "color": "#089981",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 3
+     },
+     {
+      "color": "#2962FF",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 4
+     },
+     {
+      "color": "#9575cd",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 5
+     },
+     {
+      "color": "#B39DDB",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 8
+     }
+    ],
+    "arcs": [
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 0
+     },
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 1
+     },
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1.5,
+      "y": 0
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 0
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 1
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 3,
+      "y": 0
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 3,
+      "y": 1
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 4,
+      "y": 0
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 4,
+      "y": 1
+     },
+     {
+      "color": "#2962FF",
+      "visible": true,
+      "width": 2,
+      "x": 5,
+      "y": 0
+     },
+     {
+      "color": "#2962FF",
+      "visible": true,
+      "width": 2,
+      "x": 5,
+      "y": 1
+     }
+    ],
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "scaleRatio": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxGannComple",
+   "version": 2
+  },
+  "LineToolGannFixed": {
+   "type": "LineToolGannFixed",
+   "id": "fxGannFixed",
+   "state": {
+    "reverse": false,
+    "arcsBackground": {
+     "fillBackground": true,
+     "transparency": 80
+    },
+    "levels": [
+     [
+      2,
+      "#808080",
+      true
+     ],
+     [
+      2,
+      "#FF9800",
+      true
+     ],
+     [
+      2,
+      "#00bcd4",
+      true
+     ],
+     [
+      2,
+      "#4caf50",
+      true
+     ],
+     [
+      2,
+      "#089981",
+      true
+     ],
+     [
+      2,
+      "#808080",
+      true
+     ]
+    ],
+    "fanlines": [
+     {
+      "color": "#B39DDB",
+      "visible": false,
+      "width": 2,
+      "x": 8,
+      "y": 1
+     },
+     {
+      "color": "#F23645",
+      "visible": false,
+      "width": 2,
+      "x": 5,
+      "y": 1
+     },
+     {
+      "color": "#808080",
+      "visible": false,
+      "width": 2,
+      "x": 4,
+      "y": 1
+     },
+     {
+      "color": "#FF9800",
+      "visible": false,
+      "width": 2,
+      "x": 3,
+      "y": 1
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 1
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 1
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 2
+     },
+     {
+      "color": "#089981",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 3
+     },
+     {
+      "color": "#2962FF",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 4
+     },
+     {
+      "color": "#9575cd",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 5
+     },
+     {
+      "color": "#B39DDB",
+      "visible": false,
+      "width": 2,
+      "x": 1,
+      "y": 8
+     }
+    ],
+    "arcs": [
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 0
+     },
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1,
+      "y": 1
+     },
+     {
+      "color": "#FF9800",
+      "visible": true,
+      "width": 2,
+      "x": 1.5,
+      "y": 0
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 0
+     },
+     {
+      "color": "#00bcd4",
+      "visible": true,
+      "width": 2,
+      "x": 2,
+      "y": 1
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 3,
+      "y": 0
+     },
+     {
+      "color": "#4caf50",
+      "visible": true,
+      "width": 2,
+      "x": 3,
+      "y": 1
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 4,
+      "y": 0
+     },
+     {
+      "color": "#089981",
+      "visible": true,
+      "width": 2,
+      "x": 4,
+      "y": 1
+     },
+     {
+      "color": "#2962FF",
+      "visible": true,
+      "width": 2,
+      "x": 5,
+      "y": 0
+     },
+     {
+      "color": "#2962FF",
+      "visible": true,
+      "width": 2,
+      "x": 5,
+      "y": 1
+     }
+    ],
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxGannFixed"
+  },
+  "LineToolGannFan": {
+   "type": "LineToolGannFan",
+   "id": "fxGannFan",
+   "state": {
+    "level1": [
+     null,
+     "#FF9800",
+     true,
+     0,
+     2
+    ],
+    "level2": [
+     null,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     null,
+     "#4caf50",
+     true,
+     0,
+     2
+    ],
+    "level4": [
+     null,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level5": [
+     null,
+     "#00bcd4",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     null,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level7": [
+     null,
+     "#9c27b0",
+     true,
+     0,
+     2
+    ],
+    "level8": [
+     null,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level9": [
+     null,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "showLabels": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxGannFan",
+   "sharingMode": 1
+  },
+  "LineToolFibRetracement": {
+   "type": "LineToolFibRetracement",
+   "id": "fxFibRetrace",
+   "state": {
+    "trendline": {
+     "color": "#808080",
+     "visible": true,
+     "linewidth": 2,
+     "linestyle": 2
+    },
+    "level1": [
+     0,
+     "#808080",
+     true,
+     ""
+    ],
+    "level2": [
+     0.236,
+     "#F23645",
+     true,
+     ""
+    ],
+    "level3": [
+     0.382,
+     "#FF9800",
+     true,
+     ""
+    ],
+    "level4": [
+     0.5,
+     "#4caf50",
+     true,
+     ""
+    ],
+    "level5": [
+     0.618,
+     "#089981",
+     true,
+     ""
+    ],
+    "level6": [
+     0.786,
+     "#00bcd4",
+     true,
+     ""
+    ],
+    "level7": [
+     1,
+     "#808080",
+     true,
+     ""
+    ],
+    "level8": [
+     1.618,
+     "#2962FF",
+     true,
+     ""
+    ],
+    "level9": [
+     2.618,
+     "#F23645",
+     true,
+     ""
+    ],
+    "level10": [
+     3.618,
+     "#9c27b0",
+     true,
+     ""
+    ],
+    "level11": [
+     4.236,
+     "#e91e63",
+     true,
+     ""
+    ],
+    "level12": [
+     1.272,
+     "#FF9800",
+     false,
+     ""
+    ],
+    "level13": [
+     1.414,
+     "#F23645",
+     false,
+     ""
+    ],
+    "level14": [
+     2.272,
+     "#FF9800",
+     false,
+     ""
+    ],
+    "level15": [
+     2.414,
+     "#4caf50",
+     false,
+     ""
+    ],
+    "level16": [
+     2,
+     "#089981",
+     false,
+     ""
+    ],
+    "level17": [
+     3,
+     "#00bcd4",
+     false,
+     ""
+    ],
+    "level18": [
+     3.272,
+     "#808080",
+     false,
+     ""
+    ],
+    "level19": [
+     3.414,
+     "#2962FF",
+     false,
+     ""
+    ],
+    "level20": [
+     4,
+     "#F23645",
+     false,
+     ""
+    ],
+    "level21": [
+     4.272,
+     "#9c27b0",
+     false,
+     ""
+    ],
+    "level22": [
+     4.414,
+     "#e91e63",
+     false,
+     ""
+    ],
+    "level23": [
+     4.618,
+     "#FF9800",
+     false,
+     ""
+    ],
+    "level24": [
+     4.764,
+     "#089981",
+     false,
+     ""
+    ],
+    "showCoeffs": true,
+    "showPrices": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "extendLines": true,
+    "extendLinesLeft": false,
+    "horzLabelsAlign": "left",
+    "vertLabelsAlign": "middle",
+    "showText": true,
+    "horzTextAlign": "center",
+    "vertTextAlign": "middle",
+    "reverse": false,
+    "coeffsAsPercents": false,
+    "fibLevelsBasedOnLogScale": false,
+    "labelFontSize": 12,
+    "levelsStyle": {
+     "linewidth": 2,
+     "linestyle": 0
+    },
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibRetrace",
+   "version": 2
+  },
+  "LineToolTrendBasedFibExtension": {
+   "type": "LineToolTrendBasedFibExtension",
+   "id": "fxTrendBased",
+   "state": {
+    "trendline": {
+     "color": "#808080",
+     "visible": true,
+     "linewidth": 2,
+     "linestyle": 2
+    },
+    "level1": [
+     0,
+     "#808080",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level2": [
+     0.236,
+     "#F23645",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level3": [
+     0.382,
+     "#FF9800",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level4": [
+     0.5,
+     "#4caf50",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level5": [
+     0.618,
+     "#089981",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level6": [
+     0.786,
+     "#00bcd4",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level7": [
+     1,
+     "#808080",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level8": [
+     1.618,
+     "#2962FF",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level9": [
+     2.618,
+     "#F23645",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level10": [
+     3.618,
+     "#9c27b0",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level11": [
+     4.236,
+     "#e91e63",
+     true,
+     null,
+     null,
+     ""
+    ],
+    "level12": [
+     1.272,
+     "#FF9800",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level13": [
+     1.414,
+     "#F23645",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level14": [
+     2.272,
+     "#FF9800",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level15": [
+     2.414,
+     "#4caf50",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level16": [
+     2,
+     "#089981",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level17": [
+     3,
+     "#00bcd4",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level18": [
+     3.272,
+     "#808080",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level19": [
+     3.414,
+     "#2962FF",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level20": [
+     4,
+     "#F23645",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level21": [
+     4.272,
+     "#9c27b0",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level22": [
+     4.414,
+     "#e91e63",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level23": [
+     4.618,
+     "#FF9800",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "level24": [
+     4.764,
+     "#089981",
+     false,
+     null,
+     null,
+     ""
+    ],
+    "showCoeffs": true,
+    "showPrices": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "extendLines": true,
+    "extendLinesLeft": false,
+    "horzLabelsAlign": "left",
+    "vertLabelsAlign": "middle",
+    "showText": true,
+    "horzTextAlign": "center",
+    "vertTextAlign": "middle",
+    "reverse": false,
+    "coeffsAsPercents": false,
+    "fibLevelsBasedOnLogScale": false,
+    "labelFontSize": 12,
+    "levelsStyle": {
+     "linewidth": 2,
+     "linestyle": 0
+    },
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTrendBased",
+   "sharingMode": 1,
+   "version": 2
+  },
+  "LineToolFibSpeedResistanceFan": {
+   "type": "LineToolFibSpeedResistanceFan",
+   "id": "fxFibSpeedRe",
+   "state": {
+    "grid": {
+     "color": "rgba(21, 56, 153, 0.8)",
+     "linewidth": 1,
+     "linestyle": 0,
+     "visible": true
+    },
+    "hlevel1": [
+     0,
+     "#808080",
+     true
+    ],
+    "hlevel2": [
+     0.25,
+     "#FF9800",
+     true
+    ],
+    "hlevel3": [
+     0.382,
+     "#00bcd4",
+     true
+    ],
+    "hlevel4": [
+     0.5,
+     "#4caf50",
+     true
+    ],
+    "hlevel5": [
+     0.618,
+     "#089981",
+     true
+    ],
+    "hlevel6": [
+     0.75,
+     "#2962FF",
+     true
+    ],
+    "hlevel7": [
+     1,
+     "#808080",
+     true
+    ],
+    "vlevel1": [
+     0,
+     "#808080",
+     true
+    ],
+    "vlevel2": [
+     0.25,
+     "#FF9800",
+     true
+    ],
+    "vlevel3": [
+     0.382,
+     "#00bcd4",
+     true
+    ],
+    "vlevel4": [
+     0.5,
+     "#4caf50",
+     true
+    ],
+    "vlevel5": [
+     0.618,
+     "#089981",
+     true
+    ],
+    "vlevel6": [
+     0.75,
+     "#2962FF",
+     true
+    ],
+    "vlevel7": [
+     1,
+     "#808080",
+     true
+    ],
+    "fillBackground": true,
+    "transparency": 80,
+    "linewidth": 2,
+    "linestyle": 0,
+    "showTopLabels": true,
+    "showBottomLabels": true,
+    "showLeftLabels": true,
+    "showRightLabels": true,
+    "reverse": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibSpeedRe"
+  },
+  "LineToolTrendBasedFibTime": {
+   "type": "LineToolTrendBasedFibTime",
+   "id": "fxTrendBased",
+   "state": {
+    "trendline": {
+     "color": "#808080",
+     "visible": true,
+     "linewidth": 2,
+     "linestyle": 2
+    },
+    "level1": [
+     0,
+     "#808080",
+     true,
+     0,
+     2
+    ],
+    "level2": [
+     0.382,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.5,
+     "#81c784",
+     false,
+     0,
+     2
+    ],
+    "level4": [
+     0.618,
+     "#4caf50",
+     true,
+     0,
+     2
+    ],
+    "level5": [
+     1,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1.382,
+     "#00bcd4",
+     true,
+     0,
+     2
+    ],
+    "level7": [
+     1.618,
+     "#808080",
+     true,
+     0,
+     2
+    ],
+    "level8": [
+     2,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level9": [
+     2.382,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level10": [
+     2.618,
+     "#9c27b0",
+     true,
+     0,
+     2
+    ],
+    "level11": [
+     3,
+     "#673ab7",
+     true,
+     0,
+     2
+    ],
+    "showCoeffs": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "horzLabelsAlign": "right",
+    "vertLabelsAlign": "bottom",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTrendBased"
+  },
+  "LineToolFibCircles": {
+   "type": "LineToolFibCircles",
+   "id": "fxFibCircles",
+   "state": {
+    "trendline": {
+     "color": "#808080",
+     "visible": true,
+     "linewidth": 2,
+     "linestyle": 2
+    },
+    "level1": [
+     0.236,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "level2": [
+     0.382,
+     "#FF9800",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level4": [
+     0.618,
+     "#4caf50",
+     true,
+     0,
+     2
+    ],
+    "level5": [
+     0.786,
+     "#00bcd4",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1,
+     "#808080",
+     true,
+     0,
+     2
+    ],
+    "level7": [
+     1.618,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level8": [
+     2.618,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level9": [
+     3.618,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level10": [
+     4.236,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level11": [
+     4.618,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "showCoeffs": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "coeffsAsPercents": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibCircles"
+  },
+  "LineToolFibSpiral": {
+   "type": "LineToolFibSpiral",
+   "id": "fxFibSpiral",
+   "state": {
+    "linecolor": "#00bcd4",
+    "counterclockwise": false,
+    "linewidth": 2,
+    "linestyle": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibSpiral"
+  },
+  "LineToolFibSpeedResistanceArcs": {
+   "type": "LineToolFibSpeedResistanceArcs",
+   "id": "fxFibSpeedRe",
+   "state": {
+    "trendline": {
+     "color": "#808080",
+     "visible": true,
+     "linewidth": 2,
+     "linestyle": 2
+    },
+    "level1": [
+     0.236,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "level2": [
+     0.382,
+     "#FF9800",
+     true,
+     0,
+     2
+    ],
+    "level3": [
+     0.5,
+     "#089981",
+     true,
+     0,
+     2
+    ],
+    "level4": [
+     0.618,
+     "#4caf50",
+     true,
+     0,
+     2
+    ],
+    "level5": [
+     0.786,
+     "#00bcd4",
+     true,
+     0,
+     2
+    ],
+    "level6": [
+     1,
+     "#808080",
+     true,
+     0,
+     2
+    ],
+    "level7": [
+     1.618,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level8": [
+     2.618,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level9": [
+     3.618,
+     "#2962FF",
+     true,
+     0,
+     2
+    ],
+    "level10": [
+     4.236,
+     "#e91e63",
+     true,
+     0,
+     2
+    ],
+    "level11": [
+     4.618,
+     "#F23645",
+     true,
+     0,
+     2
+    ],
+    "showCoeffs": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "fullCircles": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibSpeedRe"
+  },
+  "LineToolFibChannel": {
+   "type": "LineToolFibChannel",
+   "id": "fxFibChannel",
+   "state": {
+    "level1": [
+     0,
+     "#808080",
+     true
+    ],
+    "level2": [
+     0.236,
+     "#F23645",
+     true
+    ],
+    "level3": [
+     0.382,
+     "#FF9800",
+     true
+    ],
+    "level4": [
+     0.5,
+     "#4caf50",
+     true
+    ],
+    "level5": [
+     0.618,
+     "#089981",
+     true
+    ],
+    "level6": [
+     0.786,
+     "#00bcd4",
+     true
+    ],
+    "level7": [
+     1,
+     "#808080",
+     true
+    ],
+    "level8": [
+     1.618,
+     "#2962FF",
+     true
+    ],
+    "level9": [
+     2.618,
+     "#F23645",
+     true
+    ],
+    "level10": [
+     3.618,
+     "#9c27b0",
+     true
+    ],
+    "level11": [
+     4.236,
+     "#e91e63",
+     true
+    ],
+    "level12": [
+     1.272,
+     "#FF9800",
+     false
+    ],
+    "level13": [
+     1.414,
+     "#F23645",
+     false
+    ],
+    "level16": [
+     2,
+     "#089981",
+     false
+    ],
+    "level14": [
+     2.272,
+     "#FF9800",
+     false
+    ],
+    "level15": [
+     2.414,
+     "#4caf50",
+     false
+    ],
+    "level17": [
+     3,
+     "#00bcd4",
+     false
+    ],
+    "level18": [
+     3.272,
+     "#808080",
+     false
+    ],
+    "level19": [
+     3.414,
+     "#2962FF",
+     false
+    ],
+    "level20": [
+     4,
+     "#F23645",
+     false
+    ],
+    "level21": [
+     4.272,
+     "#9c27b0",
+     false
+    ],
+    "level22": [
+     4.414,
+     "#e91e63",
+     false
+    ],
+    "level23": [
+     4.618,
+     "#FF9800",
+     false
+    ],
+    "level24": [
+     4.764,
+     "#089981",
+     false
+    ],
+    "levelsStyle": {
+     "linewidth": 2,
+     "linestyle": 0
+    },
+    "extendLeft": false,
+    "extendRight": false,
+    "showPrices": true,
+    "showCoeffs": true,
+    "coeffsAsPercents": false,
+    "horzLabelsAlign": "left",
+    "vertLabelsAlign": "middle",
+    "fillBackground": true,
+    "transparency": 80,
+    "labelFontSize": 12,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxFibChannel",
+   "version": 2
+  },
+  "LineTool5PointsPattern": {
+   "type": "LineTool5PointsPattern",
+   "id": "fx5PointsPat",
+   "state": {
+    "color": "#2962FF",
+    "textcolor": "#ffffff",
+    "backgroundColor": "#2962FF",
+    "fillBackground": true,
+    "transparency": 85,
+    "linewidth": 2,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfx5PointsPat"
+  },
+  "LineToolCypherPattern": {
+   "type": "LineToolCypherPattern",
+   "id": "fxCypherPatt",
+   "state": {
+    "color": "#2962FF",
+    "textcolor": "#ffffff",
+    "backgroundColor": "#2962FF",
+    "fillBackground": true,
+    "transparency": 85,
+    "linewidth": 2,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxCypherPatt",
+   "sharingMode": 1
+  },
+  "LineToolABCD": {
+   "type": "LineToolABCD",
+   "id": "fxABCD",
+   "state": {
+    "color": "#089981",
+    "textcolor": "#ffffff",
+    "linewidth": 2,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxABCD"
+  },
+  "LineToolTrianglePattern": {
+   "type": "LineToolTrianglePattern",
+   "id": "fxTrianglePa",
+   "state": {
+    "color": "#673ab7",
+    "textcolor": "#ffffff",
+    "backgroundColor": "#673ab7",
+    "transparency": 85,
+    "fillBackground": true,
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "linewidth": 2,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTrianglePa"
+  },
+  "LineToolHeadAndShoulders": {
+   "type": "LineToolHeadAndShoulders",
+   "id": "fxHeadAndSho",
+   "state": {
+    "color": "#089981",
+    "textcolor": "#ffffff",
+    "backgroundColor": "#089981",
+    "fontsize": 12,
+    "bold": false,
+    "italic": false,
+    "linewidth": 2,
+    "fillBackground": true,
+    "transparency": 85,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1778025600,
+     "offset": 0,
+     "price": 295,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1778630400,
+     "offset": 0,
+     "price": 318,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxHeadAndSho"
+  },
+  "LineToolElliottImpulse": {
+   "type": "LineToolElliottImpulse",
+   "id": "fxElliottImp",
+   "state": {
+    "color": "#3d85c6",
+    "linewidth": 2,
+    "showWave": true,
+    "degree": 7,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1778025600,
+     "offset": 0,
+     "price": 295,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxElliottImp",
+   "version": 4
+  },
+  "LineToolElliottTriangle": {
+   "type": "LineToolElliottTriangle",
+   "id": "fxElliottTri",
+   "state": {
+    "color": "#FF9800",
+    "linewidth": 2,
+    "showWave": true,
+    "degree": 7,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1778025600,
+     "offset": 0,
+     "price": 295,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxElliottTri",
+   "sharingMode": 1,
+   "version": 4
+  },
+  "LineToolElliottTripleCombo": {
+   "type": "LineToolElliottTripleCombo",
+   "id": "fxElliottTri",
+   "state": {
+    "color": "#6aa84f",
+    "linewidth": 2,
+    "showWave": true,
+    "degree": 7,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1777420800,
+     "offset": 0,
+     "price": 272,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1778025600,
+     "offset": 0,
+     "price": 295,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxElliottTri",
+   "sharingMode": 1,
+   "version": 4
+  },
+  "LineToolElliottCorrection": {
+   "type": "LineToolElliottCorrection",
+   "id": "fxElliottCor",
+   "state": {
+    "color": "#3d85c6",
+    "linewidth": 2,
+    "showWave": true,
+    "degree": 7,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxElliottCor",
+   "sharingMode": 1,
+   "version": 4
+  },
+  "LineToolElliottDoubleCombo": {
+   "type": "LineToolElliottDoubleCombo",
+   "id": "fxElliottDou",
+   "state": {
+    "color": "#6aa84f",
+    "linewidth": 2,
+    "showWave": true,
+    "degree": 7,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxElliottDou",
+   "sharingMode": 1,
+   "version": 4
+  },
+  "LineToolCircleLines": {
+   "type": "LineToolCircleLines",
+   "id": "fxCircleLine",
+   "state": {
+    "linecolor": "#80ccdb",
+    "linewidth": 2,
+    "linestyle": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxCircleLine"
+  },
+  "LineToolTimeCycles": {
+   "type": "LineToolTimeCycles",
+   "id": "fxTimeCycles",
+   "state": {
+    "linecolor": "#159980",
+    "backgroundColor": "rgba(106, 168, 79, 0.5)",
+    "transparency": 50,
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTimeCycles"
+  },
+  "LineToolSineLine": {
+   "type": "LineToolSineLine",
+   "id": "fxSineLine",
+   "state": {
+    "linecolor": "#159980",
+    "linewidth": 2,
+    "linestyle": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxSineLine",
+   "sharingMode": 1
+  },
+  "LineToolRiskRewardLong": {
+   "type": "LineToolRiskRewardLong",
+   "id": "fxRiskReward",
+   "state": {
+    "linecolor": "#808080",
+    "textcolor": "#ffffff",
+    "stopBackground": "rgba(242, 54, 69, 0.2)",
+    "profitBackground": "rgba(8, 153, 129, 0.2)",
+    "stopBackgroundTransparency": 80,
+    "profitBackgroundTransparency": 80,
+    "linewidth": 1,
+    "fontsize": 12,
+    "compact": false,
+    "riskDisplayMode": "percents",
+    "accountSize": 1000,
+    "lotSize": 1,
+    "risk": 25,
+    "leverage": 10000,
+    "alwaysShowStats": false,
+    "showPriceLabels": true,
+    "qtyPrecision": "default",
+    "currency": "NONE",
+    "infoBlocks": {
+     "tpPriceOffset": {
+      "visible": true
+     },
+     "tpPercentOffset": {
+      "visible": true
+     },
+     "tpTickOffset": {
+      "visible": true
+     },
+     "tpAmount": {
+      "visible": true
+     },
+     "tpPL": {
+      "visible": false
+     },
+     "openClosePL": {
+      "visible": true
+     },
+     "qty": {
+      "visible": true
+     },
+     "riskRewardRatio": {
+      "visible": true
+     },
+     "slPriceOffset": {
+      "visible": true
+     },
+     "slPercentOffset": {
+      "visible": true
+     },
+     "slTickOffset": {
+      "visible": true
+     },
+     "slAmount": {
+      "visible": true
+     },
+     "slPL": {
+      "visible": false
+     }
+    },
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "stopLevel": 0,
+    "profitLevel": 0,
+    "qty": 0,
+    "amountTarget": 1000,
+    "amountStop": 1000,
+    "entryPointCurrencyRate": 1,
+    "closePointCurrencyRate": 1
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRiskReward",
+   "version": 2
+  },
+  "LineToolRiskRewardShort": {
+   "type": "LineToolRiskRewardShort",
+   "id": "fxRiskReward",
+   "state": {
+    "linecolor": "#808080",
+    "textcolor": "#ffffff",
+    "stopBackground": "rgba(242, 54, 69, 0.2)",
+    "profitBackground": "rgba(8, 153, 129, 0.2)",
+    "stopBackgroundTransparency": 80,
+    "profitBackgroundTransparency": 80,
+    "linewidth": 1,
+    "fontsize": 12,
+    "compact": false,
+    "riskDisplayMode": "percents",
+    "accountSize": 1000,
+    "lotSize": 1,
+    "risk": 25,
+    "leverage": 10000,
+    "alwaysShowStats": false,
+    "showPriceLabels": true,
+    "qtyPrecision": "default",
+    "currency": "NONE",
+    "infoBlocks": {
+     "tpPriceOffset": {
+      "visible": true
+     },
+     "tpPercentOffset": {
+      "visible": true
+     },
+     "tpTickOffset": {
+      "visible": true
+     },
+     "tpAmount": {
+      "visible": true
+     },
+     "tpPL": {
+      "visible": false
+     },
+     "openClosePL": {
+      "visible": true
+     },
+     "qty": {
+      "visible": true
+     },
+     "riskRewardRatio": {
+      "visible": true
+     },
+     "slPriceOffset": {
+      "visible": true
+     },
+     "slPercentOffset": {
+      "visible": true
+     },
+     "slTickOffset": {
+      "visible": true
+     },
+     "slAmount": {
+      "visible": true
+     },
+     "slPL": {
+      "visible": false
+     }
+    },
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "stopLevel": 0,
+    "profitLevel": 0,
+    "qty": 40000,
+    "amountTarget": 1000,
+    "amountStop": 1000,
+    "entryPointCurrencyRate": 1,
+    "closePointCurrencyRate": 1
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRiskReward",
+   "sharingMode": 1,
+   "version": 2,
+   "ownerSourceBase": 100
+  },
+  "LineToolPrediction": {
+   "type": "LineToolPrediction",
+   "id": "fxPrediction",
+   "state": {
+    "linecolor": "#2962FF",
+    "centersColor": "#202020",
+    "sourceBackColor": "#2962FF",
+    "sourceStrokeColor": "#2962FF",
+    "sourceTextColor": "#ffffff",
+    "targetBackColor": "#2962FF",
+    "targetStrokeColor": "#2962FF",
+    "targetTextColor": "#ffffff",
+    "successBackground": "#4caf50",
+    "successTextColor": "#ffffff",
+    "failureBackground": "#F23645",
+    "failureTextColor": "#ffffff",
+    "intermediateBackColor": "#ead289",
+    "intermediateTextColor": "#6d4d22",
+    "status": 0,
+    "linewidth": 2,
+    "transparency": 10,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPrediction"
+  },
+  "LineToolDateRange": {
+   "type": "LineToolDateRange",
+   "id": "fxDateRange",
+   "state": {
+    "textcolor": "#000000",
+    "labelBackgroundColor": "#ffffff",
+    "linecolor": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.15)",
+    "shadow": "rgba(0, 0, 0, 0.2)",
+    "customText": {
+     "color": "#2962FF",
+     "visible": false,
+     "fontsize": 12,
+     "bold": false,
+     "italic": false,
+     "text": ""
+    },
+    "linewidth": 2,
+    "fontsize": 12,
+    "fillLabelBackground": true,
+    "fillBackground": true,
+    "backgroundTransparency": 60,
+    "showVolume": true,
+    "extendTop": false,
+    "extendBottom": false,
+    "showBarsRange": true,
+    "showDateTimeRange": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxDateRange"
+  },
+  "LineToolPriceRange": {
+   "type": "LineToolPriceRange",
+   "id": "fxPriceRange",
+   "state": {
+    "textcolor": "#000000",
+    "labelBackgroundColor": "#ffffff",
+    "linecolor": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.15)",
+    "shadow": "rgba(0, 0, 0, 0.2)",
+    "customText": {
+     "color": "#2962FF",
+     "visible": false,
+     "fontsize": 12,
+     "bold": false,
+     "italic": false,
+     "text": ""
+    },
+    "linewidth": 2,
+    "fontsize": 12,
+    "fillLabelBackground": true,
+    "fillBackground": true,
+    "backgroundTransparency": 60,
+    "showVolume": true,
+    "extendLeft": false,
+    "extendRight": false,
+    "showPriceRange": true,
+    "showPercentPriceRange": true,
+    "showPipsPriceRange": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPriceRange",
+   "sharingMode": 1
+  },
+  "LineToolDateAndPriceRange": {
+   "type": "LineToolDateAndPriceRange",
+   "id": "fxDateAndPri",
+   "state": {
+    "textcolor": "#000000",
+    "labelBackgroundColor": "#ffffff",
+    "linecolor": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.15)",
+    "shadow": "rgba(0, 0, 0, 0.2)",
+    "customText": {
+     "color": "#2962FF",
+     "visible": false,
+     "fontsize": 12,
+     "bold": false,
+     "italic": false,
+     "text": ""
+    },
+    "borderColor": "#2962FF",
+    "linewidth": 2,
+    "fontsize": 12,
+    "fillLabelBackground": true,
+    "fillBackground": true,
+    "backgroundTransparency": 60,
+    "showVolume": true,
+    "drawBorder": false,
+    "borderWidth": 1,
+    "showBarsRange": true,
+    "showDateTimeRange": true,
+    "showPriceRange": true,
+    "showPercentPriceRange": true,
+    "showPipsPriceRange": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxDateAndPri",
+   "sharingMode": 1
+  },
+  "LineToolBarsPattern": {
+   "type": "LineToolBarsPattern",
+   "id": "fxBarsPatter",
+   "state": {
+    "color": "#2962FF",
+    "mode": 0,
+    "mirrored": false,
+    "flipped": false,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxBarsPatter",
+   "version": 2,
+   "pattern": [],
+   "scale": 1,
+   "diff": null
+  },
+  "LineToolGhostFeed": {
+   "type": "LineToolGhostFeed",
+   "id": "fxGhostFeed",
+   "state": {
+    "averageHL": 20,
+    "candleStyle": {
+     "upColor": "#ACE5DC",
+     "downColor": "#FAA1A4",
+     "borderColor": "#378658",
+     "borderUpColor": "#089981",
+     "borderDownColor": "#F23645",
+     "wickColor": "#808080",
+     "drawWick": true,
+     "drawBorder": true
+    },
+    "variance": 50,
+    "transparency": 50,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxGhostFeed",
+   "segments": []
+  },
+  "LineToolProjection": {
+   "type": "LineToolProjection",
+   "id": "fxProjection",
+   "state": {
+    "color1": "rgba(41, 98, 255, 0.2)",
+    "color2": "rgba(156, 39, 176, 0.2)",
+    "trendline": {
+     "color": "#9C9C9C",
+     "visible": true,
+     "linestyle": 0
+    },
+    "level1": [
+     1,
+     "#808080",
+     true,
+     0,
+     2
+    ],
+    "showCoeffs": true,
+    "fillBackground": true,
+    "transparency": 80,
+    "linewidth": 2,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxProjection"
+  },
+  "LineToolRectangle": {
+   "type": "LineToolRectangle",
+   "id": "fxRectangle",
+   "state": {
+    "color": "#9c27b0",
+    "fillBackground": true,
+    "backgroundColor": "rgba(156, 39, 176, 0.2)",
+    "linewidth": 2,
+    "transparency": 50,
+    "horzLabelsAlign": "center",
+    "vertLabelsAlign": "middle",
+    "textColor": "#9c27b0",
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "extendLeft": false,
+    "extendRight": false,
+    "middleLine": {
+     "showLine": false,
+     "lineWidth": 1,
+     "lineColor": "#9c27b0",
+     "lineStyle": 2
+    },
+    "linestyle": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "text": "Rectangle"
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRectangle"
+  },
+  "LineToolRotatedRectangle": {
+   "type": "LineToolRotatedRectangle",
+   "id": "fxRotatedRec",
+   "state": {
+    "color": "#4caf50",
+    "backgroundColor": "rgba(76, 175, 80, 0.2)",
+    "fillBackground": true,
+    "linewidth": 2,
+    "transparency": 50,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRotatedRec"
+  },
+  "LineToolCircle": {
+   "type": "LineToolCircle",
+   "id": "fxCircle",
+   "state": {
+    "color": "#FF9800",
+    "backgroundColor": "rgba(255, 152, 0, 0.2)",
+    "textColor": "#FF9800",
+    "fillBackground": true,
+    "linewidth": 2,
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "text": "Circle",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxCircle"
+  },
+  "LineToolEllipse": {
+   "type": "LineToolEllipse",
+   "id": "fxEllipse",
+   "state": {
+    "color": "#F23645",
+    "backgroundColor": "rgba(242, 54, 69, 0.2)",
+    "transparency": 50,
+    "textColor": "#F23645",
+    "fillBackground": true,
+    "linewidth": 2,
+    "fontSize": 14,
+    "bold": false,
+    "italic": false,
+    "text": "Ellipse",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxEllipse",
+   "version": 2
+  },
+  "LineToolTriangle": {
+   "type": "LineToolTriangle",
+   "id": "fxTriangle",
+   "state": {
+    "color": "#089981",
+    "backgroundColor": "rgba(8, 153, 129, 0.2)",
+    "transparency": 80,
+    "fillBackground": true,
+    "linewidth": 2,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxTriangle",
+   "sharingMode": 1
+  },
+  "LineToolPolyline": {
+   "type": "LineToolPolyline",
+   "id": "fxPolyline",
+   "state": {
+    "linecolor": "#00bcd4",
+    "backgroundColor": "rgba(0, 188, 212, 0.2)",
+    "transparency": 80,
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null,
+    "filled": false
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPolyline"
+  },
+  "LineToolPath": {
+   "type": "LineToolPath",
+   "id": "fxPath",
+   "state": {
+    "lineColor": "#2962FF",
+    "lineWidth": 2,
+    "lineStyle": 0,
+    "leftEnd": 0,
+    "rightEnd": 1,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxPath"
+  },
+  "LineToolBezierQuadro": {
+   "type": "LineToolBezierQuadro",
+   "id": "fxBezierQuad",
+   "state": {
+    "linecolor": "#2962FF",
+    "backgroundColor": "rgba(41, 98, 255, 0.2)",
+    "transparency": 50,
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": false,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxBezierQuad"
+  },
+  "LineToolBezierCubic": {
+   "type": "LineToolBezierCubic",
+   "id": "fxBezierCubi",
+   "state": {
+    "linecolor": "#673ab7",
+    "backgroundColor": "rgba(103, 58, 183, 0.2)",
+    "transparency": 80,
+    "linewidth": 2,
+    "linestyle": 0,
+    "fillBackground": false,
+    "extendLeft": false,
+    "extendRight": false,
+    "leftEnd": 0,
+    "rightEnd": 0,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776816000,
+     "offset": 0,
+     "price": 319,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxBezierCubi",
+   "sharingMode": 1
+  },
+  "LineToolArc": {
+   "type": "LineToolArc",
+   "id": "fxArc",
+   "state": {
+    "color": "#e91e63",
+    "backgroundColor": "rgba(233, 30, 99, 0.2)",
+    "transparency": 80,
+    "linewidth": 2,
+    "fillBackground": true,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1776211200,
+     "offset": 0,
+     "price": 296,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxArc",
+   "version": 2
+  },
+  "LineToolIcon": {
+   "type": "LineToolIcon",
+   "id": "fxIcon",
+   "state": {
+    "icon": 61720,
+    "angle": 1.5707963267948966,
+    "color": "#2962FF",
+    "size": 72,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxIcon"
+  },
+  "LineToolEmoji": {
+   "type": "LineToolEmoji",
+   "id": "fxEmoji",
+   "state": {
+    "emoji": "😀",
+    "angle": 1.5707963267948966,
+    "size": 72,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxEmoji"
+  },
+  "LineToolSticker": {
+   "type": "LineToolSticker",
+   "id": "fxSticker",
+   "state": {
+    "sticker": "bitcoin",
+    "angle": 1.5707963267948966,
+    "size": 72,
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "visible": true,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxSticker"
+  },
+  "LineToolRegressionTrend": {
+   "type": "LineToolRegressionTrend",
+   "id": "fxRegression",
+   "state": {
+    "inputs": {
+     "lower diviation": -2,
+     "source": "close",
+     "upper diviation": 2,
+     "use lower diviation": true,
+     "use upper diviation": true,
+     "first bar time": 0,
+     "last bar time": 0
+    },
+    "showLabelsOnPriceScale": true,
+    "linewidth": 1,
+    "linestyle": 0,
+    "styles": {
+     "upLine": {
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 2,
+      "color": "rgba(41, 98, 255, 0.3)"
+     },
+     "downLine": {
+      "display": 4294967295,
+      "linestyle": 0,
+      "linewidth": 2,
+      "color": "rgba(41, 98, 255, 0.3)"
+     },
+     "baseLine": {
+      "display": 4294967295,
+      "linestyle": 2,
+      "linewidth": 1,
+      "color": "rgba(242, 54, 69, 0.3)"
+     },
+     "extendLines": false,
+     "showPearsons": true,
+     "transparency": 70
+    },
+    "visible": true,
+    "precision": "default",
+    "symbolStateVersion": 2,
+    "zOrderVersion": 2,
+    "frozen": false,
+    "title": "",
+    "interval": "1D",
+    "symbol": "NASDAQ:AAPL",
+    "currencyId": null,
+    "unitId": null,
+    "metricId": null,
+    "adjustedToSplitTime": null
+   },
+   "points": [
+    {
+     "time_t": 1775001600,
+     "offset": 0,
+     "price": 250,
+     "interval": "1D"
+    },
+    {
+     "time_t": 1775606400,
+     "offset": 0,
+     "price": 273,
+     "interval": "1D"
+    }
+   ],
+   "zorder": -5000,
+   "ownerSource": "_seriesId",
+   "linkKey": "lkfxRegression",
+   "version": 2,
+   "metaInfo": {
+    "palettes": {},
+    "inputs": [
+     {
+      "defval": 2,
+      "id": "upper diviation",
+      "max": 500,
+      "min": -500,
+      "name": "Upper Deviation",
+      "type": "float",
+      "display": 15
+     },
+     {
+      "defval": -2,
+      "id": "lower diviation",
+      "max": 500,
+      "min": -500,
+      "name": "Lower Deviation",
+      "type": "float",
+      "display": 15
+     },
+     {
+      "defval": true,
+      "id": "use upper diviation",
+      "name": "Use Upper Deviation",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": true,
+      "id": "use lower diviation",
+      "name": "Use Lower Deviation",
+      "type": "bool",
+      "display": 0
+     },
+     {
+      "defval": 0,
+      "id": "first bar time",
+      "isHidden": true,
+      "max": 253370764800,
+      "min": -253370764800,
+      "name": "First bar time",
+      "type": "time",
+      "display": 0
+     },
+     {
+      "defval": 0,
+      "id": "last bar time",
+      "isHidden": true,
+      "max": 253370764800,
+      "min": -253370764800,
+      "name": "Last bar time",
+      "type": "time",
+      "display": 0
+     },
+     {
+      "defval": "close",
+      "id": "source",
+      "name": "Source",
+      "options": [
+       "open",
+       "high",
+       "low",
+       "close",
+       "hl2",
+       "hlc3",
+       "ohlc4"
+      ],
+      "type": "source",
+      "display": 15
+     }
+    ],
+    "plots": [],
+    "graphics": {},
+    "defaults": {
+     "inputs": {
+      "first bar time": 0,
+      "last bar time": 0,
+      "lower diviation": -2,
+      "source": "close",
+      "upper diviation": 2,
+      "use lower diviation": true,
+      "use upper diviation": true
+     }
+    },
+    "_metainfoVersion": 55,
+    "description": "Regression Trend",
+    "format": {
+     "type": "inherit"
+    },
+    "id": "RegressionTrend@tv-basicstudies-280",
+    "is_hidden_study": true,
+    "is_price_study": true,
+    "shortDescription": "Reg Trend",
+    "description_localized": "Regression Trend",
+    "shortId": "RegressionTrend",
+    "packageId": "tv-basicstudies",
+    "version": 280,
+    "fullId": "RegressionTrend@tv-basicstudies-280",
+    "productId": "tv-basicstudies",
+    "_serverMetaInfoVersion": 55
+   }
+  }
+ }
+}

@@ -64,7 +64,7 @@ const sha256 = (data: string) => createHash('sha256').update(data).digest('hex')
 
 /**
  * On Windows, antivirus, search indexing and OneDrive briefly lock new files,
- * which makes a rename fail with EPERM/EBUSY/EACCES. Retry for up to ~10 s.
+ * which makes a rename fail with EPERM/EBUSY/EACCES. Retry for up to ~17 s.
  */
 export async function renameWithRetry(from: string, to: string, sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))): Promise<void> {
   for (let attempt = 0; ; attempt++) {

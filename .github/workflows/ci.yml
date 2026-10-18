@@ -27,8 +27,8 @@ jobs:
         run: npx playwright-core install --with-deps chromium
         shell: bash
       - run: npm run typecheck
-      - name: Unit tests (parsing, restore logic, viewer, UI strings, sign-in watcher)
-        run: npm test
+      - name: Unit tests with coverage gates (parsing, restore logic, viewer, UI strings, sign-in watcher)
+        run: npm run test:coverage
       - name: Build
         run: npm run build
       - name: App smoke test (real Electron window)
@@ -39,6 +39,15 @@ jobs:
         run: xvfb-run -a npm run test:e2e
       - name: Viewer vs TradingView comparison
         run: npm run viewer:compare
+      - name: Viewer vs TradingView gallery (every drawing tool, chart style and indicator)
+        if: runner.os == 'Linux'
+        run: npm run gallery:compare
+      - uses: actions/upload-artifact@v4
+        if: always() && runner.os == 'Linux'
+        with:
+          name: gallery-compare
+          path: .test-output/gallery-compare/
+          if-no-files-found: ignore
       - name: Build installer
         run: npx electron-builder --publish never
       - name: Packaged app smoke test

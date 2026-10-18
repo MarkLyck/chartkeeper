@@ -15,25 +15,37 @@ import {
   type SeriesOptionsCommon,
   type SeriesType,
   type TimeChartOptions,
+  TickMarkType,
+  type Time,
 } from 'lightweight-charts';
-import type { DrawingPoint, ParsedStudy } from '../../core/layout';
+import type { DrawingPoint } from '../../core/layout';
 import { isDark, lwcLineStyle, withTransparency } from './colors';
 import type { ChartPlan, PlannedStudy } from './plan';
-import { DrawingsPrimitive, StudyBackdropPrimitive } from './primitives';
-import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec } from './series';
+import { DrawingsPrimitive, PivotsPrimitive, StudyBackdropPrimitive } from './primitives';
+import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec, type StyleSeriesSpec } from './series';
+import { StyleSeriesView } from './styles/view';
+import { PriceLinePrimitive } from './styles/priceLine';
+import { priceAxisTexts, tvPriceAxisWidth } from './axis';
+import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
 import { isIntraday, timeZoneOffset } from './time';
 import { num, obj, str, type Props } from '../../core/props';
 
 
-/** TradingView's dotted grid is sparser than lightweight-charts' dotted style. */
-const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 4 : tvStyle);
+/**
+ * TradingView's dotted grid is a one-pixel dot every four pixels in the full grid colour. lightweight-charts
+ * starts its grid lines half a pixel off the pixel grid, so its dotted styles smear into faint two-pixel dots;
+ * its dashed style lands one full-colour pixel every four pixels, with faint neighbours.
+ */
+const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 2 : tvStyle);
 
 export interface ChartTheme {
   background: string;
   textColor: string;
   dark: boolean;
+  /** CSS for the panel TradingView paints behind each legend row, hiding drawings under it; null when switched off. */
+  legendBackground: string | null;
   options: DeepPartial<TimeChartOptions>;
 }
 
@@ -54,10 +66,12 @@ export function chartTheme(chartProperties: Props): ChartTheme {
     width: lineWidth(cross.width, 1),
     labelBackgroundColor: '#131722',
   };
+  const legend = obj(pane.legendProperties);
   return {
     background,
     textColor,
     dark: isDark(background),
+    legendBackground: legend.showBackground === false ? null : `background:${withTransparency(background, num(legend.backgroundTransparency, 50))};border-radius:4px;padding:0 4px;margin-left:-4px;width:fit-content;`,
     options: {
       layout: {
         background: gradient
@@ -76,10 +90,14 @@ export function chartTheme(chartProperties: Props): ChartTheme {
         borderColor: lineColor,
         scaleMargins: { top: num(pane.topMargin, 10) / 100, bottom: num(pane.bottomMargin, 8) / 100 },
       },
-      timeScale: { borderColor: lineColor },
+      timeScale: { borderColor: lineColor, tickMarkFormatter: monthTick },
     },
   };
 }
+
+const MONTH = new Intl.DateTimeFormat('en-US', { month: 'short', timeZone: 'UTC' });
+/** TradingView names months "Sep" on the time axis, where the viewer's en-GB dates would say "Sept". */
+const monthTick = (time: Time, type: TickMarkType): string | null => (type === TickMarkType.Month && typeof time === 'number' ? MONTH.format(time * 1000) : null);
 
 const SERIES_DEFINITIONS = {
   Candlestick: CandlestickSeries,
@@ -90,7 +108,12 @@ const SERIES_DEFINITIONS = {
   Histogram: HistogramSeries,
 } satisfies { [K in SeriesKind]: SeriesDefinition<K> };
 
-function addSeries(chart: IChartApi, spec: SeriesSpec, pane: number, extra: DeepPartial<SeriesOptionsCommon>): ISeriesApi<SeriesType> {
+function addSeries(chart: IChartApi, spec: SeriesSpec | StyleSeriesSpec, pane: number, extra: DeepPartial<SeriesOptionsCommon>): ISeriesApi<SeriesType> {
+  if (spec.kind === 'Custom') {
+    const s = chart.addCustomSeries(new StyleSeriesView(spec.style), { ...spec.options, ...extra }, pane);
+    s.setData(spec.data);
+    return s;
+  }
   // lightweight-charts' generics can't follow spec.kind across the union, so the definition is widened once here.
   const s = chart.addSeries(SERIES_DEFINITIONS[spec.kind] as SeriesDefinition<SeriesType>, { ...spec.options, ...extra }, pane);
   s.setData(spec.data);
@@ -112,14 +135,6 @@ function formatValue(v: number | null | undefined, format: PriceFormatSpec): str
   return String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
 }
 
-const HIDDEN_INPUT = /^(__|pine)/;
-/** "MA 50 close": the inputs TradingView shows after an indicator's name. */
-function inputsSummary(study: ParsedStudy): string {
-  return Object.entries(study.inputs)
-    .filter(([k, v]) => !HIDDEN_INPUT.test(k) && (typeof v === 'number' || (typeof v === 'string' && v !== '' && v.length < 24)))
-    .map(([, v]) => String(v))
-    .join(' ');
-}
 
 /** Time axis label of a drawing, like TradingView's "Mon 14 Sep '26": the date of the bar the point sits on. */
 function timeFormatter(plan: ChartPlan): (p: DrawingPoint) => string {
@@ -155,47 +170,79 @@ function span(text: string, color?: string, bold = false): HTMLSpanElement {
   return s;
 }
 
+/** "+1.46 (+0.43%)", with TradingView's minus sign for falls. */
+function changeText(close: number, prevClose: number, format: PriceFormatSpec): string {
+  const diff = close - prevClose;
+  const sign = diff < 0 ? '−' : '+';
+  return `${sign}${formatValue(Math.abs(diff), format)} (${sign}${Math.abs((diff / prevClose) * 100).toFixed(2)}%)`;
+}
+
+/** "AAPL · 1D · NASDAQ · Line Break [3]", then the bar's values as TradingView's legend lists them for the chart style. */
 function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
+  const main = plan.main!;
   const el = legendBox(theme);
-  const title = document.createElement('div');
+  el.style.left = '10px';
+  el.style.top = '4px';
+  el.style.lineHeight = '24px';
   const exchange = plan.chart.symbol.includes(':') ? plan.chart.symbol.split(':')[0]! : '';
-  title.append(span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange].filter(Boolean).join(' · '), undefined, true));
-  const ohlc = document.createElement('span');
-  title.append(ohlc);
-  el.append(title);
+  const title = span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
+  title.style.fontSize = '16px';
+  title.style.marginRight = '12px';
+  const values = document.createElement('span');
+  const row = document.createElement('div');
+  row.style.cssText = theme.legendBackground ?? '';
+  row.append(title, values);
+  el.append(row);
   const fmt = plan.priceFormat;
-  const style = obj(plan.chart.seriesState.candleStyle);
+  const pair = (label: string, value: string, color: string) => {
+    const name = span(label);
+    name.style.marginRight = '0';
+    return [name, span(value, color)];
+  };
   return {
     el,
     update(i) {
-      const b = plan.bars[i];
+      const b = main.ohlc[i];
       if (!b) return;
-      const prev = plan.bars[i - 1];
-      const up = b[4] >= (prev && style.barColorsOnPrevClose === true ? prev[4] : b[1]);
-      const color = str(up ? style.upColor : style.downColor, up ? '#089981' : '#F23645');
-      ohlc.replaceChildren(
-        ...(['O', 'H', 'L', 'C'] as const).flatMap((k, j) => [span(k), span(formatValue(b[j + 1], fmt), color)]),
-        ...(prev ? [span(`${b[4] - prev[4] >= 0 ? '+' : ''}${formatValue(b[4] - prev[4], fmt)} (${(((b[4] - prev[4]) / prev[4]) * 100).toFixed(2)}%)`, color)] : []),
+      const prev = main.ohlc[i - 1];
+      const change = main.legend.change;
+      values.replaceChildren(
+        ...main.legend.fields.flatMap((f) => pair(f.label, formatValue(f.value(b), fmt), f.color(i))),
+        ...(prev && change ? [span(changeText(b.close, prev.close, fmt), change(i))] : []),
       );
     },
   };
 }
 
+/** TradingView's legend writes negatives with a minus sign and volume like its price axis. */
+const legendNumber = (v: number | null | undefined, format: PriceFormatSpec) =>
+  format.type === 'volume' && typeof v === 'number' ? volumeText(v) : formatValue(v, format).replace(/^-/, '\u2212');
+
+/** One row per indicator: its name, its inputs in a lighter colour, then each plot's value in the plot's colour at that bar. */
 function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): Legend {
   const el = legendBox(theme);
   el.style.top = `${top}px`;
+  el.style.lineHeight = '24px';
+  el.style.left = '9px';
   const rows = studies.map((s) => {
     const row = document.createElement('div');
+    row.style.cssText = theme.legendBackground ?? '';
     const values = document.createElement('span');
-    row.append(span(`${s.study.shortName} ${inputsSummary(s.study)}`.trim()), values);
+    values.style.marginLeft = '3px';
+    const title = span(s.study.shortName);
+    title.style.marginRight = '3px';
+    const inputs = legendInputs(s.study);
+    const args = span(inputs.join(' '), withTransparency(theme.textColor, 35));
+    args.style.wordSpacing = '1.25px';
+    row.append(title, ...(inputs.length ? [args] : []), values);
     el.append(row);
-    return { s, values };
+    return { s, values, plots: s.render.series.filter((p) => p.inLegend) };
   });
   return {
     el,
     update(i) {
-      for (const { s, values } of rows) {
-        values.replaceChildren(...s.render.series.map((p) => span(formatValue(p.values[i], s.priceFormat), p.color)));
+      for (const { s, values, plots } of rows) {
+        values.replaceChildren(...plots.map((p) => span(legendNumber(p.values[i], s.priceFormat), opaque(p.barColors?.[i] ?? p.color))));
       }
     },
   };
@@ -205,7 +252,8 @@ export interface RenderedChart {
   destroy(): void;
 }
 
-export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { from: number; to: number } | undefined): RenderedChart {
+export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleRange?: { from: number; to: number }; priceRange?: { from: number; to: number }; priceAxisWidth?: number }): RenderedChart {
+  const { visibleRange, priceRange } = view;
   const theme = chartTheme(plan.chart.chartProperties);
   cell.style.position = 'relative';
   cell.style.background = theme.background;
@@ -233,35 +281,52 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { 
 
   const drawingsEnv = {
     timeIndex: plan.timeIndex,
+    bars: plan.bars,
+    dark: theme.dark,
+    background: theme.background,
+    drawingStudies: plan.drawingStudies,
+    timeZone: plan.chart.timezone,
     formatPrice: (p: number) => formatValue(p, plan.priceFormat),
     formatTime: timeFormatter(plan),
     priceStep: plan.priceFormat.type === 'price' ? plan.priceFormat.minMove : 0.01,
   };
 
+  const paneMargins = { top: 0.1, bottom: 0.08, ...theme.options.rightPriceScale?.scaleMargins };
   const legends: { pane: number; legend: Legend }[] = [];
+  let mainSeries: ISeriesApi<SeriesType> | null = null;
   plan.panes.forEach((pane, index) => {
     let host: ISeriesApi<SeriesType> | null = null;
     if (pane.main) {
       host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
+      if (plan.main!.priceLine) host.attachPrimitive(new PriceLinePrimitive(plan.main!.priceLine));
+      mainSeries = host;
       legends.push({ pane: index, legend: mainLegend(plan, theme) });
     }
     for (const ps of pane.studies) {
       let first: ISeriesApi<SeriesType> | null = null;
       for (const plot of ps.render.series) {
-        const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat: ps.priceFormat });
+        const priceFormat = ps.priceFormat.type === 'volume' ? { type: 'custom' as const, formatter: volumeText, minMove: 1 } : ps.priceFormat;
+        const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat });
         first ??= s;
       }
-      if (ps.priceScaleId !== 'right' && first) {
-        const volume = ps.study.metaInfoId.startsWith('Volume@');
-        first.priceScale().applyOptions({ scaleMargins: volume ? { top: 0.75, bottom: 0 } : { top: 0.1, bottom: 0.08 } });
+      const overlay = ps.priceScaleId !== 'right';
+      // A pane's own scale follows its first indicator, like TradingView's scale follows its main source.
+      if (first && (overlay || (!pane.main && ps === pane.studies[0]))) {
+        first.priceScale().applyOptions({ scaleMargins: studyScaleMargins(ps.study, overlay, paneMargins) });
       }
       const target = first ?? host;
       if (!target) continue;
       if (ps.render.fills.length || ps.render.bands.length) target.attachPrimitive(new StudyBackdropPrimitive(ps.render.fills, ps.render.bands));
+      if (ps.pivots) target.attachPrimitive(new PivotsPrimitive(ps.pivots, { formatPrice: drawingsEnv.formatPrice, lastBar: plan.bars.length - 1 }));
       host ??= first;
     }
-    if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 26 : 6) });
-    if (host && pane.drawings.length) host.attachPrimitive(new DrawingsPrimitive(pane.drawings, drawingsEnv));
+    if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 28 : 4) });
+    if (host && pane.drawings.length) {
+      // Only the main series has a TradingView z-order to sort drawings against; in indicator panes drawings stay on top.
+      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
+      host.attachPrimitive(drawings);
+      chart.panes()[index]?.attachPrimitive(drawings.belowSeries());
+    }
   });
 
   const total = plan.panes.reduce((sum, p) => sum + p.stretchFactor, 0);
@@ -284,9 +349,24 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { 
   updateLegends(last);
   chart.subscribeCrosshairMove((param) => updateLegends(param.logical ?? last));
 
+  const saved = plan.chart.timeScale;
   const applyRange = () => {
-    const range = visibleRange ? { from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) } : { from: last - 150, to: last + 10 };
-    chart.timeScale().setVisibleLogicalRange(range);
+    if (visibleRange) {
+      chart.timeScale().setVisibleLogicalRange({ from: plan.timeIndex.indexOf(visibleRange.from), to: plan.timeIndex.indexOf(visibleRange.to) });
+    } else if (saved) {
+      // TradingView reopens a layout at its saved bar spacing, with the last bar `rightOffset` bars from the right edge.
+      // lightweight-charts places every bar 1 px further left than TradingView (its index-to-x subtracts 1), so offset by 1 px less.
+      const rightOffset = saved.rightOffset - 1 / saved.barSpacing;
+      chart.timeScale().applyOptions({ barSpacing: saved.barSpacing, rightOffset });
+      chart.timeScale().scrollToPosition(rightOffset, false);
+    } else {
+      chart.timeScale().setVisibleLogicalRange({ from: last - 150, to: last + 10 });
+    }
+    if (priceRange && mainSeries) {
+      // An explicit range spans the whole pane, so the autoscale margins must not shrink it.
+      mainSeries.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0, bottom: 0 } });
+      mainSeries.priceScale().setVisibleRange(priceRange);
+    }
   };
   applyRange();
   const onSize = () => {
@@ -295,8 +375,27 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, visibleRange: { 
   };
   chart.timeScale().subscribeSizeChange(onSize);
 
+  // lightweight-charts pads its price axis more than TradingView does. Widening the chart by the difference
+  // and letting the cell clip it puts the plot area and the axis where TradingView has them.
+  let axisFrame = 0;
+  const matchAxisWidth = (tries: number) => {
+    const ctx = document.createElement('canvas').getContext('2d');
+    const lwcWidth = chart.priceScale('right').width();
+    if (!ctx || lwcWidth === 0) {
+      if (tries > 0) axisFrame = requestAnimationFrame(() => matchAxisWidth(tries - 1));
+      return;
+    }
+    const { fontSize, fontFamily } = chart.options().layout;
+    ctx.font = `${fontSize}px ${fontFamily}`;
+    const width = view.priceAxisWidth ?? tvPriceAxisWidth(priceAxisTexts(chart), (t) => ctx.measureText(t).width);
+    holder.style.right = `${Math.min(0, width - lwcWidth)}px`;
+    if (width > lwcWidth) chart.applyOptions({ rightPriceScale: { minimumWidth: width } });
+  };
+  axisFrame = requestAnimationFrame(() => matchAxisWidth(60));
+
   return {
     destroy() {
+      cancelAnimationFrame(axisFrame);
       cancelAnimationFrame(frame);
       chart.remove();
       cell.replaceChildren();

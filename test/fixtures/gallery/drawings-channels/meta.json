@@ -1,0 +1,112 @@
+{
+  "scene": "drawings-channels",
+  "description": "Channels and pitchforks: parallel channel, regression trend, flat top/bottom, disjoint channel, pitchfork, Schiff and modified Schiff, inside pitchfork, pitchfan.",
+  "uid": "drawings-channels",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:19:21.912Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 235.47495636270403,
+        "to": 360.69370454662
+      },
+      "tradingView": {
+        "drawings": 9,
+        "shapes": 9,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolParallelChannel",
+      "type": "LineToolParallelChannel",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolRegressionTrend",
+      "type": "LineToolRegressionTrend",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolFlatBottom",
+      "type": "LineToolFlatBottom",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolDisjointAngle",
+      "type": "LineToolDisjointAngle",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolPitchfork",
+      "type": "LineToolPitchfork",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolSchiffPitchfork",
+      "type": "LineToolSchiffPitchfork",
+      "image": "isolated/c1d06.png"
+    },
+    {
+      "id": "c1d07",
+      "chartId": "1",
+      "requestedType": "LineToolSchiffPitchfork2",
+      "type": "LineToolSchiffPitchfork2",
+      "image": "isolated/c1d07.png"
+    },
+    {
+      "id": "c1d08",
+      "chartId": "1",
+      "requestedType": "LineToolInsidePitchfork",
+      "type": "LineToolInsidePitchfork",
+      "image": "isolated/c1d08.png"
+    },
+    {
+      "id": "c1d09",
+      "chartId": "1",
+      "requestedType": "LineToolPitchfan",
+      "type": "LineToolPitchfan",
+      "image": "isolated/c1d09.png"
+    }
+  ]
+}

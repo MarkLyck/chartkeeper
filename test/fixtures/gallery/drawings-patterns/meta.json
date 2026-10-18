@@ -1,0 +1,84 @@
+{
+  "scene": "drawings-patterns",
+  "description": "Chart patterns: XABCD, cypher, ABCD, triangle pattern, head and shoulders.",
+  "uid": "drawings-patterns",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:20:19.098Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:NVDA",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 156.53643876591747,
+        "to": 253.03695154260322
+      },
+      "tradingView": {
+        "drawings": 5,
+        "shapes": 5,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineTool5PointsPattern",
+      "type": "LineTool5PointsPattern",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolCypherPattern",
+      "type": "LineToolCypherPattern",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolABCD",
+      "type": "LineToolABCD",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolTrianglePattern",
+      "type": "LineToolTrianglePattern",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolHeadAndShoulders",
+      "type": "LineToolHeadAndShoulders",
+      "image": "isolated/c1d05.png"
+    }
+  ]
+}

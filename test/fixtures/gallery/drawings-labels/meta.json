@@ -1,0 +1,91 @@
+{
+  "scene": "drawings-labels",
+  "description": "Labels: balloon, signpost, price label, price note, comment, table.",
+  "uid": "drawings-labels",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:21:32.550Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:AAPL",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773360000,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 235.47495636270403,
+        "to": 360.69370454662
+      },
+      "tradingView": {
+        "drawings": 6,
+        "shapes": 6,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolBalloon",
+      "type": "LineToolBalloon",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolSignpost",
+      "type": "LineToolSignpost",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolPriceLabel",
+      "type": "LineToolPriceLabel",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolPriceNote",
+      "type": "LineToolPriceNote",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolComment",
+      "type": "LineToolComment",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolTable",
+      "type": "LineToolTable",
+      "image": "isolated/c1d06.png"
+    }
+  ]
+}

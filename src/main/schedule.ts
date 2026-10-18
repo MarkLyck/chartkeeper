@@ -5,6 +5,14 @@ import path from 'node:path';
 /** After a failed attempt, wait this long before trying again, so a lasting problem doesn't hammer TradingView. */
 export const RETRY_AFTER_MS = 3 * 60 * 60 * 1000;
 
+/** When the app checks whether the daily backup is due: shortly after start, then every 15 minutes. */
+export interface ScheduleTiming {
+  firstCheckMs: number;
+  everyMs: number;
+}
+
+export const DAILY_CHECK: ScheduleTiming = { firstCheckMs: 60_000, everyMs: 15 * 60_000 };
+
 /**
  * Whether the daily backup is due: no successful backup since the most recent
  * time the clock passed the chosen hour. So it runs once a day, and catches up

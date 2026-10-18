@@ -115,7 +115,8 @@ account. It never changes existing ones.
 ## What is not backed up
 
 Alerts, watchlists, and other people's scripts are not backed up. The viewer
-can't draw labels and boxes made by Pine scripts, or a few rare drawing tools.
+draws every drawing tool, chart style and built-in indicator, but not the
+labels and boxes that Pine scripts draw, or image drawings.
 [docs/LIMITATIONS.md](docs/LIMITATIONS.md) has the full list and the reasons.
 
 ## Your data and TradingView's rules
@@ -132,29 +133,85 @@ save prices so charts can be viewed offline** in the settings.
 - [docs/INVESTIGATION.md](docs/INVESTIGATION.md) records how tradingview.com
   stores layouts and the endpoints ChartKeeper uses.
 - [docs/decisions.tsv](docs/decisions.tsv) is the decision log.
-- `npm run viewer:compare` writes the viewer and TradingView's own rendering
-  of the same layout side by side:
-  ![Viewer next to TradingView](docs/screenshots/viewer-vs-tradingview.png)
+- `npm run gallery:compare` renders each of the 40 scenes in
+  `test/fixtures/gallery` (every drawing tool, chart style and indicator a
+  signed-out TradingView chart offers, captured from TradingView itself) with
+  the viewer, scores every drawing, chart style and indicator against
+  TradingView's pixels, and fails when a score drops below
+  `test/gallery/thresholds.ts`. The report is in
+  `.test-output/gallery-compare/index.html`. TradingView on the left,
+  ChartKeeper on the right:
+  ![Viewer next to TradingView, light](docs/screenshots/advanced-vs-tradingview.png)
+  ![Viewer next to TradingView, dark](docs/screenshots/advanced-dark-vs-tradingview.png)
+- `npm run viewer:compare` checks the cases the gallery can't capture (several
+  charts in one layout, a chart without prices, unknown drawings, indicator
+  errors) and writes `.test-output/viewer-gallery.png`.
 - `src/core/` holds the TradingView client, backup, restore, diff and snapshot
   format, with no Electron code. `src/core/tv/` is the only folder that knows
   TradingView URLs and response shapes.
 - `src/main/` is the Electron app process (sign-in, private session, tray,
   daily schedule). `src/renderer/` is the window, and `src/renderer/viewer/`
-  is the offline chart viewer (Lightweight Charts, Apache 2.0).
+  is the offline chart viewer (Lightweight Charts, Apache 2.0). It draws
+  icon drawings with the Font Awesome 4.7 font (SIL OFL 1.1,
+  [licenses/font-awesome-OFL.txt](licenses/font-awesome-OFL.txt)).
 
 ```sh
 npm install
 npm test                 # unit tests: parsing, restore logic, viewer, strings
-npm run test:e2e         # starts the real app window
-npm run viewer:compare   # viewer next to TradingView's own rendering
+npm run test:e2e         # starts the real app window and runs every flow against a fake TradingView
+npm run gallery:compare  # every tool, style and indicator against TradingView's own rendering
+npm run viewer:compare   # multi-chart layouts and error cases in the viewer
+npm run test:compat      # restore keeps every feature, checked by tradingview.com's own loader (no account)
 npm run test:live        # round trip on a real TradingView account (asks you to sign in)
 npm run dist             # installer for this computer, in release/
 npx tsx scripts/packaged-smoke.ts   # starts the packaged app from release/ and opens a backup
 npx tsx scripts/record-demos.ts     # demo videos in docs/demos (needs an unlocked screen)
 ```
 
+The end-to-end tests need no TradingView account. `npm run test:e2e` also
+builds `dist-test/fake-tradingview.js`, and the app loads it when it runs
+unpackaged with `CHARTKEEPER_FAKE_TRADINGVIEW=1`. The fake answers the
+tradingview.com requests of the app's private session, so the hidden
+TradingView page and the restore check run as shipped. A packaged app ignores
+the variable, and the installer never contains `dist-test/`.
+
 Set `CHARTKEEPER_BROWSER` to a browser's path to sign in with that browser, or
 to `none` to use ChartKeeper's own sign-in window.
 
 `npx tsx scripts/capture-reference.ts` rebuilds the reference backup and the
 TradingView screenshot from a signed-out TradingView chart.
+
+### Compatibility test
+
+`npm run test:compat` backs up an "advanced" test account (every drawing tool,
+custom styles, indicators, custom chart settings, two charts) with the real
+backup code, and restores it with the real restore code. It then loads the
+content that the restore sends to TradingView into a signed-out
+tradingview.com chart, through TradingView's own loader. It reads the result
+back with TradingView's own serializer and compares every drawing, indicator
+and chart setting. The report is in `.test-output/compat/report.md`.
+`test/compat/knownRewrites.ts` lists the values that TradingView's loader
+changes by itself. `npx tsx scripts/build-compat-fixture.ts` rebuilds the
+drawing-tool fixture from tradingview.com.
+
+### Live round trip in CI
+
+The `live` job in `.github/workflows/compat.yml` runs `npm run test:live` with
+a saved TradingView session. When the session secret is not set, the job is
+skipped. This happens on pull requests from forks, which get no secrets.
+
+To set the secret:
+
+1. Sign in once on your computer: `npm run test:live`. A browser window opens.
+   Sign in to the test account. The session is saved to
+   `.test-output/live-session.json`.
+2. Store the session as a repository secret:
+   `gh secret set TV_SESSION_COOKIES < .test-output/live-session.json`.
+3. When TradingView ends the session, the job fails with "has expired". Delete
+   `.test-output/live-session.json` and do steps 1 and 2 again.
+
+The secret is a signed-in TradingView session. Anyone who can read it can use
+that TradingView account, and a workflow change in a branch of this
+repository can read it. Use a dedicated test account with no payment details
+and no layouts you need. Each run creates one layout on that account and then
+deletes it (`TV_TEST_CLEANUP=1`), so the account needs one free layout slot.

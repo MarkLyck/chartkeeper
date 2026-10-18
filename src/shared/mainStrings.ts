@@ -16,8 +16,14 @@ const STRINGS = {
 
 type MainStringKey = keyof typeof STRINGS;
 
+/** Singular wording, used when the count `n` is 1. */
+const ONE: Partial<Record<MainStringKey, string>> = {
+  backupDoneBody: '{n} layout saved.',
+};
+
 type Args<K extends MainStringKey> = [ParamNames<(typeof STRINGS)[K]>] extends [never] ? [] : [params: Record<ParamNames<(typeof STRINGS)[K]>, string | number>];
 
 export function mainString<K extends MainStringKey>(key: K, ...args: Args<K>): string {
-  return fill(STRINGS[key], args[0]);
+  const params = args[0] as Record<string, string | number> | undefined;
+  return fill(params?.n === 1 ? (ONE[key] ?? STRINGS[key]) : STRINGS[key], params);
 }

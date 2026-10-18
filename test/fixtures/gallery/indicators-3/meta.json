@@ -1,0 +1,51 @@
+{
+  "scene": "indicators-3",
+  "description": "Commodity Channel Index and Rate Of Change on NASDAQ:NVDA.",
+  "uid": "indicators-3",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-17T21:26:13.175Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "NASDAQ:NVDA",
+      "interval": "D",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1773619200,
+        "to": 1793664000
+      },
+      "priceRange": {
+        "from": 156.51976364417706,
+        "to": 253.0577954447787
+      },
+      "tradingView": {
+        "drawings": 0,
+        "shapes": 0,
+        "studies": [
+          "Commodity channel index",
+          "Rate of change"
+        ]
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": []
+}

@@ -1,0 +1,70 @@
+name: TradingView compatibility
+
+on:
+  pull_request:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+jobs:
+  compat:
+    name: Restore keeps every feature (signed-out tradingview.com)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright-core install --with-deps chromium
+      - run: npm run test:compat
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compat-report
+          path: .test-output/compat/
+          if-no-files-found: warn
+
+  # Secrets are not readable in a job's `if`, so this job reports whether the
+  # session secret exists. Pull requests from forks get no secrets, and the
+  # live job then shows as skipped instead of failed.
+  live-session:
+    name: Check for the TradingView session secret
+    runs-on: ubuntu-latest
+    outputs:
+      available: ${{ steps.check.outputs.available }}
+    steps:
+      - id: check
+        env:
+          TV_SESSION_COOKIES: ${{ secrets.TV_SESSION_COOKIES }}
+        run: echo "available=${{ env.TV_SESSION_COOKIES != '' }}" >> "$GITHUB_OUTPUT"
+
+  live:
+    name: Live round trip (TradingView test account)
+    needs: live-session
+    if: needs.live-session.outputs.available == 'true'
+    runs-on: ubuntu-latest
+    # One run at a time: each run creates a layout on the test account.
+    concurrency: tradingview-live-account
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium
+        run: npx playwright-core install --with-deps chromium
+      - name: Back up, restore as a new layout, compare, delete the copy
+        env:
+          TV_SESSION_COOKIES: ${{ secrets.TV_SESSION_COOKIES }}
+          TV_TEST_CLEANUP: '1'
+        run: npm run test:live
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-roundtrip
+          path: .test-output/live-roundtrip/**/roundtrip-diff.json
+          if-no-files-found: ignore
