@@ -26,6 +26,8 @@ import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec, type
 import { StyleSeriesView } from './styles/view';
 import { PriceLinePrimitive } from './styles/priceLine';
 import { priceAxisTexts, tvPriceAxisWidth } from './axis';
+import { applyPriceScale, priceRangeInScaleUnits } from './priceScale';
+import type { PriceScaleState } from '../../core/layout';
 import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
@@ -293,6 +295,8 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
 
   const paneMargins = { top: 0.1, bottom: 0.08, ...theme.options.rightPriceScale?.scaleMargins };
   const legends: { pane: number; legend: Legend }[] = [];
+  /** Each price scale with the series that owns it, applied again whenever the view is reset. */
+  const scales: { series: ISeriesApi<SeriesType>; scale: PriceScaleState }[] = [];
   let mainSeries: ISeriesApi<SeriesType> | null = null;
   plan.panes.forEach((pane, index) => {
     let host: ISeriesApi<SeriesType> | null = null;
@@ -300,6 +304,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
       if (plan.main!.priceLine) host.attachPrimitive(new PriceLinePrimitive(plan.main!.priceLine));
       mainSeries = host;
+      scales.push({ series: host, scale: plan.chart.priceScale });
       legends.push({ pane: index, legend: mainLegend(plan, theme) });
     }
     for (const ps of pane.studies) {
@@ -313,6 +318,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       // A pane's own scale follows its first indicator, like TradingView's scale follows its main source.
       if (first && (overlay || (!pane.main && ps === pane.studies[0]))) {
         first.priceScale().applyOptions({ scaleMargins: studyScaleMargins(ps.study, overlay, paneMargins) });
+        scales.push({ series: first, scale: ps.priceScale });
       }
       const target = first ?? host;
       if (!target) continue;
@@ -362,10 +368,12 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     } else {
       chart.timeScale().setVisibleLogicalRange({ from: last - 150, to: last + 10 });
     }
-    if (priceRange && mainSeries) {
+    for (const { series, scale } of scales) applyPriceScale(series.priceScale(), scale);
+    const explicit = priceRange && priceRangeInScaleUnits(plan.chart.priceScale.mode, { from: Math.min(priceRange.from, priceRange.to), to: Math.max(priceRange.from, priceRange.to) });
+    if (explicit && mainSeries) {
       // An explicit range spans the whole pane, so the autoscale margins must not shrink it.
       mainSeries.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0, bottom: 0 } });
-      mainSeries.priceScale().setVisibleRange(priceRange);
+      mainSeries.priceScale().setVisibleRange(explicit);
     }
   };
   applyRange();

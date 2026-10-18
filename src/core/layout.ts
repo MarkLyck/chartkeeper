@@ -32,6 +32,8 @@ export interface ParsedChart {
   timeScale: { barSpacing: number; rightOffset: number } | null;
   /** z-order of the main series; TradingView draws drawings with a lower z-order under it. */
   seriesZorder: number;
+  /** The price scale of the main series. */
+  priceScale: PriceScaleState;
   panes: ParsedPane[];
 }
 
@@ -41,6 +43,52 @@ export interface ParsedPane {
   containsMainSeries: boolean;
   studies: ParsedStudy[];
   drawings: ParsedDrawing[];
+  /** The price scale each source of the pane sits on, by source id. Sources TradingView did not list keep the default scale. */
+  priceScales: Readonly<Record<string, PriceScaleState>>;
+}
+
+/** How a price scale maps values to heights: TradingView's scale modes, in the order of its PriceScaleMode (and lightweight-charts'). */
+export const PRICE_SCALE_MODES = ['normal', 'log', 'percentage', 'indexed-to-100'] as const;
+export type PriceScaleMode = (typeof PRICE_SCALE_MODES)[number];
+
+/** A price scale as TradingView saved it: `rightAxisesState[].state`, `leftAxisesState[].state` or `overlayPriceScales[id]`. */
+export interface PriceScaleState {
+  mode: PriceScaleMode;
+  inverted: boolean;
+  /**
+   * Null while the scale fits the data (autoscale). Otherwise the values TradingView keeps between the top
+   * and bottom margins, in the mode's own units: log10(price + 0.0001) + 4 on a log scale, percent on a
+   * percentage scale, prices otherwise.
+   */
+  manualRange: { min: number; max: number } | null;
+}
+
+export const DEFAULT_PRICE_SCALE: PriceScaleState = { mode: 'normal', inverted: false, manualRange: null };
+
+/** One saved scale state. Percentage and indexed-to-100 win over log, as in TradingView, which keeps the log flag underneath. */
+export function parsePriceScale(raw: unknown): PriceScaleState {
+  const s = obj(raw);
+  const mode: PriceScaleMode = s.m_isPercentage === true ? 'percentage' : s.m_isIndexedTo100 === true ? 'indexed-to-100' : s.m_isLog === true ? 'log' : 'normal';
+  const range = obj(s.m_priceRange);
+  const min = num(range.m_minValue, null);
+  const max = num(range.m_maxValue, null);
+  const manualRange = s.m_isAutoScale === false && min !== null && max !== null && max > min ? { min, max } : null;
+  return { mode, inverted: s.m_isInverted === true, manualRange };
+}
+
+/** Source id -> scale, from a pane's axis lists and overlay scales. */
+function paneScales(pane: Record<string, unknown>): Record<string, PriceScaleState> {
+  const out: Record<string, PriceScaleState> = {};
+  for (const key of ['leftAxisesState', 'rightAxisesState']) {
+    const axes = pane[key];
+    if (!Array.isArray(axes)) continue;
+    for (const axis of axes.filter(isObj)) {
+      const scale = parsePriceScale(axis.state);
+      for (const id of Array.isArray(axis.sources) ? axis.sources : []) if (typeof id === 'string') out[id] = scale;
+    }
+  }
+  for (const [id, state] of Object.entries(obj(pane.overlayPriceScales))) out[id] = parsePriceScale(state);
+  return out;
 }
 
 export interface PlotDef {
@@ -181,6 +229,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
         containsMainSeries: pane.sources.some((s) => s.type === 'MainSeries'),
         studies: pane.sources.filter((s) => isStudyType(s.type)).map((s) => parseStudy(s, record.studyMetaInfoMap)),
         drawings: drawingsHere,
+        priceScales: paneScales(pane),
       };
     });
     const main = mainSeriesOf(chart);
@@ -199,6 +248,7 @@ export function parseLayout(record: LayoutRecord, drawings: DrawingsRecord | nul
       chartProperties: isObj(chart.chartProperties) ? chart.chartProperties : {},
       timeScale: barSpacing !== null && barSpacing > 0 ? { barSpacing, rightOffset: num(ts.m_rightOffset, 0) } : null,
       seriesZorder: num(main.zorder, 0),
+      priceScale: panes.find((p) => p.containsMainSeries)?.priceScales[sourceId(main)] ?? DEFAULT_PRICE_SCALE,
       panes,
     };
   });

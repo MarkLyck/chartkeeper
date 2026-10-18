@@ -14,7 +14,7 @@
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { chromium, type Page } from 'playwright-core';
-import { countLayout, parseLayout } from '../src/core/layout';
+import { countLayout, DEFAULT_PRICE_SCALE, parseLayout } from '../src/core/layout';
 import type { Bar, ChartData, LayoutRecord } from '../src/core/model';
 import { layoutDir, layoutFiles, noExtras, SnapshotWriter } from '../src/core/snapshot';
 import { decodeFrames, fetchChartData, nodeSocketFactory } from '../src/core/tv/datafeed';
@@ -173,7 +173,7 @@ async function plainBars(spec: ChartSpec): Promise<Bar[]> {
   const key = `${spec.symbol}@${spec.interval}`;
   const hit = barCache.get(key);
   if (hit) return hit;
-  const chart = { chartId: '1', symbol: spec.symbol, shortName: spec.symbol, interval: spec.interval, style: 1, seriesState: {}, timezone: 'Etc/UTC', chartProperties: {}, timeScale: null, seriesZorder: 0, panes: [] };
+  const chart = { chartId: '1', symbol: spec.symbol, shortName: spec.symbol, interval: spec.interval, style: 1, seriesState: {}, timezone: 'Etc/UTC', chartProperties: {}, timeScale: null, seriesZorder: 0, priceScale: DEFAULT_PRICE_SCALE, panes: [] };
   const data = await fetchChartData(chart, [], nodeSocketFactory, { authToken: null, bars: DATA_BARS });
   if (data.bars.length < 50) throw new Error(`Only ${data.bars.length} bars for ${key}`);
   barCache.set(key, data.bars);
