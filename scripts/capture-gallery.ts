@@ -27,9 +27,12 @@ const OUT = path.join(ROOT, 'test/fixtures/gallery');
 const BUILD = path.join(ROOT, '.test-output/gallery-build');
 const VIEWPORT = { width: 1406, height: 681 };
 const DATA_BARS = 600;
-/** Width of `.chart-container` at VIEWPORT, and roughly what the price axis takes of it. */
+/** Width of `.chart-container` at VIEWPORT, and roughly what the price axis takes of it. The toolbars take the rest of the window. */
 const CHART_AREA_WIDTH = 1000;
 const PRICE_AXIS_WIDTH = 66;
+const viewportOf = (scene: Scene) => scene.viewport ?? VIEWPORT;
+const chartAreaWidth = (scene: Scene) => viewportOf(scene).width - (VIEWPORT.width - CHART_AREA_WIDTH);
+const dataBars = (spec: ChartSpec) => spec.dataBars ?? DATA_BARS;
 
 type Json = Record<string, unknown>;
 
@@ -170,11 +173,11 @@ interface SeriesWindow {
 const barCache = new Map<string, Bar[]>();
 
 async function plainBars(spec: ChartSpec): Promise<Bar[]> {
-  const key = `${spec.symbol}@${spec.interval}`;
+  const key = `${spec.symbol}@${spec.interval}x${dataBars(spec)}`;
   const hit = barCache.get(key);
   if (hit) return hit;
   const chart = { chartId: '1', symbol: spec.symbol, shortName: spec.symbol, interval: spec.interval, style: 1, seriesState: {}, timezone: 'Etc/UTC', chartProperties: {}, timeScale: null, seriesZorder: 0, priceScale: DEFAULT_PRICE_SCALE, panes: [] };
-  const data = await fetchChartData(chart, [], nodeSocketFactory, { authToken: null, bars: DATA_BARS });
+  const data = await fetchChartData(chart, [], nodeSocketFactory, { authToken: null, bars: dataBars(spec) });
   if (data.bars.length < 50) throw new Error(`Only ${data.bars.length} bars for ${key}`);
   barCache.set(key, data.bars);
   return data.bars;
@@ -188,8 +191,23 @@ function seriesWindow(bars: Bar[], visibleBars: number): SeriesWindow {
   return { bars, last, first, lo: Math.min(...shown.map((b) => b[3])), hi: Math.max(...shown.map((b) => b[2])), step: gaps[Math.floor(gaps.length / 2)]!, scale: Math.min(1, bars.length / visibleBars) };
 }
 
+/** Unix seconds of a decimal year: 2020.5 is half way through 2020. */
+function yearTime(year: number): number {
+  const whole = Math.floor(year);
+  const start = Date.UTC(whole, 0, 1);
+  return Math.round((start + (year - whole) * (Date.UTC(whole + 1, 0, 1) - start)) / 1000);
+}
+
 function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: number } {
   const back = (bars: number) => Math.round(bars * w.scale);
+  if ('year' in a) {
+    // The bar the time falls in, or the future bar the same number of steps past the last one.
+    const t = yearTime(a.year);
+    const last = w.bars[w.last]![0];
+    if (t > last) return { time: last + Math.round((t - last) / w.step) * w.step, price: a.price };
+    const bar = [...w.bars].reverse().find((b) => b[0] <= t) ?? w.bars[0]!;
+    return { time: bar[0], price: a.price };
+  }
   if (!Array.isArray(a)) {
     const { swing, from, to } = a as Extract<Anchor, { swing: unknown }>;
     let best = -1;
@@ -226,8 +244,14 @@ function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], wi
     main.state = deepMerge(main.state as Json, QUIET_SERIES, { symbol: spec.symbol, shortName: spec.symbol.split(':').pop(), interval: spec.interval, style: spec.style }, spec.series);
     chart.chartProperties = deepMerge(chart.chartProperties as Json, QUIET_CHART, spec.chartProperties);
     chart.lineToolsGroups = { groups: [] };
+    if (spec.priceScale) {
+      const axis = (mainPane.rightAxisesState as { state: Json; sources: string[] }[]).find((a) => a.sources.includes(String(main.id)));
+      if (!axis) throw new Error('The base layout has no price scale listing the main series');
+      axis.state = deepMerge(axis.state, spec.priceScale);
+      main.state = deepMerge(main.state as Json, { priceAxisProperties: { log: axis.state.m_isLog === true, percentage: axis.state.m_isPercentage === true, indexedTo100: axis.state.m_isIndexedTo100 === true } });
+    }
     const w = windows[ci]!;
-    const plotWidth = CHART_AREA_WIDTH / scene.charts.length - PRICE_AXIS_WIDTH;
+    const plotWidth = chartAreaWidth(scene) / scene.charts.length - PRICE_AXIS_WIDTH;
     const shownBars = w.last - w.first + 1 + spec.rightMarginBars;
     chart.timeScale = deepMerge(chart.timeScale as Json, { m_barSpacing: +(plotWidth / shownBars).toFixed(3), m_rightOffset: spec.rightMarginBars, usePercentageRightOffset: false });
     const drawings: TvSource[] = (withDrawings ? spec.drawings : []).map((dr, i) => ({
@@ -384,6 +408,7 @@ async function cleanShot(page: Page, clip: { x: number; y: number; width: number
 
 async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['theme'], TvContent>, scene: Scene): Promise<void> {
   const started = Date.now();
+  await page.setViewportSize(viewportOf(scene));
   await setTheme(page, scene.theme);
   const windows: SeriesWindow[] = await Promise.all(scene.charts.map(async (c) => seriesWindow(await plainBars(c), c.visibleBars)));
   if (chartStyle(scene.charts[0].style).computed) {
@@ -411,7 +436,12 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
       }, ids),
     30000,
   );
-  await page.mouse.move(VIEWPORT.width - 3, VIEWPORT.height - 3);
+  for (const [ci, spec] of scene.charts.entries()) {
+    const wanted = spec.priceScale?.m_isLog === true ? 1 : 0;
+    const mode = await page.evaluate((i) => (window as any).TradingViewApi.chart(i).getPanes()[0].getMainSourcePriceScale().getMode() as number, ci);
+    if (mode !== wanted) throw new Error(`Chart ${ci + 1} opened with price scale mode ${mode}, the scene asks for ${wanted}`);
+  }
+  await page.mouse.move(viewportOf(scene).width - 3, viewportOf(scene).height - 3);
   await sleep(2000);
 
   const view = await page.evaluate((count) => {
@@ -477,7 +507,7 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
       data = { chartId: chart.chartId, symbol: chart.symbol, interval: chart.interval, fetchedAt: new Date().toISOString(), bars: log.seriesBars(key), computedStyle: style.id, studies: {} };
       if (!computedSeries?.includes('BarSet')) throw new Error(`Expected a computed series for style ${style.name}, TradingView resolved ${computedSeries}`);
     } else {
-      data = await fetchChartData(chart, studies, nodeSocketFactory, { authToken: null, bars: DATA_BARS });
+      data = await fetchChartData(chart, studies, nodeSocketFactory, { authToken: null, bars: dataBars(spec) });
       const bad = Object.entries(data.studies).filter(([, s]) => s.status !== 'ok');
       if (bad.length) throw new Error(`The datafeed could not compute ${bad.map(([id, s]) => `${id}: ${s.status === 'error' ? s.error : ''}`).join(', ')}`);
     }

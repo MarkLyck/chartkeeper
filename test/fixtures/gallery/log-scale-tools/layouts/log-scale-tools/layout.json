@@ -1,0 +1,3086 @@
+{
+  "uid": "log-scale-tools",
+  "id": 1,
+  "name": "log-scale-tools",
+  "description": "Price-dependent tools on a log scale (TSX Venture weekly): fib retracement and extension with and without log-based levels, fib channel, parallel and disjoint channels, Gann box, price and date ranges, a long position, a horizontal line, and Elliott degrees 0 to 5 and 11.",
+  "lastModified": 1792337717,
+  "content": {
+    "name": "log-scale-tools",
+    "layout": "s",
+    "charts": [
+      {
+        "panes": [
+          {
+            "sources": [
+              {
+                "type": "MainSeries",
+                "id": "_seriesId",
+                "zorder": 0,
+                "haStyle": {
+                  "studyId": "BarSetHeikenAshi@tv-basicstudies-60"
+                },
+                "renkoStyle": {
+                  "studyId": "BarSetRenko@tv-prostudies-73"
+                },
+                "pbStyle": {
+                  "studyId": "BarSetPriceBreak@tv-prostudies-34"
+                },
+                "kagiStyle": {
+                  "studyId": "BarSetKagi@tv-prostudies-73"
+                },
+                "pnfStyle": {
+                  "studyId": "BarSetPnF@tv-prostudies-73"
+                },
+                "rangeStyle": {
+                  "studyId": "BarSetRange@tv-basicstudies-72"
+                },
+                "svpStyle": {
+                  "studyId": "VbPSessions@tv-volumebyprice-126"
+                },
+                "volFootprintStyle": {
+                  "studyId": "Footprint@tv-volumebyprice-104"
+                },
+                "tpoStyle": {
+                  "studyId": "TPOSessions@tv-volumebyprice-104"
+                },
+                "formattingDeps": {
+                  "pricescale": 100,
+                  "minmov": 1,
+                  "fractional": false,
+                  "minmove2": 0,
+                  "variable_tick_size": "0.01"
+                },
+                "studyBindings": {
+                  "17": null,
+                  "18": {},
+                  "20": null
+                },
+                "state": {
+                  "style": 1,
+                  "esdShowDividends": false,
+                  "esdShowSplits": false,
+                  "esdShowEarnings": false,
+                  "esdShowBreaks": false,
+                  "showContinuousContractSwitches": true,
+                  "showContinuousContractSwitchesBreaks": false,
+                  "showFuturesContractExpiration": true,
+                  "showLastNews": true,
+                  "showCountdown": false,
+                  "visible": true,
+                  "showPriceLine": true,
+                  "priceLineWidth": 1,
+                  "showPrevClosePriceLine": false,
+                  "prevClosePriceLineWidth": 1,
+                  "minTick": "default",
+                  "dividendsAdjustment": false,
+                  "backAdjustment": false,
+                  "settlementAsClose": true,
+                  "sessionId": "regular",
+                  "bidAsk": {
+                    "visible": false,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "bidLineColor": "#2962FF",
+                    "askLineColor": "#F7525F"
+                  },
+                  "prePostMarket": {
+                    "visible": true,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "preMarketColor": "#FB8C00",
+                    "postMarketColor": "#2962FF",
+                    "overnightMarketColor": "#8e24aa"
+                  },
+                  "highLowAvgPrice": {
+                    "highLowPriceLinesVisible": false,
+                    "highLowPriceLabelsVisible": false,
+                    "averageClosePriceLineVisible": false,
+                    "averageClosePriceLabelVisible": false,
+                    "highLowPriceLinesWidth": 1,
+                    "averagePriceLineWidth": 1,
+                    "highLowPriceLinesColor": "",
+                    "averagePriceLineColor": ""
+                  },
+                  "statusViewStyle": {
+                    "fontSize": 16,
+                    "showExchange": true,
+                    "showInterval": true,
+                    "symbolTextSource": "description"
+                  },
+                  "lineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "lineWithMarkersStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "steplineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "baselineStyle": {
+                    "topLineWidth": 2,
+                    "bottomLineWidth": 2,
+                    "topLineStyle": 0,
+                    "bottomLineStyle": 0,
+                    "priceSource": "close",
+                    "transparency": 50,
+                    "baseLevelPercentage": 50,
+                    "baselineColor": "#8C8C8C",
+                    "topFillColor1": "rgba(8, 153, 129, 0.28)",
+                    "topFillColor2": "rgba(8, 153, 129, 0.05)",
+                    "bottomFillColor1": "rgba(242, 54, 69, 0.05)",
+                    "bottomFillColor2": "rgba(242, 54, 69, 0.28)",
+                    "topLineColor": "#089981",
+                    "bottomLineColor": "#F23645"
+                  },
+                  "areaStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "transparency": 100,
+                    "color1": "rgba(41, 98, 255, 0.28)",
+                    "color2": "#2962FF",
+                    "linecolor": "#2962FF"
+                  },
+                  "hlcAreaStyle": {
+                    "highLineVisible": true,
+                    "highLineStyle": 0,
+                    "highLineWidth": 2,
+                    "lowLineVisible": true,
+                    "lowLineStyle": 0,
+                    "lowLineWidth": 2,
+                    "closeLineStyle": 0,
+                    "closeLineWidth": 2,
+                    "highLineColor": "#00bcd4",
+                    "lowLineColor": "#e91e63",
+                    "closeLineColor": "#2962FF",
+                    "highCloseFillColor": "rgba(0, 188, 212, 0.25)",
+                    "closeLowFillColor": "rgba(233, 30, 99, 0.25)"
+                  },
+                  "barStyle": {
+                    "barColorsOnPrevClose": false,
+                    "dontDrawOpen": false,
+                    "thinBars": true,
+                    "downColor": "#F23645",
+                    "upColor": "#089981"
+                  },
+                  "hlcBarsStyle": {
+                    "thinBars": true,
+                    "color": "#2962FF"
+                  },
+                  "candleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "volCandlesStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hollowCandleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "haStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "showRealLastPrice": false,
+                    "barColorsOnPrevClose": false,
+                    "inputs": {},
+                    "inputInfo": {},
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hiloStyle": {
+                    "showBorders": true,
+                    "showLabels": true,
+                    "drawBody": true,
+                    "color": "#2962FF",
+                    "borderColor": "#2962FF",
+                    "labelColor": "#2962FF"
+                  },
+                  "columnStyle": {
+                    "barColorsOnPrevClose": true,
+                    "priceSource": "close",
+                    "baselinePosition": "bottom",
+                    "upColor": "rgba(8, 153, 129, 0.5)",
+                    "downColor": "rgba(242, 54, 69, 0.5)"
+                  },
+                  "renkoStyle": {
+                    "inputs": {
+                      "source": "close",
+                      "sources": "Close",
+                      "boxSize": 3,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "wicks": true
+                    },
+                    "inputInfo": {
+                      "source": {
+                        "name": "Source"
+                      },
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "wicks": {
+                        "name": "Wicks"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "borderUpColorProjection": "#a9dcc3",
+                    "borderDownColorProjection": "#f5a6ae",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "pbStyle": {
+                    "inputs": {
+                      "lb": 3
+                    },
+                    "inputInfo": {
+                      "lb": {
+                        "name": "Number of line"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "borderUpColorProjection": "#a9dcc3",
+                    "borderDownColorProjection": "#f5a6ae"
+                  },
+                  "kagiStyle": {
+                    "inputs": {
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "reversalAmount": 1
+                    },
+                    "inputInfo": {
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae"
+                  },
+                  "pnfStyle": {
+                    "inputs": {
+                      "sources": "Close",
+                      "reversalAmount": 3,
+                      "boxSize": 1,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "oneStepBackBuilding": false
+                    },
+                    "inputInfo": {
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "oneStepBackBuilding": {
+                        "name": "One step back building"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae"
+                  },
+                  "rangeStyle": {
+                    "barStyle": 0,
+                    "thinBars": true,
+                    "inputs": {
+                      "range": 10,
+                      "phantomBars": false
+                    },
+                    "inputInfo": {
+                      "range": {
+                        "name": "Range"
+                      },
+                      "phantomBars": {
+                        "name": "Phantom bars"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "upColorProjection": "#a9dcc3",
+                    "downColorProjection": "#f5a6ae",
+                    "candlesUpColor": "#089981",
+                    "candlesDownColor": "#F23645",
+                    "candlesBorderUpColor": "#089981",
+                    "candlesBorderDownColor": "#F23645",
+                    "candlesWickUpColor": "#089981",
+                    "candlesWickDownColor": "#F23645"
+                  },
+                  "tpoStyle": {
+                    "color": "#2962FF",
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "styles": {
+                      "splitByBlocks": false,
+                      "splitByBlocksMode": 0
+                    },
+                    "inputs": {
+                      "period": "Day",
+                      "periodsNum": 1,
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSession2": "",
+                      "customSession3": "",
+                      "customSession4": "",
+                      "customSession5": "",
+                      "rowSize": "Auto",
+                      "ticksPerRow": 100,
+                      "vaPercent": 70,
+                      "blockSize": "30m",
+                      "mergePoints": "[]",
+                      "extendPoorHigh": false,
+                      "extendPoorLow": false,
+                      "extendPOC": false,
+                      "extendTpoVah": false,
+                      "extendTpoVal": false,
+                      "extendVolumePoc": false,
+                      "extendVolumeVah": false,
+                      "extendVolumeVal": false,
+                      "extendSingleprints": false
+                    },
+                    "tpo": {
+                      "colors": {
+                        "gradientColors": [
+                          "#e91e63",
+                          "#00c853",
+                          "#00bcd4",
+                          "#651FFF"
+                        ]
+                      },
+                      "showBlocks": true,
+                      "showLetters": true,
+                      "nonVaOpacity": 30
+                    },
+                    "levels": {
+                      "showPOC": true,
+                      "pocColor": "#0F0F0F",
+                      "showPoorHigh": false,
+                      "poorHighColor": "#6200EA",
+                      "showPoorLow": false,
+                      "poorLowColor": "#6200EA",
+                      "showSingleprints": false,
+                      "singleprintsColor": "rgba(224, 64, 251, 0.15)",
+                      "showVAH": true,
+                      "vahColor": "#0F0F0F",
+                      "showVAL": true,
+                      "valColor": "#0F0F0F",
+                      "showMidpoint": false,
+                      "showOpenPrice": false,
+                      "showClosePrice": false,
+                      "initialBalanceRange": {
+                        "levels": 2,
+                        "visible": true
+                      }
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#0F0F0F",
+                      "showValues": true,
+                      "vah": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "val": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "poc": {
+                        "visible": false,
+                        "color": "#0F0F0F",
+                        "linestyle": 0,
+                        "linewidth": 2
+                      },
+                      "volumeColor": "rgba(38, 198, 218, 0.5)",
+                      "valueAreaColor": "rgba(38, 198, 218, 0.75)",
+                      "placement": "left_to_right"
+                    },
+                    "summary": {
+                      "visible": false,
+                      "belowSeries": true,
+                      "infoBlocks": {
+                        "hlRange": {
+                          "visible": false
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "rotationFactor": {
+                          "visible": false
+                        },
+                        "totalVolume": {
+                          "visible": false
+                        },
+                        "tpoCountAbovePoc": {
+                          "visible": false
+                        },
+                        "tpoCountBelowPoc": {
+                          "visible": false
+                        },
+                        "tpoCountTotal": {
+                          "visible": false
+                        },
+                        "vaRange": {
+                          "visible": false
+                        },
+                        "vahPrice": {
+                          "visible": true
+                        },
+                        "valPrice": {
+                          "visible": true
+                        },
+                        "initialBalanceHigh": {
+                          "visible": true
+                        },
+                        "initialBalanceLow": {
+                          "visible": true
+                        },
+                        "initialBalanceRange": {
+                          "visible": true
+                        }
+                      }
+                    },
+                    "priceSource": "close"
+                  },
+                  "svpStyle": {
+                    "inputs": {
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSessionTZ": "Exchange",
+                      "volume": "Up/Down",
+                      "vaVolume": 70,
+                      "extendPocRight": false,
+                      "extendVAHRight": false,
+                      "extendVALRight": false,
+                      "rowsLayout": "Number Of Rows",
+                      "rows": 24
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#0F0F0F",
+                      "showValues": false,
+                      "volumeColorUp": "rgba(38, 198, 218, 0.5)",
+                      "volumeColorDown": "rgba(236, 64, 122, 0.5)",
+                      "valueAreaColorUp": "rgba(38, 198, 218, 0.75)",
+                      "valueAreaColorDown": "rgba(236, 64, 122, 0.75)",
+                      "histogramBoxColor": "rgba(38, 198, 218, 0.05)",
+                      "placement": "left_to_right",
+                      "percentWidth": 100
+                    },
+                    "vah": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "val": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "poc": {
+                      "visible": true,
+                      "color": "#0F0F0F",
+                      "linestyle": 0,
+                      "linewidth": 2
+                    },
+                    "developingPoc": {
+                      "visible": false,
+                      "color": "#0F0F0F",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    },
+                    "developingVA": {
+                      "visible": false,
+                      "color": "#00bcd4",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    }
+                  },
+                  "volFootprintStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "deltaAdjust": true,
+                    "showSummary": true,
+                    "summaryMode": 0,
+                    "extendedSummary": {
+                      "belowSeries": true,
+                      "blockInfo": {
+                        "volume": {
+                          "visible": true
+                        },
+                        "volumePercentage": {
+                          "visible": false
+                        },
+                        "buyVolume": {
+                          "visible": false
+                        },
+                        "buyVolumePercentage": {
+                          "visible": false
+                        },
+                        "sellVolume": {
+                          "visible": false
+                        },
+                        "sellVolumePercentage": {
+                          "visible": false
+                        },
+                        "delta": {
+                          "visible": true
+                        },
+                        "deltaPercentage": {
+                          "visible": false
+                        },
+                        "minDelta": {
+                          "visible": false
+                        },
+                        "maxDelta": {
+                          "visible": false
+                        },
+                        "sessionCVD": {
+                          "visible": true
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "hlRange": {
+                          "visible": false
+                        }
+                      },
+                      "openInterestBlockInfo": {
+                        "openInterest": {
+                          "visible": false
+                        }
+                      },
+                      "extendedOpenInterestBlockInfo": {
+                        "openInterestHigh": {
+                          "visible": false
+                        },
+                        "openInterestLow": {
+                          "visible": false
+                        }
+                      }
+                    },
+                    "type": "Buy and sell",
+                    "displayMode": 0,
+                    "pointOfControl": true,
+                    "bgColors": {
+                      "adjBuyBgColors": [
+                        "#70CCBD",
+                        "#22AB94",
+                        "#06806B",
+                        "#004D40"
+                      ],
+                      "adjSellBgColors": [
+                        "#FAA1A4",
+                        "#F7525F",
+                        "#CC2F3C",
+                        "#802028"
+                      ],
+                      "adjTotalBgColors": [
+                        "#90BFF9",
+                        "#3179F5",
+                        "#1E53E5",
+                        "#143EB2"
+                      ],
+                      "buyBgColor": "#22AB94",
+                      "sellBgColor": "#F7525F",
+                      "totalBgColor": "#3179F5",
+                      "pocColor": "#000000"
+                    },
+                    "imbalanceHighlight": {
+                      "buyColor": "#089981",
+                      "sellColor": "#F23645",
+                      "visible": true
+                    },
+                    "unfinishedAuction": {
+                      "highColor": "#D500F9",
+                      "lowColor": "#00e5ff"
+                    },
+                    "inputs": {
+                      "rowSize": "Auto",
+                      "atrLength": 14,
+                      "imbalancePercent": 300,
+                      "ticksPerRow": 100,
+                      "showVA": true,
+                      "vaPercent": 70,
+                      "calcStackedImbalance": false,
+                      "showUnfinishedAuction": false,
+                      "stackedImbalanceCount": 3,
+                      "ignore_zero_volume_for_imbalance_calc": false,
+                      "minimal_imbalance_volume": 0
+                    }
+                  },
+                  "baseLineColor": "#B8B8B8",
+                  "prevClosePriceLineColor": "#555555",
+                  "priceLineColor": "",
+                  "timeframe": "",
+                  "shortName": "JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "symbol": "TSX:JX",
+                  "interval": "W",
+                  "priceAxisProperties": {
+                    "autoScale": true,
+                    "autoScaleDisabled": false,
+                    "lockScale": false,
+                    "percentage": false,
+                    "percentageDisabled": false,
+                    "log": true,
+                    "logDisabled": false,
+                    "alignLabels": true,
+                    "isInverted": false,
+                    "indexedTo100": false
+                  }
+                }
+              },
+              {
+                "type": "LineToolFibRetracement",
+                "id": "c1d01",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "visible": true,
+                    "linewidth": 2,
+                    "linestyle": 2
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true,
+                    ""
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true,
+                    ""
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true,
+                    ""
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true,
+                    ""
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true,
+                    ""
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true,
+                    ""
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true,
+                    ""
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false,
+                    ""
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false,
+                    ""
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false,
+                    ""
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false,
+                    ""
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false,
+                    ""
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false,
+                    ""
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "showCoeffs": true,
+                  "showPrices": true,
+                  "fillBackground": true,
+                  "transparency": 85,
+                  "extendLines": false,
+                  "extendLinesLeft": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "showText": true,
+                  "horzTextAlign": "center",
+                  "vertTextAlign": "middle",
+                  "reverse": false,
+                  "coeffsAsPercents": false,
+                  "fibLevelsBasedOnLogScale": false,
+                  "labelFontSize": 12,
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1300109400,
+                    "offset": 0,
+                    "price": 2400,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1453127400,
+                    "offset": 0,
+                    "price": 480,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools00",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolFibRetracement",
+                "id": "c1d02",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "visible": true,
+                    "linewidth": 2,
+                    "linestyle": 2
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true,
+                    ""
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true,
+                    ""
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true,
+                    ""
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true,
+                    ""
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true,
+                    ""
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true,
+                    ""
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true,
+                    ""
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true,
+                    ""
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true,
+                    ""
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false,
+                    ""
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false,
+                    ""
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false,
+                    ""
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false,
+                    ""
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false,
+                    ""
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false,
+                    ""
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false,
+                    ""
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false,
+                    ""
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false,
+                    ""
+                  ],
+                  "showCoeffs": true,
+                  "showPrices": true,
+                  "fillBackground": true,
+                  "transparency": 85,
+                  "extendLines": false,
+                  "extendLinesLeft": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "showText": true,
+                  "horzTextAlign": "center",
+                  "vertTextAlign": "middle",
+                  "reverse": false,
+                  "coeffsAsPercents": false,
+                  "fibLevelsBasedOnLogScale": true,
+                  "labelFontSize": 12,
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1584365400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4999,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools01",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolTrendBasedFibExtension",
+                "id": "c1d03",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "visible": true,
+                    "linewidth": 2,
+                    "linestyle": 2
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "showCoeffs": true,
+                  "showPrices": false,
+                  "fillBackground": false,
+                  "transparency": 80,
+                  "extendLines": false,
+                  "extendLinesLeft": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "showText": true,
+                  "horzTextAlign": "center",
+                  "vertTextAlign": "middle",
+                  "reverse": false,
+                  "coeffsAsPercents": false,
+                  "fibLevelsBasedOnLogScale": false,
+                  "labelFontSize": 12,
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1453127400,
+                    "offset": 0,
+                    "price": 480,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1517841000,
+                    "offset": 0,
+                    "price": 920,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1584365400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4998,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools02",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolTrendBasedFibExtension",
+                "id": "c1d04",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "visible": true,
+                    "linewidth": 2,
+                    "linestyle": 2
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false,
+                    null,
+                    null,
+                    ""
+                  ],
+                  "showCoeffs": true,
+                  "showPrices": true,
+                  "fillBackground": true,
+                  "transparency": 90,
+                  "extendLines": false,
+                  "extendLinesLeft": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "showText": true,
+                  "horzTextAlign": "center",
+                  "vertTextAlign": "middle",
+                  "reverse": false,
+                  "coeffsAsPercents": false,
+                  "fibLevelsBasedOnLogScale": true,
+                  "labelFontSize": 12,
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1699885800,
+                    "offset": 0,
+                    "price": 467,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1722951000,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1738593000,
+                    "offset": 0,
+                    "price": 560,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4997,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools03",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolFibChannel",
+                "id": "c1d05",
+                "state": {
+                  "level1": [
+                    0,
+                    "#808080",
+                    true
+                  ],
+                  "level2": [
+                    0.236,
+                    "#F23645",
+                    true
+                  ],
+                  "level3": [
+                    0.382,
+                    "#FF9800",
+                    true
+                  ],
+                  "level4": [
+                    0.5,
+                    "#4caf50",
+                    true
+                  ],
+                  "level5": [
+                    0.618,
+                    "#089981",
+                    true
+                  ],
+                  "level6": [
+                    0.786,
+                    "#00bcd4",
+                    true
+                  ],
+                  "level7": [
+                    1,
+                    "#808080",
+                    true
+                  ],
+                  "level8": [
+                    1.618,
+                    "#2962FF",
+                    true
+                  ],
+                  "level9": [
+                    2.618,
+                    "#F23645",
+                    true
+                  ],
+                  "level10": [
+                    3.618,
+                    "#9c27b0",
+                    true
+                  ],
+                  "level11": [
+                    4.236,
+                    "#e91e63",
+                    true
+                  ],
+                  "level12": [
+                    1.272,
+                    "#FF9800",
+                    false
+                  ],
+                  "level13": [
+                    1.414,
+                    "#F23645",
+                    false
+                  ],
+                  "level16": [
+                    2,
+                    "#089981",
+                    false
+                  ],
+                  "level14": [
+                    2.272,
+                    "#FF9800",
+                    false
+                  ],
+                  "level15": [
+                    2.414,
+                    "#4caf50",
+                    false
+                  ],
+                  "level17": [
+                    3,
+                    "#00bcd4",
+                    false
+                  ],
+                  "level18": [
+                    3.272,
+                    "#808080",
+                    false
+                  ],
+                  "level19": [
+                    3.414,
+                    "#2962FF",
+                    false
+                  ],
+                  "level20": [
+                    4,
+                    "#F23645",
+                    false
+                  ],
+                  "level21": [
+                    4.272,
+                    "#9c27b0",
+                    false
+                  ],
+                  "level22": [
+                    4.414,
+                    "#e91e63",
+                    false
+                  ],
+                  "level23": [
+                    4.618,
+                    "#FF9800",
+                    false
+                  ],
+                  "level24": [
+                    4.764,
+                    "#089981",
+                    false
+                  ],
+                  "levelsStyle": {
+                    "linewidth": 2,
+                    "linestyle": 0
+                  },
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "showPrices": true,
+                  "showCoeffs": true,
+                  "coeffsAsPercents": false,
+                  "horzLabelsAlign": "left",
+                  "vertLabelsAlign": "middle",
+                  "fillBackground": true,
+                  "transparency": 90,
+                  "labelFontSize": 12,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1199111400,
+                    "offset": 0,
+                    "price": 2700,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1325082600,
+                    "offset": 0,
+                    "price": 1200,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1199111400,
+                    "offset": 0,
+                    "price": 1500,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4996,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools04",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolParallelChannel",
+                "id": "c1d06",
+                "state": {
+                  "level1": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": -0.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level2": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 0,
+                    "lineStyle": 0,
+                    "lineWidth": 2
+                  },
+                  "level3": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 0.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level4": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 0.5,
+                    "lineStyle": 2,
+                    "lineWidth": 1
+                  },
+                  "level5": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 0.75,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "level6": {
+                    "color": "#2962FF",
+                    "visible": true,
+                    "coeff": 1,
+                    "lineStyle": 0,
+                    "lineWidth": 2
+                  },
+                  "level7": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "coeff": 1.25,
+                    "lineStyle": 0,
+                    "lineWidth": 1
+                  },
+                  "labelTextColor": "#2962FF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.15)",
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "fillBackground": true,
+                  "transparency": 80,
+                  "labelVisible": false,
+                  "labelHorzAlign": "left",
+                  "labelVertAlign": "bottom",
+                  "labelFontSize": 14,
+                  "labelBold": false,
+                  "labelItalic": false,
+                  "version": 2,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "labelText": ""
+                },
+                "points": [
+                  {
+                    "time_t": 1340631000,
+                    "offset": 0,
+                    "price": 1100,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1451399400,
+                    "offset": 0,
+                    "price": 480,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1340631000,
+                    "offset": 0,
+                    "price": 1600,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4995,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools05",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolDisjointAngle",
+                "id": "c1d07",
+                "state": {
+                  "linecolor": "#089981",
+                  "backgroundColor": "rgba(8, 153, 129, 0.15)",
+                  "textcolor": "#089981",
+                  "labelTextColor": "#089981",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "fillBackground": true,
+                  "transparency": 20,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "fontsize": 12,
+                  "bold": false,
+                  "italic": false,
+                  "showPrices": false,
+                  "showPriceRange": false,
+                  "showDateTimeRange": false,
+                  "showBarsRange": false,
+                  "labelVisible": false,
+                  "labelHorzAlign": "left",
+                  "labelVertAlign": "bottom",
+                  "labelFontSize": 14,
+                  "labelBold": false,
+                  "labelItalic": false,
+                  "labelText": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1615213800,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1697463000,
+                    "offset": 0,
+                    "price": 480,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1615213800,
+                    "offset": 0,
+                    "price": 700,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4994,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools06",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolGannSquare",
+                "id": "c1d08",
+                "state": {
+                  "color": "#2962FF",
+                  "fans": {
+                    "color": "#9C9C9C",
+                    "visible": false
+                  },
+                  "hlevel1": [
+                    0,
+                    "#808080",
+                    true
+                  ],
+                  "hlevel2": [
+                    0.25,
+                    "#FF9800",
+                    true
+                  ],
+                  "hlevel3": [
+                    0.382,
+                    "#00bcd4",
+                    true
+                  ],
+                  "hlevel4": [
+                    0.5,
+                    "#4caf50",
+                    true
+                  ],
+                  "hlevel5": [
+                    0.618,
+                    "#089981",
+                    true
+                  ],
+                  "hlevel6": [
+                    0.75,
+                    "#2962FF",
+                    true
+                  ],
+                  "hlevel7": [
+                    1,
+                    "#808080",
+                    true
+                  ],
+                  "vlevel1": [
+                    0,
+                    "#808080",
+                    true
+                  ],
+                  "vlevel2": [
+                    0.25,
+                    "#FF9800",
+                    true
+                  ],
+                  "vlevel3": [
+                    0.382,
+                    "#00bcd4",
+                    true
+                  ],
+                  "vlevel4": [
+                    0.5,
+                    "#4caf50",
+                    true
+                  ],
+                  "vlevel5": [
+                    0.618,
+                    "#089981",
+                    true
+                  ],
+                  "vlevel6": [
+                    0.75,
+                    "#2962FF",
+                    true
+                  ],
+                  "vlevel7": [
+                    1,
+                    "#808080",
+                    true
+                  ],
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "showTopLabels": true,
+                  "showBottomLabels": true,
+                  "showLeftLabels": true,
+                  "showRightLabels": true,
+                  "fillHorzBackground": true,
+                  "horzTransparency": 80,
+                  "fillVertBackground": true,
+                  "vertTransparency": 80,
+                  "reverse": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1223991000,
+                    "offset": 0,
+                    "price": 600,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1287408600,
+                    "offset": 0,
+                    "price": 2000,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4993,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools07",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolPriceRange",
+                "id": "c1d09",
+                "state": {
+                  "textcolor": "#000000",
+                  "labelBackgroundColor": "#ffffff",
+                  "linecolor": "#089981",
+                  "backgroundColor": "rgba(8, 153, 129, 0.2)",
+                  "shadow": "rgba(0, 0, 0, 0.2)",
+                  "customText": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "fontsize": 12,
+                    "bold": false,
+                    "italic": false,
+                    "text": ""
+                  },
+                  "linewidth": 2,
+                  "fontsize": 12,
+                  "fillLabelBackground": true,
+                  "fillBackground": true,
+                  "backgroundTransparency": 60,
+                  "showVolume": true,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "showPriceRange": true,
+                  "showPercentPriceRange": true,
+                  "showPipsPriceRange": true,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1703687400,
+                    "offset": 0,
+                    "price": 500,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1722951000,
+                    "offset": 0,
+                    "price": 1050,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4992,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools08",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolDateAndPriceRange",
+                "id": "c1d10",
+                "state": {
+                  "textcolor": "#000000",
+                  "labelBackgroundColor": "#ffffff",
+                  "linecolor": "#9C27B0",
+                  "backgroundColor": "rgba(156, 39, 176, 0.2)",
+                  "shadow": "rgba(0, 0, 0, 0.2)",
+                  "customText": {
+                    "color": "#2962FF",
+                    "visible": false,
+                    "fontsize": 12,
+                    "bold": false,
+                    "italic": false,
+                    "text": ""
+                  },
+                  "borderColor": "#2962FF",
+                  "linewidth": 2,
+                  "fontsize": 12,
+                  "fillLabelBackground": true,
+                  "fillBackground": true,
+                  "backgroundTransparency": 60,
+                  "showVolume": true,
+                  "drawBorder": false,
+                  "borderWidth": 1,
+                  "showBarsRange": true,
+                  "showDateTimeRange": true,
+                  "showPriceRange": true,
+                  "showPercentPriceRange": true,
+                  "showPipsPriceRange": true,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1529933400,
+                    "offset": 0,
+                    "price": 450,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1574087400,
+                    "offset": 0,
+                    "price": 800,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4991,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools09",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolRiskRewardLong",
+                "id": "c1d11",
+                "state": {
+                  "linecolor": "#808080",
+                  "textcolor": "#ffffff",
+                  "stopBackground": "rgba(242, 54, 69, 0.2)",
+                  "profitBackground": "rgba(8, 153, 129, 0.2)",
+                  "stopBackgroundTransparency": 80,
+                  "profitBackgroundTransparency": 80,
+                  "linewidth": 1,
+                  "fontsize": 12,
+                  "compact": false,
+                  "riskDisplayMode": "percents",
+                  "accountSize": 1000,
+                  "lotSize": 1,
+                  "risk": 25,
+                  "leverage": 10000,
+                  "alwaysShowStats": false,
+                  "showPriceLabels": true,
+                  "qtyPrecision": "default",
+                  "currency": "NONE",
+                  "infoBlocks": {
+                    "tpPriceOffset": {
+                      "visible": true
+                    },
+                    "tpPercentOffset": {
+                      "visible": true
+                    },
+                    "tpTickOffset": {
+                      "visible": true
+                    },
+                    "tpAmount": {
+                      "visible": true
+                    },
+                    "tpPL": {
+                      "visible": false
+                    },
+                    "openClosePL": {
+                      "visible": true
+                    },
+                    "qty": {
+                      "visible": true
+                    },
+                    "riskRewardRatio": {
+                      "visible": true
+                    },
+                    "slPriceOffset": {
+                      "visible": true
+                    },
+                    "slPercentOffset": {
+                      "visible": true
+                    },
+                    "slTickOffset": {
+                      "visible": true
+                    },
+                    "slAmount": {
+                      "visible": true
+                    },
+                    "slPL": {
+                      "visible": false
+                    }
+                  },
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "stopLevel": 20000,
+                  "profitLevel": 40000,
+                  "qty": 1.25,
+                  "amountTarget": 1500,
+                  "amountStop": 750,
+                  "entryPointCurrencyRate": 1,
+                  "closePointCurrencyRate": 1
+                },
+                "points": [
+                  {
+                    "time_t": 1754400600,
+                    "offset": 0,
+                    "price": 800,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1785850200,
+                    "offset": 0,
+                    "price": 800,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4990,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools010",
+                "sharingMode": 1,
+                "version": 2,
+                "ownerSourceBase": 100
+              },
+              {
+                "type": "LineToolHorzLine",
+                "id": "c1d12",
+                "state": {
+                  "linecolor": "#FF9800",
+                  "textcolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "showPrice": true,
+                  "fontsize": 12,
+                  "bold": false,
+                  "italic": false,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "text": "1,000",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1388413800,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4989,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools011",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d13",
+                "state": {
+                  "color": "#00BCD4",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1227537000,
+                    "offset": 0,
+                    "price": 650,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1243258200,
+                    "offset": 0,
+                    "price": 1300,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1249392600,
+                    "offset": 0,
+                    "price": 1050,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1274794200,
+                    "offset": 0,
+                    "price": 1800,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1280842200,
+                    "offset": 0,
+                    "price": 1550,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1300109400,
+                    "offset": 0,
+                    "price": 2400,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4988,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools012",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d14",
+                "state": {
+                  "color": "#E91E63",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 2,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1453127400,
+                    "offset": 0,
+                    "price": 480,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1464096600,
+                    "offset": 0,
+                    "price": 780,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1470144600,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1485786600,
+                    "offset": 0,
+                    "price": 920,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1498483800,
+                    "offset": 0,
+                    "price": 780,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1517841000,
+                    "offset": 0,
+                    "price": 920,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4987,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools013",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottCorrection",
+                "id": "c1d15",
+                "state": {
+                  "color": "#C9A100",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 4,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1300109400,
+                    "offset": 0,
+                    "price": 2400,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1334583000,
+                    "offset": 0,
+                    "price": 1300,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1356964200,
+                    "offset": 0,
+                    "price": 1700,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1419863400,
+                    "offset": 0,
+                    "price": 700,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4986,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools014",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottDoubleCombo",
+                "id": "c1d16",
+                "state": {
+                  "color": "#9C27B0",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 3,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1627997400,
+                    "offset": 0,
+                    "price": 783,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1637591400,
+                    "offset": 0,
+                    "price": 1045,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1672237800,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4985,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools015",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottTripleCombo",
+                "id": "c1d17",
+                "state": {
+                  "color": "#808000",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 5,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1517841000,
+                    "offset": 0,
+                    "price": 920,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1526995800,
+                    "offset": 0,
+                    "price": 600,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1536586200,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1549290600,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1558445400,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1577716200,
+                    "offset": 0,
+                    "price": 450,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4984,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools016",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottTriangle",
+                "id": "c1d18",
+                "state": {
+                  "color": "#F23645",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 11,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1699885800,
+                    "offset": 0,
+                    "price": 467,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1716298200,
+                    "offset": 0,
+                    "price": 680,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1725888600,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1735569000,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1741613400,
+                    "offset": 0,
+                    "price": 560,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1748266200,
+                    "offset": 0,
+                    "price": 600,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4983,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools017",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottCorrection",
+                "id": "c1d19",
+                "state": {
+                  "color": "#5C6BC0",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 1,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1770042600,
+                    "offset": 0,
+                    "price": 1180,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1776087000,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1782739800,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1786368600,
+                    "offset": 0,
+                    "price": 740,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4982,
+                "ownerSource": "_seriesId",
+                "linkKey": "lklogscaletools018",
+                "sharingMode": 1,
+                "version": 4
+              }
+            ],
+            "mainSourceId": "_seriesId",
+            "stretchFactor": 2000,
+            "leftAxisesState": [],
+            "rightAxisesState": [
+              {
+                "state": {
+                  "id": "S7kxmrRvncl2",
+                  "m_priceRange": null,
+                  "m_isAutoScale": true,
+                  "m_isPercentage": false,
+                  "m_isIndexedTo100": false,
+                  "m_isLog": true,
+                  "m_isLockScale": false,
+                  "m_isInverted": false,
+                  "m_topMargin": 0.1,
+                  "m_bottomMargin": 0.08,
+                  "alignLabels": true,
+                  "logFormula": {
+                    "logicalOffset": 4,
+                    "coordOffset": 0.0001
+                  },
+                  "hasCalculatedPriceRange": true
+                },
+                "sources": [
+                  "c1d01",
+                  "c1d02",
+                  "c1d03",
+                  "c1d04",
+                  "c1d05",
+                  "c1d06",
+                  "c1d07",
+                  "c1d08",
+                  "c1d09",
+                  "c1d10",
+                  "c1d11",
+                  "c1d12",
+                  "c1d13",
+                  "c1d14",
+                  "c1d15",
+                  "c1d16",
+                  "c1d17",
+                  "c1d18",
+                  "c1d19",
+                  "_seriesId"
+                ]
+              }
+            ],
+            "overlayPriceScales": {},
+            "priceScaleRatio": null,
+            "isCollapsed": false,
+            "isMaximized": false,
+            "mode": 0
+          }
+        ],
+        "timeScale": {
+          "m_barSpacing": 0.881,
+          "m_rightOffset": 60,
+          "rightOffsetPercentage": 5,
+          "usePercentageRightOffset": false
+        },
+        "chartProperties": {
+          "paneProperties": {
+            "backgroundType": "solid",
+            "vertGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(46, 46, 46, 0.2)"
+            },
+            "horzGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(46, 46, 46, 0.2)"
+            },
+            "crossHairProperties": {
+              "style": 2,
+              "transparency": 0,
+              "width": 1,
+              "color": "#9C9C9C"
+            },
+            "topMargin": 10,
+            "bottomMargin": 8,
+            "axisProperties": {
+              "autoScale": true,
+              "autoScaleDisabled": false,
+              "lockScale": false,
+              "percentage": false,
+              "percentageDisabled": false,
+              "indexedTo100": false,
+              "log": false,
+              "logDisabled": false,
+              "alignLabels": true,
+              "isInverted": false
+            },
+            "legendProperties": {
+              "showStudyArguments": true,
+              "showStudyTitles": true,
+              "showStudyValues": true,
+              "showSeriesTitle": true,
+              "showSeriesOHLC": true,
+              "showLegend": true,
+              "showLastDayChange": false,
+              "showBarChange": true,
+              "showVolume": false,
+              "showBackground": true,
+              "showPriceSource": true,
+              "backgroundTransparency": 50,
+              "showLogo": false,
+              "showTradingButtons": false,
+              "showTradingButtonsMobile": false,
+              "showSeriesLegendCloseOnMobile": true,
+              "barChangeUpColor": "#089981",
+              "barChangeDownColor": "#F23645",
+              "useBarChangeCustomColors": false
+            },
+            "separatorColor": "#EBEBEB",
+            "background": "#ffffff",
+            "backgroundGradientStartColor": "#ffffff",
+            "backgroundGradientEndColor": "#ffffff"
+          },
+          "scalesProperties": {
+            "fontSize": 12,
+            "scaleSeriesOnly": false,
+            "showSeriesLastValue": true,
+            "seriesLastValueMode": 1,
+            "showSeriesPrevCloseValue": false,
+            "showStudyLastValue": true,
+            "showSymbolLabels": false,
+            "showStudyPlotLabels": false,
+            "showBidAskLabels": false,
+            "showPrePostMarketPriceLabel": true,
+            "showFundamentalNameLabel": false,
+            "showFundamentalLastValue": true,
+            "barSpacing": 6,
+            "axisHighlightColor": "rgba(41, 98, 255, 0.25)",
+            "axisHoverHighlightColor": "",
+            "axisLineToolLabelBackgroundColorCommon": "#2962FF",
+            "axisLineToolLabelBackgroundColorActive": "#143EB2",
+            "showPriceScaleCrosshairLabel": true,
+            "showTimeScaleCrosshairLabel": true,
+            "saveLeftEdge": false,
+            "textColor": "#0F0F0F",
+            "lineColor": "rgba(46, 46, 46, 0)",
+            "backgroundColor": "#ffffff"
+          },
+          "publishedChartsTimelineProperties": {
+            "type": "BarsMarksContainer",
+            "id": "PublishedChartsTimeline",
+            "zorder": 10000003,
+            "pinnedTooltips": {}
+          },
+          "chartEventsSourceProperties": {
+            "visible": false,
+            "futureOnly": true,
+            "breaks": {
+              "color": "#555555",
+              "visible": false,
+              "style": 2,
+              "width": 1
+            }
+          },
+          "tradingProperties": {
+            "showPositions": true,
+            "positionAndBracketsPL": true,
+            "positionPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "bracketsPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "showOrders": true,
+            "showProjectMarketOrder": true,
+            "showExecutions": true,
+            "showExecutionsLabels": false,
+            "showReverse": true,
+            "extendLeft": true,
+            "lineLength": 5,
+            "horizontalAlignment": 2,
+            "lineWidth": 1,
+            "lineStyle": 0
+          },
+          "priceScaleSelectionStrategyName": "auto",
+          "inactivityGaps": false
+        },
+        "sessions": {
+          "properties": {
+            "sessionHighlight": {
+              "backgrounds": {
+                "preMarket": {
+                  "color": "#FF9800",
+                  "transparency": 92
+                },
+                "postMarket": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "nightMarket": {
+                  "color": "#D500F9",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": true
+                },
+                "electronic": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "outOfSession": {
+                  "color": "#2962FF",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": false
+                }
+              },
+              "vertlines": {
+                "sessBreaks": {
+                  "color": "#4985e7",
+                  "style": 2,
+                  "visible": false,
+                  "width": 1,
+                  "available": true
+                }
+              }
+            }
+          }
+        },
+        "version": 3,
+        "timezone": "Etc/UTC",
+        "shouldBeSavedEvenIfHidden": false,
+        "linkingGroup": null,
+        "lineToolsGroups": {
+          "groups": []
+        },
+        "chartId": "1"
+      }
+    ],
+    "symbolLock": 0,
+    "intervalLock": 0,
+    "trackTimeLock": 0,
+    "dateRangeLock": 0,
+    "crosshairLock": 1,
+    "layoutsSizes": {
+      "s": [
+        {
+          "percent": 1
+        }
+      ]
+    },
+    "symbolAliasServiceState": []
+  },
+  "studyMetaInfoMap": {},
+  "listEntry": {
+    "image_url": "log-scale-tools",
+    "url": "log-scale-tools",
+    "id": 1,
+    "name": "log-scale-tools"
+  }
+}

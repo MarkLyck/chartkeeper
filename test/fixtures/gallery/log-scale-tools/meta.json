@@ -1,0 +1,182 @@
+{
+  "scene": "log-scale-tools",
+  "description": "Price-dependent tools on a log scale (TSX Venture weekly): fib retracement and extension with and without log-based levels, fib channel, parallel and disjoint channels, Gann box, price and date ranges, a long position, a horizontal line, and Elliott degrees 0 to 5 and 11.",
+  "uid": "log-scale-tools",
+  "theme": "light",
+  "arrangement": "s",
+  "capturedAt": "2026-10-18T15:35:17.448Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1000,
+    "height": 600
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "TSX:JX",
+      "interval": "W",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1000,
+        "height": 600
+      },
+      "visibleRange": {
+        "from": 1191196800,
+        "to": 1828051200
+      },
+      "priceRange": {
+        "from": 264.90380287331135,
+        "to": 4211.997336210808
+      },
+      "tradingView": {
+        "drawings": 19,
+        "shapes": 19,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolFibRetracement",
+      "type": "LineToolFibRetracement",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolFibRetracement",
+      "type": "LineToolFibRetracement",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolTrendBasedFibExtension",
+      "type": "LineToolTrendBasedFibExtension",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolTrendBasedFibExtension",
+      "type": "LineToolTrendBasedFibExtension",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolFibChannel",
+      "type": "LineToolFibChannel",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolParallelChannel",
+      "type": "LineToolParallelChannel",
+      "image": "isolated/c1d06.png"
+    },
+    {
+      "id": "c1d07",
+      "chartId": "1",
+      "requestedType": "LineToolDisjointAngle",
+      "type": "LineToolDisjointAngle",
+      "image": "isolated/c1d07.png"
+    },
+    {
+      "id": "c1d08",
+      "chartId": "1",
+      "requestedType": "LineToolGannSquare",
+      "type": "LineToolGannSquare",
+      "image": "isolated/c1d08.png"
+    },
+    {
+      "id": "c1d09",
+      "chartId": "1",
+      "requestedType": "LineToolPriceRange",
+      "type": "LineToolPriceRange",
+      "image": "isolated/c1d09.png"
+    },
+    {
+      "id": "c1d10",
+      "chartId": "1",
+      "requestedType": "LineToolDateAndPriceRange",
+      "type": "LineToolDateAndPriceRange",
+      "image": "isolated/c1d10.png"
+    },
+    {
+      "id": "c1d11",
+      "chartId": "1",
+      "requestedType": "LineToolRiskRewardLong",
+      "type": "LineToolRiskRewardLong",
+      "image": "isolated/c1d11.png"
+    },
+    {
+      "id": "c1d12",
+      "chartId": "1",
+      "requestedType": "LineToolHorzLine",
+      "type": "LineToolHorzLine",
+      "image": "isolated/c1d12.png"
+    },
+    {
+      "id": "c1d13",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d13.png"
+    },
+    {
+      "id": "c1d14",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d14.png"
+    },
+    {
+      "id": "c1d15",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d15.png"
+    },
+    {
+      "id": "c1d16",
+      "chartId": "1",
+      "requestedType": "LineToolElliottDoubleCombo",
+      "type": "LineToolElliottDoubleCombo",
+      "image": "isolated/c1d16.png"
+    },
+    {
+      "id": "c1d17",
+      "chartId": "1",
+      "requestedType": "LineToolElliottTripleCombo",
+      "type": "LineToolElliottTripleCombo",
+      "image": "isolated/c1d17.png"
+    },
+    {
+      "id": "c1d18",
+      "chartId": "1",
+      "requestedType": "LineToolElliottTriangle",
+      "type": "LineToolElliottTriangle",
+      "image": "isolated/c1d18.png"
+    },
+    {
+      "id": "c1d19",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d19.png"
+    }
+  ]
+}
