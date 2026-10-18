@@ -122,6 +122,13 @@ function addSeries(chart: IChartApi, spec: SeriesSpec | StyleSeriesSpec, pane: n
   return s;
 }
 
+/** A series' lightweight-charts price format that writes values as TradingView does (see formatValue). */
+function lwcPriceFormat(format: PriceFormatSpec): DeepPartial<SeriesOptionsCommon['priceFormat']> {
+  if (format.type === 'volume') return { type: 'custom', formatter: volumeText, minMove: 1 };
+  if (format.type === 'percent') return format;
+  return { type: 'custom', minMove: format.minMove, formatter: (p: number) => formatValue(p, format) };
+}
+
 function formatValue(v: number | null | undefined, format: PriceFormatSpec): string {
   if (v === null || v === undefined) return '∅';
   if (format.type === 'volume') {
@@ -134,7 +141,10 @@ function formatValue(v: number | null | undefined, format: PriceFormatSpec): str
   if (format.type === 'percent') return `${v.toFixed(2)}%`;
   // 346.085 is stored as 346.08499..., so shift the decimal point in text to round half up like TradingView.
   const p = format.precision;
-  return String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
+  const fixed = String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
+  // TradingView groups thousands in prices everywhere: axis, legend and drawing labels ("3,800.00").
+  const [int = '', frac] = fixed.split('.');
+  return `${int.replace(/\B(?=(\d{3})+$)/g, ',')}${frac === undefined ? '' : `.${frac}`}`;
 }
 
 
@@ -187,7 +197,7 @@ function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
   el.style.top = '4px';
   el.style.lineHeight = '24px';
   const exchange = plan.chart.symbol.includes(':') ? plan.chart.symbol.split(':')[0]! : '';
-  const title = span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
+  const title = span([plan.symbolTitle, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
   title.style.fontSize = '16px';
   title.style.marginRight = '12px';
   const values = document.createElement('span');
@@ -262,7 +272,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
 
   if (!plan.main) {
     const box = legendBox(theme);
-    box.append(span(`${plan.chart.shortName} · ${intervalLabel(plan.chart.interval)}`, undefined, true));
+    box.append(span(`${plan.symbolTitle} · ${intervalLabel(plan.chart.interval)}`, undefined, true));
     const msg = document.createElement('div');
     msg.textContent = STRINGS.noPriceDataBanner;
     msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0.75;';
@@ -301,7 +311,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
   plan.panes.forEach((pane, index) => {
     let host: ISeriesApi<SeriesType> | null = null;
     if (pane.main) {
-      host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
+      host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right', priceFormat: lwcPriceFormat(plan.priceFormat) });
       if (plan.main!.priceLine) host.attachPrimitive(new PriceLinePrimitive(plan.main!.priceLine));
       mainSeries = host;
       scales.push({ series: host, scale: plan.chart.priceScale });
@@ -310,7 +320,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     for (const ps of pane.studies) {
       let first: ISeriesApi<SeriesType> | null = null;
       for (const plot of ps.render.series) {
-        const priceFormat = ps.priceFormat.type === 'volume' ? { type: 'custom' as const, formatter: volumeText, minMove: 1 } : ps.priceFormat;
+        const priceFormat = lwcPriceFormat(ps.priceFormat);
         const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat });
         first ??= s;
       }

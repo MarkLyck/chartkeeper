@@ -273,7 +273,8 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
     ws.send(msg('chart_create_session', [cs, '']));
     ws.send(msg('switch_timezone', [cs, chart.timezone || 'Etc/UTC']));
     ws.send(msg('resolve_symbol', [cs, 'sds_sym_1', seriesSymbol(chart)]));
-    await waitFor('symbol');
+    const resolved = await waitFor('symbol');
+    const description = (resolved as { description?: unknown } | null)?.description;
     ws.send(msg('create_series', [cs, 'sds_1', 's1', 'sds_sym_1', chart.interval, opts.bars, '']));
     await waitFor('series');
 
@@ -322,6 +323,7 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
       interval: chart.interval,
       fetchedAt: new Date().toISOString(),
       bars: [...bars.values()].sort((a, b) => a[0] - b[0]),
+      ...(typeof description === 'string' && description ? { description } : {}),
       ...(chart.style in COMPUTED_STYLES ? { computedStyle: chart.style } : {}),
       studies: studyResults,
       ...(Object.keys(drawingStudies).length ? { drawingStudies } : {}),

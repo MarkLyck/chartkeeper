@@ -80,6 +80,8 @@ export const ChartDataSchema = z.object({
    * instead of the symbol's plain bars.
    */
   computedStyle: z.number().optional(),
+  /** The symbol's name as TradingView resolved it ("Apple Inc"), which its legend shows by default. */
+  description: z.string().optional(),
   /** Keyed by the study's source id in the layout. */
   studies: z.record(z.string(), StudyValuesSchema),
   /**

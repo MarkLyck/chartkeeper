@@ -44,6 +44,8 @@ export interface PlannedPane {
 
 export interface ChartPlan {
   chart: ParsedChart;
+  /** The symbol as the legend names it: TradingView's description ("Apple Inc") unless the chart is set to show the ticker. */
+  symbolTitle: string;
   /** Null when the snapshot has no price data for this chart. */
   main: MainSeriesSpec | null;
   bars: Bar[];
@@ -171,7 +173,8 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
   }
   for (const p of panes) p.drawings.sort((a, b) => a.zorder - b.zorder);
 
-  return { chart, main, bars, times, timeIndex, priceFormat, drawingStudies: data?.drawingStudies ?? {}, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
+  const symbolTitle = obj(chart.seriesState.statusViewStyle).symbolTextSource !== 'ticker' && data?.description ? data.description : chart.shortName;
+  return { chart, symbolTitle, main, bars, times, timeIndex, priceFormat, drawingStudies: data?.drawingStudies ?? {}, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
 }
 
 export interface LayoutPlan {
