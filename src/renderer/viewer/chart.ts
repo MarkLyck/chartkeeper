@@ -40,6 +40,9 @@ import { num, obj, str, type Props } from '../../core/props';
  * starts its grid lines half a pixel off the pixel grid, so its dotted styles smear into faint two-pixel dots;
  * its dashed style lands one full-colour pixel every four pixels, with faint neighbours.
  */
+/** How far past the last bar TradingView's time axis still has dates: a weekly chart's axis ends about ten years out. */
+const FUTURE_BARS = 500;
+
 const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 2 : tvStyle);
 
 export interface ChartTheme {
@@ -345,6 +348,11 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       chart.panes()[index]?.attachPrimitive(drawings.belowSeries());
     }
   });
+
+  // TradingView's time axis carries dates FUTURE_BARS bars past the last bar. Empty (whitespace) points give
+  // lightweight-charts the same dates there without moving the last bar, which its right offset counts from.
+  const future = plan.timeIndex.futureTimes(FUTURE_BARS).map((t) => ({ time: (intraday ? t + timeZoneOffset(t, plan.chart.timezone) : t) as Time }));
+  chart.addSeries(LineSeries, { visible: false, lastValueVisible: false, priceLineVisible: false, priceScaleId: 'future-dates' }, 0).setData(future);
 
   const total = plan.panes.reduce((sum, p) => sum + p.stretchFactor, 0);
   chart.panes().forEach((p, i) => p.setStretchFactor((plan.panes[i]?.stretchFactor ?? 1000) / total));
