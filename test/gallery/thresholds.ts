@@ -143,15 +143,15 @@ export const INDICATOR_THRESHOLDS: Readonly<Record<string, Threshold>> = {
 
 /**
  * Lower minimums for one scene, where the scene's content (not the tool) costs points. Each entry says
- * why; every other item of the scene must still reach the tables above. Measured on macOS only.
+ * why; every other item of the scene must still reach the tables above.
  */
 export const SCENE_THRESHOLDS: Readonly<Record<string, { drawings?: Readonly<Record<string, Threshold>>; styles?: Readonly<Record<number, Threshold>> }>> = {
   'replica-tsxv-weekly-log': {
     drawings: {
       LineToolText: {
-        min: 0.76,
+        min: 0.72,
         reason: 'The label "1" is a single 2 px stroke: TradingView anti-aliases it across one more pixel column than the viewer, so a third of its few pixels differ in colour. The labels "2" to "5" score 0.97 to 1.00.',
-      }, // measured macOS 0.787
+      }, // measured macOS 0.787; not measured on Linux, so less the 0.05 that fonts move text there (see the top of this file)
     },
   },
 };

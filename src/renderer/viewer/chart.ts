@@ -40,7 +40,7 @@ import { num, obj, str, type Props } from '../../core/props';
  * starts its grid lines half a pixel off the pixel grid, so its dotted styles smear into faint two-pixel dots;
  * its dashed style lands one full-colour pixel every four pixels, with faint neighbours.
  */
-/** How far past the last bar TradingView's time axis still has dates: a weekly chart's axis ends about ten years out. */
+/** How far past the last bar TradingView's time axis still has dates: the replica gallery scene's weekly axis labels 2036 but not 2038, so about 500 bars after its last bar in late 2026. */
 const FUTURE_BARS = 500;
 
 const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 2 : tvStyle);

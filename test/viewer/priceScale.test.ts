@@ -10,7 +10,7 @@ import { planChart } from '../../src/renderer/viewer/plan';
 import { FIXTURES } from '../fakes/fixtures';
 
 /**
- * Scale states and visible ranges read from tradingview.com (TSX:JX 1W, build of 2026-10-18) after
+ * Scale states and visible ranges read from tradingview.com (TSX:JX 1W, 2026-10-18) after
  * `getMainSourcePriceScale().setMode(...)`, `setAutoScale(false)` and `setVisiblePriceRange(...)`.
  */
 const base = { id: 'x', m_priceRange: null, m_isAutoScale: true, m_isPercentage: false, m_isIndexedTo100: false, m_isLog: false, m_isLockScale: false, m_isInverted: false, m_topMargin: 0.1, m_bottomMargin: 0.08, alignLabels: true, logFormula: { logicalOffset: 4, coordOffset: 0.0001 }, hasCalculatedPriceRange: true };
