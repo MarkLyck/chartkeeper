@@ -36,7 +36,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
       return h('section', { class: 'card signin' }, spinner(t('signin.waitingTitle')), h('p', {}, t('signin.waitingBody')));
     return h('section', { class: 'card signin', attrs: { 'aria-label': t('signin.notSignedIn') } },
       h('p', { class: 'signin-status' }, h('span', { class: 'dot dot-off', attrs: { 'aria-hidden': 'true' } }), t('signin.notSignedIn')),
-      h('p', { class: 'signin-explain' }, t('signin.explain'), s.browserName ? ` ${t('signin.browser', { browser: s.browserName })}` : ''),
+      h('p', { class: 'signin-explain' }, t('signin.explain'), ` ${s.browserName ? t('signin.browser', { browser: s.browserName }) : t('signin.noBrowser')}`),
       button(t('signin.button'), signIn, { kind: 'primary', big: true, id: 'signin', disabled: s.busy !== null }),
       signInError ? errorBox(ctx, signInError) : null);
   }
