@@ -1,0 +1,322 @@
+{
+  "scene": "replica-tsxv-weekly-log",
+  "description": "Replica of a user's chart: TSX Venture weekly on a log scale scrolled to 2045, sine lines, time cycles, a descending channel, fib time zone, Elliott waves in eight degrees reaching 2043, text, a box and projection paths.",
+  "uid": "replica-tsxv-weekly-log",
+  "theme": "dark",
+  "arrangement": "s",
+  "capturedAt": "2026-10-18T15:34:47.825Z",
+  "tradingViewBuild": "2026-10-16T17:55:37",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1600,
+    "height": 680
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "TSX:JX",
+      "interval": "W",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 680
+      },
+      "visibleRange": {
+        "from": 1013385600,
+        "to": 2148595200
+      },
+      "priceRange": {
+        "from": 263.5069199046502,
+        "to": 4478.248151637389
+      },
+      "tradingView": {
+        "drawings": 39,
+        "shapes": 39,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolRectangle",
+      "type": "LineToolRectangle",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolSineLine",
+      "type": "LineToolSineLine",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolSineLine",
+      "type": "LineToolSineLine",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolSineLine",
+      "type": "LineToolSineLine",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolTimeCycles",
+      "type": "LineToolTimeCycles",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolTimeCycles",
+      "type": "LineToolTimeCycles",
+      "image": "isolated/c1d06.png"
+    },
+    {
+      "id": "c1d07",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d07.png"
+    },
+    {
+      "id": "c1d08",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d08.png"
+    },
+    {
+      "id": "c1d09",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d09.png"
+    },
+    {
+      "id": "c1d10",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d10.png"
+    },
+    {
+      "id": "c1d11",
+      "chartId": "1",
+      "requestedType": "LineToolRay",
+      "type": "LineToolRay",
+      "image": "isolated/c1d11.png"
+    },
+    {
+      "id": "c1d12",
+      "chartId": "1",
+      "requestedType": "LineToolRay",
+      "type": "LineToolRay",
+      "image": "isolated/c1d12.png"
+    },
+    {
+      "id": "c1d13",
+      "chartId": "1",
+      "requestedType": "LineToolCircle",
+      "type": "LineToolCircle",
+      "image": "isolated/c1d13.png"
+    },
+    {
+      "id": "c1d14",
+      "chartId": "1",
+      "requestedType": "LineToolCircle",
+      "type": "LineToolCircle",
+      "image": "isolated/c1d14.png"
+    },
+    {
+      "id": "c1d15",
+      "chartId": "1",
+      "requestedType": "LineToolVertLine",
+      "type": "LineToolVertLine",
+      "image": "isolated/c1d15.png"
+    },
+    {
+      "id": "c1d16",
+      "chartId": "1",
+      "requestedType": "LineToolVertLine",
+      "type": "LineToolVertLine",
+      "image": "isolated/c1d16.png"
+    },
+    {
+      "id": "c1d17",
+      "chartId": "1",
+      "requestedType": "LineToolFibTimeZone",
+      "type": "LineToolFibTimeZone",
+      "image": "isolated/c1d17.png"
+    },
+    {
+      "id": "c1d18",
+      "chartId": "1",
+      "requestedType": "LineToolElliottTripleCombo",
+      "type": "LineToolElliottTripleCombo",
+      "image": "isolated/c1d18.png"
+    },
+    {
+      "id": "c1d19",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d19.png"
+    },
+    {
+      "id": "c1d20",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d20.png"
+    },
+    {
+      "id": "c1d21",
+      "chartId": "1",
+      "requestedType": "LineToolElliottDoubleCombo",
+      "type": "LineToolElliottDoubleCombo",
+      "image": "isolated/c1d21.png"
+    },
+    {
+      "id": "c1d22",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d22.png"
+    },
+    {
+      "id": "c1d23",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d23.png"
+    },
+    {
+      "id": "c1d24",
+      "chartId": "1",
+      "requestedType": "LineToolElliottTriangle",
+      "type": "LineToolElliottTriangle",
+      "image": "isolated/c1d24.png"
+    },
+    {
+      "id": "c1d25",
+      "chartId": "1",
+      "requestedType": "LineToolElliottDoubleCombo",
+      "type": "LineToolElliottDoubleCombo",
+      "image": "isolated/c1d25.png"
+    },
+    {
+      "id": "c1d26",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d26.png"
+    },
+    {
+      "id": "c1d27",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d27.png"
+    },
+    {
+      "id": "c1d28",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d28.png"
+    },
+    {
+      "id": "c1d29",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d29.png"
+    },
+    {
+      "id": "c1d30",
+      "chartId": "1",
+      "requestedType": "LineToolRectangle",
+      "type": "LineToolRectangle",
+      "image": "isolated/c1d30.png"
+    },
+    {
+      "id": "c1d31",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d31.png"
+    },
+    {
+      "id": "c1d32",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d32.png"
+    },
+    {
+      "id": "c1d33",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d33.png"
+    },
+    {
+      "id": "c1d34",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d34.png"
+    },
+    {
+      "id": "c1d35",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d35.png"
+    },
+    {
+      "id": "c1d36",
+      "chartId": "1",
+      "requestedType": "LineToolPath",
+      "type": "LineToolPath",
+      "image": "isolated/c1d36.png"
+    },
+    {
+      "id": "c1d37",
+      "chartId": "1",
+      "requestedType": "LineToolPolyline",
+      "type": "LineToolPolyline",
+      "image": "isolated/c1d37.png"
+    },
+    {
+      "id": "c1d38",
+      "chartId": "1",
+      "requestedType": "LineToolArrowMarkUp",
+      "type": "LineToolArrowMarkUp",
+      "image": "isolated/c1d38.png"
+    },
+    {
+      "id": "c1d39",
+      "chartId": "1",
+      "requestedType": "LineToolArrowMarkDown",
+      "type": "LineToolArrowMarkDown",
+      "image": "isolated/c1d39.png"
+    }
+  ]
+}

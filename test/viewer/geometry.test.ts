@@ -138,6 +138,26 @@ describe('time index', () => {
     expect(index.indexOf(monday + 15 * 3600)).toBe(last + 3); // between bars: the next one
   });
 
+  it('lists future bar times that land on consecutive bar positions, so the time axis and drawings agree past the last bar', () => {
+    const thu = Date.UTC(2026, 8, 17) / 1000;
+    const slots = [13.5, 14.5, 15.5].map((h) => h * 3600);
+    const cases: [string, number[]][] = [
+      ['D', times],
+      ['2D', times],
+      ['W', [0, 7, 14].map((w) => mon + w * DAY)],
+      ['M', [0, 1, 2].map((m) => Date.UTC(2026, m, 1) / 1000)],
+      ['60', [thu, thu + DAY].flatMap((d) => slots.map((s) => d + s))],
+      ['15', [0, 900, 1800]],
+    ];
+    for (const [interval, ts] of cases) {
+      const idx = new TimeIndex(ts, interval);
+      const future = idx.futureTimes(30);
+      expect(future, interval).toHaveLength(30);
+      expect(future.map((t) => idx.indexOf(t)), interval).toEqual(future.map((_, k) => ts.length + k));
+    }
+    expect(index.futureTimes(1)).toEqual([times[9]! + 3 * DAY]); // Friday -> Monday
+  });
+
   it('labels intervals like the chart header', () => {
     expect(['D', '1D', '60', '240', '15', '1W', '3M', '30S'].map(intervalLabel)).toEqual(['1D', '1D', '1h', '4h', '15m', '1W', '3M', '30s']);
   });

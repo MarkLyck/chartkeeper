@@ -25,7 +25,7 @@ import { SnapshotReader } from '../src/core/snapshot';
 import { openLayout } from '../src/core/snapshotView';
 import type { AnalyzeInput, AnalyzeResult, MaskScore, RenderInfo, SceneInput } from './gallery/page';
 import { parseColor, type Rect } from '../test/gallery/pixels';
-import { DRAWING_THRESHOLDS, INDICATOR_THRESHOLDS, STYLE_THRESHOLDS, type Threshold } from '../test/gallery/thresholds';
+import { DRAWING_THRESHOLDS, INDICATOR_THRESHOLDS, SCENE_THRESHOLDS, STYLE_THRESHOLDS, type Threshold } from '../test/gallery/thresholds';
 
 const ROOT = path.resolve(__dirname, '..');
 const GALLERY = path.join(ROOT, 'test/fixtures/gallery');
@@ -247,7 +247,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
   for (const r of result.drawings) {
     await fs.writeFile(path.join(out, 'drawings', `${r.id}.png`), fromDataUrl(r.overlay));
     const type = typeOf.get(r.id) ?? meta.drawings.find((d) => d.id === r.id)!.type;
-    const threshold = DRAWING_THRESHOLDS[type] ?? null;
+    const threshold = SCENE_THRESHOLDS[meta.scene]?.drawings?.[type] ?? DRAWING_THRESHOLDS[type] ?? null;
     const failure = notShownIds.has(r.id) && !threshold?.reason ? 'listed as not shown' : check(r.f1, threshold);
     drawings.push({ scene: meta.scene, id: r.id, type, family: families.get(type) ?? 'other', f1: r.f1, precision: r.precision, recall: r.recall, centroidDistance: r.centroidDistance, colorDistance: r.colorDistance, threshold, failure });
   }
@@ -257,7 +257,7 @@ async function compareScene(browser: Browser, script: string, dir: string, famil
     const keys = info.studies.length ? info.studies.map((id) => `indicator:${studyKey(id)}`) : info.main ? [`style:${chartMeta.style.id}`] : [];
     const failures = keys.map((k) => {
       const [kind, name] = k.split(':') as [string, string];
-      const t = kind === 'style' ? (STYLE_THRESHOLDS[Number(name)] ?? null) : (INDICATOR_THRESHOLDS[name] ?? null);
+      const t = kind === 'style' ? (SCENE_THRESHOLDS[meta.scene]?.styles?.[Number(name)] ?? STYLE_THRESHOLDS[Number(name)] ?? null) : (INDICATOR_THRESHOLDS[name] ?? null);
       const f = check(s.f1, t);
       return f && `${k} ${f}`;
     });

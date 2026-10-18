@@ -54,6 +54,16 @@ describe('planLayout on the reference snapshot', () => {
     ]);
     expect(panes.map((p) => p.stretchFactor)).toEqual([2000, 1000]);
   });
+
+  it("names the symbol by TradingView's description, or by ticker when the chart is set to show tickers or the backup has no description", () => {
+    const layout = parseLayout(record, null);
+    const title = (data: ChartData, l = layout) => planLayout(l, { 1: data }).charts[0]!.symbolTitle;
+    expect(title({ ...chartData, description: 'Apple Inc' })).toBe('Apple Inc');
+    expect(title(chartData)).toBe('AAPL');
+    const tickers = clone(layout);
+    tickers.charts[0]!.seriesState = { ...tickers.charts[0]!.seriesState, statusViewStyle: { symbolTextSource: 'ticker' } };
+    expect(title({ ...chartData, description: 'Apple Inc' }, tickers)).toBe('AAPL');
+  });
 });
 
 describe('planLayout on a layout with problems', () => {

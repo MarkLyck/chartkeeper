@@ -26,6 +26,8 @@ import { lineWidth, type PriceFormatSpec, type SeriesKind, type SeriesSpec, type
 import { StyleSeriesView } from './styles/view';
 import { PriceLinePrimitive } from './styles/priceLine';
 import { priceAxisTexts, tvPriceAxisWidth } from './axis';
+import { applyPriceScale, priceRangeInScaleUnits } from './priceScale';
+import type { PriceScaleState } from '../../core/layout';
 import { legendInputs, opaque, studyScaleMargins, volumeText } from './studies';
 import { LOCALE } from '../../shared/locale';
 import { intervalLabel, STRINGS } from './strings';
@@ -38,6 +40,9 @@ import { num, obj, str, type Props } from '../../core/props';
  * starts its grid lines half a pixel off the pixel grid, so its dotted styles smear into faint two-pixel dots;
  * its dashed style lands one full-colour pixel every four pixels, with faint neighbours.
  */
+/** How far past the last bar TradingView's time axis still has dates: the replica gallery scene's weekly axis labels 2036 but not 2038, so about 500 bars after its last bar in late 2026. */
+const FUTURE_BARS = 500;
+
 const gridStyle = (tvStyle: unknown) => lwcLineStyle(tvStyle === 1 ? 2 : tvStyle);
 
 export interface ChartTheme {
@@ -120,6 +125,13 @@ function addSeries(chart: IChartApi, spec: SeriesSpec | StyleSeriesSpec, pane: n
   return s;
 }
 
+/** A series' lightweight-charts price format that writes values as TradingView does (see formatValue). */
+function lwcPriceFormat(format: PriceFormatSpec): DeepPartial<SeriesOptionsCommon['priceFormat']> {
+  if (format.type === 'volume') return { type: 'custom', formatter: volumeText, minMove: 1 };
+  if (format.type === 'percent') return format;
+  return { type: 'custom', minMove: format.minMove, formatter: (p: number) => formatValue(p, format) };
+}
+
 function formatValue(v: number | null | undefined, format: PriceFormatSpec): string {
   if (v === null || v === undefined) return '∅';
   if (format.type === 'volume') {
@@ -132,7 +144,10 @@ function formatValue(v: number | null | undefined, format: PriceFormatSpec): str
   if (format.type === 'percent') return `${v.toFixed(2)}%`;
   // 346.085 is stored as 346.08499..., so shift the decimal point in text to round half up like TradingView.
   const p = format.precision;
-  return String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
+  const fixed = String(v).includes('e') ? v.toFixed(p) : (Math.round(Number(`${v}e${p}`)) / 10 ** p).toFixed(p);
+  // TradingView groups thousands in prices everywhere: axis, legend and drawing labels ("3,800.00").
+  const [int = '', frac] = fixed.split('.');
+  return `${int.replace(/\B(?=(\d{3})+$)/g, ',')}${frac === undefined ? '' : `.${frac}`}`;
 }
 
 
@@ -185,7 +200,7 @@ function mainLegend(plan: ChartPlan, theme: ChartTheme): Legend {
   el.style.top = '4px';
   el.style.lineHeight = '24px';
   const exchange = plan.chart.symbol.includes(':') ? plan.chart.symbol.split(':')[0]! : '';
-  const title = span([plan.chart.shortName, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
+  const title = span([plan.symbolTitle, intervalLabel(plan.chart.interval), exchange, main.legend.styleName].filter(Boolean).join(' · '));
   title.style.fontSize = '16px';
   title.style.marginRight = '12px';
   const values = document.createElement('span');
@@ -260,7 +275,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
 
   if (!plan.main) {
     const box = legendBox(theme);
-    box.append(span(`${plan.chart.shortName} · ${intervalLabel(plan.chart.interval)}`, undefined, true));
+    box.append(span(`${plan.symbolTitle} · ${intervalLabel(plan.chart.interval)}`, undefined, true));
     const msg = document.createElement('div');
     msg.textContent = STRINGS.noPriceDataBanner;
     msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0.75;';
@@ -293,19 +308,22 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
 
   const paneMargins = { top: 0.1, bottom: 0.08, ...theme.options.rightPriceScale?.scaleMargins };
   const legends: { pane: number; legend: Legend }[] = [];
+  /** Each price scale with the series that owns it, applied again whenever the view is reset. */
+  const scales: { series: ISeriesApi<SeriesType>; scale: PriceScaleState }[] = [];
   let mainSeries: ISeriesApi<SeriesType> | null = null;
   plan.panes.forEach((pane, index) => {
     let host: ISeriesApi<SeriesType> | null = null;
     if (pane.main) {
-      host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right' });
+      host = addSeries(chart, plan.main!.spec, index, { priceScaleId: 'right', priceFormat: lwcPriceFormat(plan.priceFormat) });
       if (plan.main!.priceLine) host.attachPrimitive(new PriceLinePrimitive(plan.main!.priceLine));
       mainSeries = host;
+      scales.push({ series: host, scale: plan.chart.priceScale });
       legends.push({ pane: index, legend: mainLegend(plan, theme) });
     }
     for (const ps of pane.studies) {
       let first: ISeriesApi<SeriesType> | null = null;
       for (const plot of ps.render.series) {
-        const priceFormat = ps.priceFormat.type === 'volume' ? { type: 'custom' as const, formatter: volumeText, minMove: 1 } : ps.priceFormat;
+        const priceFormat = lwcPriceFormat(ps.priceFormat);
         const s = addSeries(chart, plot.spec, index, { priceScaleId: ps.priceScaleId, priceFormat });
         first ??= s;
       }
@@ -313,6 +331,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       // A pane's own scale follows its first indicator, like TradingView's scale follows its main source.
       if (first && (overlay || (!pane.main && ps === pane.studies[0]))) {
         first.priceScale().applyOptions({ scaleMargins: studyScaleMargins(ps.study, overlay, paneMargins) });
+        scales.push({ series: first, scale: ps.priceScale });
       }
       const target = first ?? host;
       if (!target) continue;
@@ -323,11 +342,17 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     if (pane.studies.length) legends.push({ pane: index, legend: studyLegend(pane.studies, theme, pane.main ? 28 : 4) });
     if (host && pane.drawings.length) {
       // Only the main series has a TradingView z-order to sort drawings against; in indicator panes drawings stay on top.
-      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
+      const logScale = scales.find((s) => s.series === host)?.scale.mode === 'log';
+      const drawings = new DrawingsPrimitive(pane.drawings, { ...drawingsEnv, logScale, seriesZorder: pane.main ? plan.chart.seriesZorder : -Infinity });
       host.attachPrimitive(drawings);
       chart.panes()[index]?.attachPrimitive(drawings.belowSeries());
     }
   });
+
+  // TradingView's time axis carries dates FUTURE_BARS bars past the last bar. Empty (whitespace) points give
+  // lightweight-charts the same dates there without moving the last bar, which its right offset counts from.
+  const future = plan.timeIndex.futureTimes(FUTURE_BARS).map((t) => ({ time: (intraday ? t + timeZoneOffset(t, plan.chart.timezone) : t) as Time }));
+  chart.addSeries(LineSeries, { visible: false, lastValueVisible: false, priceLineVisible: false, priceScaleId: 'future-dates' }, 0).setData(future);
 
   const total = plan.panes.reduce((sum, p) => sum + p.stretchFactor, 0);
   chart.panes().forEach((p, i) => p.setStretchFactor((plan.panes[i]?.stretchFactor ?? 1000) / total));
@@ -362,10 +387,12 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     } else {
       chart.timeScale().setVisibleLogicalRange({ from: last - 150, to: last + 10 });
     }
-    if (priceRange && mainSeries) {
+    for (const { series, scale } of scales) applyPriceScale(series.priceScale(), scale);
+    const explicit = priceRange && priceRangeInScaleUnits(plan.chart.priceScale.mode, { from: Math.min(priceRange.from, priceRange.to), to: Math.max(priceRange.from, priceRange.to) });
+    if (explicit && mainSeries) {
       // An explicit range spans the whole pane, so the autoscale margins must not shrink it.
       mainSeries.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0, bottom: 0 } });
-      mainSeries.priceScale().setVisibleRange(priceRange);
+      mainSeries.priceScale().setVisibleRange(explicit);
     }
   };
   applyRange();

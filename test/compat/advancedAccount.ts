@@ -345,5 +345,38 @@ export function advancedAccount(): AdvancedAccount {
     studies: [studyOf(bollinger2, 0, 0)],
   };
 
-  return { layouts: [layout1, layout2], expected: [expected1, expected2] };
+  const [layout3, expected3] = replicaInAccount();
+  return { layouts: [layout1, layout2, layout3], expected: [expected1, expected2, expected3] };
+}
+
+/**
+ * Layout 3: the gallery's copy of a user's real chart (TSX Venture weekly) exactly as TradingView saved
+ * it: a log price scale, the view scrolled 950 bars past the last bar, points as far out as 2043, sine
+ * lines, time cycles, a fib time zone, Elliott waves in eight degrees, text, a box and paths. Its drawings
+ * are spread over the content and both storage buckets, the places a real account keeps them.
+ */
+function replicaInAccount(): [FakeLayout, ExpectedLayout] {
+  const scene = 'replica-tsxv-weekly-log';
+  const record = JSON.parse(readFileSync(path.join(FIXTURES, `gallery/${scene}/layouts/${scene}/layout.json`), 'utf8')) as { content: TvContent; studyMetaInfoMap: Record<string, Props> };
+  const content = structuredClone(record.content);
+  const chart = content.charts[0]!;
+  const pane = chart.panes[0]!;
+  const axis = (pane.rightAxisesState as { sources: string[] }[])[0]!;
+  const symbol = 'TSX:JX';
+  const storage: FakeLayout['storage'] = { '1': {}, _shared: {} };
+  const places: StoredIn[] = ['content', 'storage:1', 'storage:_shared'];
+  const drawings: ExpectedDrawing[] = pane.sources
+    .filter((s) => String(s.type).startsWith('LineTool'))
+    .map((source, i) => {
+      const storedIn = places[i % places.length]!;
+      if (storedIn !== 'content') {
+        pane.sources = pane.sources.filter((s) => s !== source);
+        axis.sources = axis.sources.filter((id) => id !== source.id);
+        storage[storedIn.slice('storage:'.length)]![String(source.id)] = storedDto(source, symbol);
+      }
+      return { id: String(source.id), type: String(source.type), storedIn, chart: 0, pane: 0, source: structuredClone(source) };
+    });
+  const layout: FakeLayout = { uid: 'AdvRepl3', id: 603, name: 'TSX Venture replica', content: { ...content, name: 'TSX Venture replica' }, studyMeta: record.studyMetaInfoMap, storage, listExtra: { symbol, resolution: '1W', short_name: 'JX' } };
+  const expected: ExpectedLayout = { uid: layout.uid, name: layout.name, arrangement: 's', settings: {}, charts: [expectedChart(chart)], drawings, studies: [] };
+  return [layout, expected];
 }

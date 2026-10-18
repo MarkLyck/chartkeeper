@@ -66,6 +66,37 @@ export class TimeIndex {
     return count;
   }
 
+  /** Opening times of the `count` bars after the last one, numbered as `indexOf` numbers them: the k-th lands on the last bar's index + k. */
+  futureTimes(count: number): number[] {
+    const last = this.times[this.times.length - 1];
+    if (last === undefined || count <= 0) return [];
+    const { unit, n } = this.interval;
+    const out: number[] = [];
+    const tradingDay = (d: number) => this.tradesWeekends || !isWeekend(d);
+    if (this.slots.length > 1) {
+      for (let d = utcDay(last); out.length < count; d++) {
+        if (d !== utcDay(last) && !tradingDay(d)) continue;
+        for (const slot of this.slots) if (d * DAY + slot > last && out.length < count) out.push(d * DAY + slot);
+      }
+      return out;
+    }
+    if (unit === 'D') {
+      const timeOfDay = last - utcDay(last) * DAY;
+      for (let d = utcDay(last) + 1, seen = 0; out.length < count; d++) {
+        if (tradingDay(d) && ++seen % n === 0) out.push(d * DAY + timeOfDay);
+      }
+      return out;
+    }
+    if (unit === 'M') {
+      const at = new Date(last * 1000);
+      for (let k = 1; k <= count; k++) out.push(Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + k * n, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes()) / 1000);
+      return out;
+    }
+    const step = unit === 'W' ? 7 * DAY * n : unit === 'm' ? 60 * n : n;
+    for (let k = 1; k <= count; k++) out.push(last + k * step);
+    return out;
+  }
+
   /** Whole bars from time `a` to a later time `b`, as the time scale would count them. */
   barsBetween(a: number, b: number): number {
     const { unit, n } = this.interval;

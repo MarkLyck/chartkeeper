@@ -133,7 +133,7 @@ save prices so charts can be viewed offline** in the settings.
 - [docs/INVESTIGATION.md](docs/INVESTIGATION.md) records how tradingview.com
   stores layouts and the endpoints ChartKeeper uses.
 - [docs/decisions.tsv](docs/decisions.tsv) is the decision log.
-- `npm run gallery:compare` renders each of the 40 scenes in
+- `npm run gallery:compare` renders each of the 42 scenes in
   `test/fixtures/gallery` (every drawing tool, chart style and indicator a
   signed-out TradingView chart offers, captured from TradingView itself) with
   the viewer, scores every drawing, chart style and indicator against
@@ -143,6 +143,12 @@ save prices so charts can be viewed offline** in the settings.
   ChartKeeper on the right:
   ![Viewer next to TradingView, light](docs/screenshots/advanced-vs-tradingview.png)
   ![Viewer next to TradingView, dark](docs/screenshots/advanced-dark-vs-tradingview.png)
+  The `replica-tsxv-weekly-log` scene copies a user's real chart: TSX Venture
+  weekly on a log price scale, scrolled ten years into the future, with sine
+  lines, time cycles, a fib time zone, Elliott waves in eight degrees and
+  projections to 2043. `log-scale-tools` checks the tools whose shape depends
+  on prices on a log scale. `npm run screenshots` regenerates these images.
+  ![Replica of a user's log-scale chart next to TradingView](docs/screenshots/replica-vs-tradingview.png)
 - `npm run viewer:compare` checks the cases the gallery can't capture (several
   charts in one layout, a chart without prices, unknown drawings, indicator
   errors) and writes `.test-output/viewer-gallery.png`.
@@ -184,7 +190,8 @@ TradingView screenshot from a signed-out TradingView chart.
 ### Compatibility test
 
 `npm run test:compat` backs up an "advanced" test account (every drawing tool,
-custom styles, indicators, custom chart settings, two charts) with the real
+custom styles, indicators, custom chart settings, two charts, and the replica
+of a user's log-scale weekly chart with its far-future drawings) with the real
 backup code, and restores it with the real restore code. It then loads the
 content that the restore sends to TradingView into a signed-out
 tradingview.com chart, through TradingView's own loader. It reads the result

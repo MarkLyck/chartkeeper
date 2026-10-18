@@ -1,4 +1,4 @@
-import { drawingsForChart, type ParsedChart, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
+import { DEFAULT_PRICE_SCALE, drawingsForChart, type ParsedChart, type PriceScaleState, type ParsedDrawing, type ParsedLayout, type ParsedPane, type ParsedStudy } from '../../core/layout';
 import { sameTicker } from '../../core/tv/content';
 import type { Bar, ChartData, StudyValues } from '../../core/model';
 import { obj } from '../../core/props';
@@ -30,6 +30,8 @@ export interface PlannedStudy {
   priceFormat: PriceFormatSpec;
   /** Price scale for the study's series: "right" shares the pane's scale, anything else is a separate overlay scale. */
   priceScaleId: string;
+  /** How TradingView saved the scale the study sits on. */
+  priceScale: PriceScaleState;
 }
 
 export interface PlannedPane {
@@ -42,6 +44,8 @@ export interface PlannedPane {
 
 export interface ChartPlan {
   chart: ParsedChart;
+  /** The symbol as the legend names it: TradingView's description ("Apple Inc") unless the chart is set to show the ticker. */
+  symbolTitle: string;
   /** Null when the snapshot has no price data for this chart. */
   main: MainSeriesSpec | null;
   bars: Bar[];
@@ -133,6 +137,7 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
         pivots,
         priceFormat: studyPriceFormat(study, priceFormat),
         priceScaleId: isMainPane && !study.isPriceStudy ? `overlay-${study.id}` : 'right',
+        priceScale: pane.priceScales[study.id] ?? DEFAULT_PRICE_SCALE,
       });
       renderedStudies.push(study.id);
       if (render.unsupported.length) add('indicator', study.id, name, { code: 'unsupported-plots', count: render.unsupported.length }, true);
@@ -168,7 +173,8 @@ export function planChart(layout: ParsedLayout, chart: ParsedChart, data: ChartD
   }
   for (const p of panes) p.drawings.sort((a, b) => a.zorder - b.zorder);
 
-  return { chart, main, bars, times, timeIndex, priceFormat, drawingStudies: data?.drawingStudies ?? {}, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
+  const symbolTitle = obj(chart.seriesState.statusViewStyle).symbolTextSource !== 'ticker' && data?.description ? data.description : chart.shortName;
+  return { chart, symbolTitle, main, bars, times, timeIndex, priceFormat, drawingStudies: data?.drawingStudies ?? {}, panes, rendered: { drawings: renderedDrawings, studies: renderedStudies }, notShown };
 }
 
 export interface LayoutPlan {

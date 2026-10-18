@@ -1852,6 +1852,396 @@
         }
       ],
       "drawings": []
+    },
+    {
+      "name": "replica-tsxv-weekly-log",
+      "dir": "replica-tsxv-weekly-log",
+      "uid": "replica-tsxv-weekly-log",
+      "description": "Replica of a user's chart: TSX Venture weekly on a log scale scrolled to 2045, sine lines, time cycles, a descending channel, fib time zone, Elliott waves in eight degrees reaching 2043, text, a box and projection paths.",
+      "theme": "dark",
+      "arrangement": "s",
+      "capturedAt": "2026-10-18T15:34:47.825Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "TSX:JX",
+          "interval": "W",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolRectangle",
+          "requestedType": "LineToolRectangle",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolSineLine",
+          "requestedType": "LineToolSineLine",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolSineLine",
+          "requestedType": "LineToolSineLine",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolSineLine",
+          "requestedType": "LineToolSineLine",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolTimeCycles",
+          "requestedType": "LineToolTimeCycles",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolTimeCycles",
+          "requestedType": "LineToolTimeCycles",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d10.png"
+        },
+        {
+          "id": "c1d11",
+          "type": "LineToolRay",
+          "requestedType": "LineToolRay",
+          "image": "isolated/c1d11.png"
+        },
+        {
+          "id": "c1d12",
+          "type": "LineToolRay",
+          "requestedType": "LineToolRay",
+          "image": "isolated/c1d12.png"
+        },
+        {
+          "id": "c1d13",
+          "type": "LineToolCircle",
+          "requestedType": "LineToolCircle",
+          "image": "isolated/c1d13.png"
+        },
+        {
+          "id": "c1d14",
+          "type": "LineToolCircle",
+          "requestedType": "LineToolCircle",
+          "image": "isolated/c1d14.png"
+        },
+        {
+          "id": "c1d15",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d15.png"
+        },
+        {
+          "id": "c1d16",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d16.png"
+        },
+        {
+          "id": "c1d17",
+          "type": "LineToolFibTimeZone",
+          "requestedType": "LineToolFibTimeZone",
+          "image": "isolated/c1d17.png"
+        },
+        {
+          "id": "c1d18",
+          "type": "LineToolElliottTripleCombo",
+          "requestedType": "LineToolElliottTripleCombo",
+          "image": "isolated/c1d18.png"
+        },
+        {
+          "id": "c1d19",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d19.png"
+        },
+        {
+          "id": "c1d20",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d20.png"
+        },
+        {
+          "id": "c1d21",
+          "type": "LineToolElliottDoubleCombo",
+          "requestedType": "LineToolElliottDoubleCombo",
+          "image": "isolated/c1d21.png"
+        },
+        {
+          "id": "c1d22",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d22.png"
+        },
+        {
+          "id": "c1d23",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d23.png"
+        },
+        {
+          "id": "c1d24",
+          "type": "LineToolElliottTriangle",
+          "requestedType": "LineToolElliottTriangle",
+          "image": "isolated/c1d24.png"
+        },
+        {
+          "id": "c1d25",
+          "type": "LineToolElliottDoubleCombo",
+          "requestedType": "LineToolElliottDoubleCombo",
+          "image": "isolated/c1d25.png"
+        },
+        {
+          "id": "c1d26",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d26.png"
+        },
+        {
+          "id": "c1d27",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d27.png"
+        },
+        {
+          "id": "c1d28",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d28.png"
+        },
+        {
+          "id": "c1d29",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d29.png"
+        },
+        {
+          "id": "c1d30",
+          "type": "LineToolRectangle",
+          "requestedType": "LineToolRectangle",
+          "image": "isolated/c1d30.png"
+        },
+        {
+          "id": "c1d31",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d31.png"
+        },
+        {
+          "id": "c1d32",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d32.png"
+        },
+        {
+          "id": "c1d33",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d33.png"
+        },
+        {
+          "id": "c1d34",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d34.png"
+        },
+        {
+          "id": "c1d35",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d35.png"
+        },
+        {
+          "id": "c1d36",
+          "type": "LineToolPath",
+          "requestedType": "LineToolPath",
+          "image": "isolated/c1d36.png"
+        },
+        {
+          "id": "c1d37",
+          "type": "LineToolPolyline",
+          "requestedType": "LineToolPolyline",
+          "image": "isolated/c1d37.png"
+        },
+        {
+          "id": "c1d38",
+          "type": "LineToolArrowMarkUp",
+          "requestedType": "LineToolArrowMarkUp",
+          "image": "isolated/c1d38.png"
+        },
+        {
+          "id": "c1d39",
+          "type": "LineToolArrowMarkDown",
+          "requestedType": "LineToolArrowMarkDown",
+          "image": "isolated/c1d39.png"
+        }
+      ]
+    },
+    {
+      "name": "log-scale-tools",
+      "dir": "log-scale-tools",
+      "uid": "log-scale-tools",
+      "description": "Price-dependent tools on a log scale (TSX Venture weekly): fib retracement and extension with and without log-based levels, fib channel, parallel and disjoint channels, Gann box, price and date ranges, a long position, a horizontal line, and Elliott degrees 0 to 5 and 11.",
+      "theme": "light",
+      "arrangement": "s",
+      "capturedAt": "2026-10-18T15:35:17.448Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "TSX:JX",
+          "interval": "W",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolFibRetracement",
+          "requestedType": "LineToolFibRetracement",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolFibRetracement",
+          "requestedType": "LineToolFibRetracement",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolTrendBasedFibExtension",
+          "requestedType": "LineToolTrendBasedFibExtension",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolTrendBasedFibExtension",
+          "requestedType": "LineToolTrendBasedFibExtension",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolFibChannel",
+          "requestedType": "LineToolFibChannel",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolParallelChannel",
+          "requestedType": "LineToolParallelChannel",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolDisjointAngle",
+          "requestedType": "LineToolDisjointAngle",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolGannSquare",
+          "requestedType": "LineToolGannSquare",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolPriceRange",
+          "requestedType": "LineToolPriceRange",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolDateAndPriceRange",
+          "requestedType": "LineToolDateAndPriceRange",
+          "image": "isolated/c1d10.png"
+        },
+        {
+          "id": "c1d11",
+          "type": "LineToolRiskRewardLong",
+          "requestedType": "LineToolRiskRewardLong",
+          "image": "isolated/c1d11.png"
+        },
+        {
+          "id": "c1d12",
+          "type": "LineToolHorzLine",
+          "requestedType": "LineToolHorzLine",
+          "image": "isolated/c1d12.png"
+        },
+        {
+          "id": "c1d13",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d13.png"
+        },
+        {
+          "id": "c1d14",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d14.png"
+        },
+        {
+          "id": "c1d15",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d15.png"
+        },
+        {
+          "id": "c1d16",
+          "type": "LineToolElliottDoubleCombo",
+          "requestedType": "LineToolElliottDoubleCombo",
+          "image": "isolated/c1d16.png"
+        },
+        {
+          "id": "c1d17",
+          "type": "LineToolElliottTripleCombo",
+          "requestedType": "LineToolElliottTripleCombo",
+          "image": "isolated/c1d17.png"
+        },
+        {
+          "id": "c1d18",
+          "type": "LineToolElliottTriangle",
+          "requestedType": "LineToolElliottTriangle",
+          "image": "isolated/c1d18.png"
+        },
+        {
+          "id": "c1d19",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d19.png"
+        }
+      ]
     }
   ],
   "coverage": {
@@ -1880,7 +2270,8 @@
         "ui": "text",
         "scenes": [
           "advanced",
-          "drawings-text"
+          "drawings-text",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -1967,7 +2358,8 @@
         "ui": "arrow_up",
         "scenes": [
           "advanced",
-          "drawings-marks"
+          "drawings-marks",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -1977,7 +2369,8 @@
         "ui": "arrow_down",
         "scenes": [
           "advanced",
-          "drawings-marks"
+          "drawings-marks",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2060,7 +2453,8 @@
         "ui": "vertical_line",
         "scenes": [
           "advanced",
-          "drawings-lines"
+          "drawings-lines",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2088,7 +2482,8 @@
           "style-line-with-markers",
           "style-step-line",
           "style-hlc-area",
-          "style-hlc-bars"
+          "style-hlc-bars",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2136,7 +2531,8 @@
           "style-line-with-markers",
           "style-step-line",
           "style-hlc-area",
-          "style-hlc-bars"
+          "style-hlc-bars",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2175,7 +2571,8 @@
         "ui": "ray",
         "scenes": [
           "advanced-dark",
-          "drawings-lines"
+          "drawings-lines",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2195,7 +2592,8 @@
         "ui": "parallel_channel",
         "scenes": [
           "advanced",
-          "drawings-channels"
+          "drawings-channels",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2204,7 +2602,8 @@
         "type": "LineToolDisjointAngle",
         "ui": "disjoint_angle",
         "scenes": [
-          "drawings-channels"
+          "drawings-channels",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2277,7 +2676,8 @@
         "type": "LineToolGannSquare",
         "ui": "gannbox",
         "scenes": [
-          "drawings-gann"
+          "drawings-gann",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2314,7 +2714,8 @@
         "ui": "fib_retracement",
         "scenes": [
           "advanced",
-          "drawings-fibs"
+          "drawings-fibs",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2324,7 +2725,8 @@
         "ui": "fib_trend_ext",
         "scenes": [
           "advanced",
-          "drawings-fibs"
+          "drawings-fibs",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2342,7 +2744,8 @@
         "type": "LineToolFibTimeZone",
         "ui": "fib_timezone",
         "scenes": [
-          "drawings-fibs-time"
+          "drawings-fibs-time",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2388,7 +2791,8 @@
         "ui": "fib_channel",
         "scenes": [
           "advanced-dark",
-          "drawings-fibs"
+          "drawings-fibs",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2444,7 +2848,9 @@
         "ui": "elliott_impulse_wave",
         "scenes": [
           "advanced-dark",
-          "drawings-elliott"
+          "drawings-elliott",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2453,7 +2859,9 @@
         "type": "LineToolElliottTriangle",
         "ui": "elliott_triangle_wave",
         "scenes": [
-          "drawings-elliott"
+          "drawings-elliott",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2462,7 +2870,9 @@
         "type": "LineToolElliottTripleCombo",
         "ui": "elliott_triple_combo",
         "scenes": [
-          "drawings-elliott"
+          "drawings-elliott",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2471,7 +2881,9 @@
         "type": "LineToolElliottCorrection",
         "ui": "elliott_correction",
         "scenes": [
-          "drawings-elliott"
+          "drawings-elliott",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2480,7 +2892,9 @@
         "type": "LineToolElliottDoubleCombo",
         "ui": "elliott_double_combo",
         "scenes": [
-          "drawings-elliott"
+          "drawings-elliott",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2498,7 +2912,8 @@
         "type": "LineToolTimeCycles",
         "ui": "time_cycles",
         "scenes": [
-          "drawings-cycles"
+          "drawings-cycles",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2507,7 +2922,8 @@
         "type": "LineToolSineLine",
         "ui": "sine_line",
         "scenes": [
-          "drawings-cycles"
+          "drawings-cycles",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2517,7 +2933,8 @@
         "ui": "long_position",
         "scenes": [
           "advanced",
-          "drawings-positions"
+          "drawings-positions",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2557,7 +2974,8 @@
         "ui": "price_range",
         "scenes": [
           "advanced-dark",
-          "drawings-measures"
+          "drawings-measures",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2566,7 +2984,8 @@
         "type": "LineToolDateAndPriceRange",
         "ui": "date_and_price_range",
         "scenes": [
-          "drawings-measures"
+          "drawings-measures",
+          "log-scale-tools"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2603,7 +3022,8 @@
         "ui": "rectangle",
         "scenes": [
           "advanced",
-          "drawings-shapes"
+          "drawings-shapes",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2621,7 +3041,8 @@
         "type": "LineToolCircle",
         "ui": "circle",
         "scenes": [
-          "drawings-shapes"
+          "drawings-shapes",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2650,7 +3071,8 @@
         "type": "LineToolPolyline",
         "ui": "polyline",
         "scenes": [
-          "drawings-freehand"
+          "drawings-freehand",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2659,7 +3081,8 @@
         "type": "LineToolPath",
         "ui": "path",
         "scenes": [
-          "drawings-freehand"
+          "drawings-freehand",
+          "replica-tsxv-weekly-log"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2776,7 +3199,9 @@
           "indicators-2",
           "indicators-3",
           "indicators-4",
-          "indicators-5"
+          "indicators-5",
+          "replica-tsxv-weekly-log",
+          "log-scale-tools"
         ],
         "notCapturable": null
       },

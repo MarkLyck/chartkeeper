@@ -56,6 +56,8 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | [indicators-3](indicators-3/) | NASDAQ:NVDA D Candles | Commodity channel index, Rate of change | 0 | Commodity Channel Index and Rate Of Change on NASDAQ:NVDA. |
 | [indicators-4](indicators-4/) | NYSE:JPM D Candles | Pivot points high low, Pivot points standard | 0 | Pivot Points Standard and Pivot Points High Low on NYSE:JPM. |
 | [indicators-5](indicators-5/) | NASDAQ:AMZN D Candles | Moving Average, Chaikin money flow | 0 | Chaikin Money Flow and Moving Average on NASDAQ:AMZN. |
+| [replica-tsxv-weekly-log](replica-tsxv-weekly-log/) | TSX:JX W Candles | - | 39 | Replica of a user's chart: TSX Venture weekly on a log scale scrolled to 2045, sine lines, time cycles, a descending channel, fib time zone, Elliott waves in eight degrees reaching 2043, text, a box and projection paths. |
+| [log-scale-tools](log-scale-tools/) | TSX:JX W Candles | - | 19 | Price-dependent tools on a log scale (TSX Venture weekly): fib retracement and extension with and without log-based levels, fib channel, parallel and disjoint channels, Gann box, price and date ranges, a long position, a horizontal line, and Elliott degrees 0 to 5 and 11. |
 
 ## Drawing tools (89 of 90 captured)
 
@@ -63,7 +65,7 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | --- | --- | --- | --- |
 | `LineToolBrush` | brush | drawings-freehand |  |
 | `LineToolHighlighter` | highlighter | advanced-dark, drawings-freehand |  |
-| `LineToolText` | text | advanced, drawings-text |  |
+| `LineToolText` | text | advanced, drawings-text, replica-tsxv-weekly-log |  |
 | `LineToolTextAbsolute` | anchored_text | drawings-text |  |
 | `LineToolNote` | note | drawings-text |  |
 | `LineToolTextNote` | text_note | advanced, drawings-text |  |
@@ -72,8 +74,8 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | `LineToolCallout` | callout | advanced, drawings-text |  |
 | `LineToolBalloon` | balloon | advanced-dark, drawings-labels |  |
 | `LineToolComment` | comment | drawings-labels |  |
-| `LineToolArrowMarkUp` | arrow_up | advanced, drawings-marks |  |
-| `LineToolArrowMarkDown` | arrow_down | advanced, drawings-marks |  |
+| `LineToolArrowMarkUp` | arrow_up | advanced, drawings-marks, replica-tsxv-weekly-log |  |
+| `LineToolArrowMarkDown` | arrow_down | advanced, drawings-marks, replica-tsxv-weekly-log |  |
 | `LineToolArrowMarkLeft` | arrow_left | drawings-marks |  |
 | `LineToolArrowMarkRight` | arrow_right | drawings-marks |  |
 | `LineToolPriceLabel` | price_label | advanced, drawings-labels |  |
@@ -82,18 +84,18 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | `LineToolFlagMark` | flag | advanced-dark, drawings-marks |  |
 | `LineToolImage` | image | **not captured** | Needs an image uploaded to TradingView, which requires an account. The loader drops it without one. |
 | `LineToolTable` | table | drawings-labels |  |
-| `LineToolVertLine` | vertical_line | advanced, drawings-lines |  |
-| `LineToolHorzLine` | horizontal_line | advanced, drawings-lines, style-bars, style-candles, style-line, style-area, style-renko, style-kagi, style-point-figure, style-line-break, style-heikin-ashi, style-hollow-candles, style-baseline, style-range, style-high-low, style-columns, style-line-with-markers, style-step-line, style-hlc-area, style-hlc-bars |  |
+| `LineToolVertLine` | vertical_line | advanced, drawings-lines, replica-tsxv-weekly-log |  |
+| `LineToolHorzLine` | horizontal_line | advanced, drawings-lines, style-bars, style-candles, style-line, style-area, style-renko, style-kagi, style-point-figure, style-line-break, style-heikin-ashi, style-hollow-candles, style-baseline, style-range, style-high-low, style-columns, style-line-with-markers, style-step-line, style-hlc-area, style-hlc-bars, log-scale-tools |  |
 | `LineToolCrossLine` | cross_line | advanced-dark, drawings-lines |  |
 | `LineToolHorzRay` | horizontal_ray | advanced, drawings-lines |  |
-| `LineToolTrendLine` | trend_line | advanced, drawings-lines, style-bars, style-candles, style-line, style-area, style-renko, style-kagi, style-point-figure, style-line-break, style-heikin-ashi, style-hollow-candles, style-baseline, style-range, style-high-low, style-columns, style-line-with-markers, style-step-line, style-hlc-area, style-hlc-bars |  |
+| `LineToolTrendLine` | trend_line | advanced, drawings-lines, style-bars, style-candles, style-line, style-area, style-renko, style-kagi, style-point-figure, style-line-break, style-heikin-ashi, style-hollow-candles, style-baseline, style-range, style-high-low, style-columns, style-line-with-markers, style-step-line, style-hlc-area, style-hlc-bars, replica-tsxv-weekly-log |  |
 | `LineToolInfoLine` | info_line | advanced-dark, drawings-lines |  |
 | `LineToolTrendAngle` | trend_angle | drawings-lines |  |
 | `LineToolArrow` | arrow | advanced, drawings-lines |  |
-| `LineToolRay` | ray | advanced-dark, drawings-lines |  |
+| `LineToolRay` | ray | advanced-dark, drawings-lines, replica-tsxv-weekly-log |  |
 | `LineToolExtended` | extended | advanced-dark, drawings-lines |  |
-| `LineToolParallelChannel` | parallel_channel | advanced, drawings-channels |  |
-| `LineToolDisjointAngle` | disjoint_angle | drawings-channels |  |
+| `LineToolParallelChannel` | parallel_channel | advanced, drawings-channels, log-scale-tools |  |
+| `LineToolDisjointAngle` | disjoint_angle | drawings-channels, log-scale-tools |  |
 | `LineToolFlatBottom` | flat_bottom | drawings-channels |  |
 | `LineToolAnchoredVWAP` | anchored_vwap | drawings-positions |  |
 | `LineToolPitchfork` | pitchfork | advanced, drawings-channels |  |
@@ -101,48 +103,48 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | `LineToolSchiffPitchfork2` | schiff_pitchfork | drawings-channels |  |
 | `LineToolInsidePitchfork` | inside_pitchfork | drawings-channels |  |
 | `LineToolPitchfan` | pitchfan | drawings-channels |  |
-| `LineToolGannSquare` | gannbox | drawings-gann |  |
+| `LineToolGannSquare` | gannbox | drawings-gann, log-scale-tools |  |
 | `LineToolGannComplex` | gannbox_square | drawings-gann | TradingView saves it as `LineToolGannFixed`. |
 | `LineToolGannFixed` | gannbox_fixed | drawings-gann |  |
 | `LineToolGannFan` | gannbox_fan | drawings-gann |  |
-| `LineToolFibRetracement` | fib_retracement | advanced, drawings-fibs |  |
-| `LineToolTrendBasedFibExtension` | fib_trend_ext | advanced, drawings-fibs |  |
+| `LineToolFibRetracement` | fib_retracement | advanced, drawings-fibs, log-scale-tools |  |
+| `LineToolTrendBasedFibExtension` | fib_trend_ext | advanced, drawings-fibs, log-scale-tools |  |
 | `LineToolFibSpeedResistanceFan` | fib_speed_resist_fan | drawings-fibs |  |
-| `LineToolFibTimeZone` | fib_timezone | drawings-fibs-time |  |
+| `LineToolFibTimeZone` | fib_timezone | drawings-fibs-time, replica-tsxv-weekly-log |  |
 | `LineToolTrendBasedFibTime` | fib_trend_time | drawings-fibs-time |  |
 | `LineToolFibCircles` | fib_circles | drawings-fibs-time |  |
 | `LineToolFibSpiral` | fib_spiral | drawings-fibs-time |  |
 | `LineToolFibSpeedResistanceArcs` | fib_speed_resist_arcs | drawings-fibs-time |  |
-| `LineToolFibChannel` | fib_channel | advanced-dark, drawings-fibs |  |
+| `LineToolFibChannel` | fib_channel | advanced-dark, drawings-fibs, log-scale-tools |  |
 | `LineTool5PointsPattern` | xabcd_pattern | drawings-patterns |  |
 | `LineToolCypherPattern` | cypher_pattern | drawings-patterns |  |
 | `LineToolABCD` | abcd_pattern | advanced-dark, drawings-patterns |  |
 | `LineToolTrianglePattern` | triangle_pattern | drawings-patterns |  |
 | `LineToolHeadAndShoulders` | head_and_shoulders | drawings-patterns |  |
-| `LineToolElliottImpulse` | elliott_impulse_wave | advanced-dark, drawings-elliott |  |
-| `LineToolElliottTriangle` | elliott_triangle_wave | drawings-elliott |  |
-| `LineToolElliottTripleCombo` | elliott_triple_combo | drawings-elliott |  |
-| `LineToolElliottCorrection` | elliott_correction | drawings-elliott |  |
-| `LineToolElliottDoubleCombo` | elliott_double_combo | drawings-elliott |  |
+| `LineToolElliottImpulse` | elliott_impulse_wave | advanced-dark, drawings-elliott, replica-tsxv-weekly-log, log-scale-tools |  |
+| `LineToolElliottTriangle` | elliott_triangle_wave | drawings-elliott, replica-tsxv-weekly-log, log-scale-tools |  |
+| `LineToolElliottTripleCombo` | elliott_triple_combo | drawings-elliott, replica-tsxv-weekly-log, log-scale-tools |  |
+| `LineToolElliottCorrection` | elliott_correction | drawings-elliott, replica-tsxv-weekly-log, log-scale-tools |  |
+| `LineToolElliottDoubleCombo` | elliott_double_combo | drawings-elliott, replica-tsxv-weekly-log, log-scale-tools |  |
 | `LineToolCircleLines` | cyclic_lines | drawings-cycles |  |
-| `LineToolTimeCycles` | time_cycles | drawings-cycles |  |
-| `LineToolSineLine` | sine_line | drawings-cycles |  |
-| `LineToolRiskRewardLong` | long_position | advanced, drawings-positions |  |
+| `LineToolTimeCycles` | time_cycles | drawings-cycles, replica-tsxv-weekly-log |  |
+| `LineToolSineLine` | sine_line | drawings-cycles, replica-tsxv-weekly-log |  |
+| `LineToolRiskRewardLong` | long_position | advanced, drawings-positions, log-scale-tools |  |
 | `LineToolRiskRewardShort` | short_position | advanced, drawings-positions |  |
 | `LineToolPrediction` | forecast | advanced-dark, drawings-positions |  |
 | `LineToolDateRange` | date_range | advanced-dark, drawings-measures |  |
-| `LineToolPriceRange` | price_range | advanced-dark, drawings-measures |  |
-| `LineToolDateAndPriceRange` | date_and_price_range | drawings-measures |  |
+| `LineToolPriceRange` | price_range | advanced-dark, drawings-measures, log-scale-tools |  |
+| `LineToolDateAndPriceRange` | date_and_price_range | drawings-measures, log-scale-tools |  |
 | `LineToolBarsPattern` | bars_pattern | drawings-measures |  |
 | `LineToolGhostFeed` | ghost_feed | drawings-measures |  |
 | `LineToolProjection` | projection | drawings-positions |  |
-| `LineToolRectangle` | rectangle | advanced, drawings-shapes |  |
+| `LineToolRectangle` | rectangle | advanced, drawings-shapes, replica-tsxv-weekly-log |  |
 | `LineToolRotatedRectangle` | rotated_rectangle | drawings-shapes |  |
-| `LineToolCircle` | circle | drawings-shapes |  |
+| `LineToolCircle` | circle | drawings-shapes, replica-tsxv-weekly-log |  |
 | `LineToolEllipse` | ellipse | advanced-dark, drawings-shapes |  |
 | `LineToolTriangle` | triangle | advanced-dark, drawings-shapes |  |
-| `LineToolPolyline` | polyline | drawings-freehand |  |
-| `LineToolPath` | path | drawings-freehand |  |
+| `LineToolPolyline` | polyline | drawings-freehand, replica-tsxv-weekly-log |  |
+| `LineToolPath` | path | drawings-freehand, replica-tsxv-weekly-log |  |
 | `LineToolBezierQuadro` | curve | drawings-shapes |  |
 | `LineToolBezierCubic` | double_curve | drawings-shapes |  |
 | `LineToolArc` | arc | drawings-shapes |  |
@@ -157,7 +159,7 @@ Line Break, Heikin Ashi, Range) are the bars TradingView itself received for the
 | Style | Name | Scenes | Note |
 | --- | --- | --- | --- |
 | 0 | Bars | style-bars |  |
-| 1 | Candles | advanced, advanced-dark, drawings-lines, drawings-channels, drawings-fibs, drawings-fibs-time, drawings-gann, drawings-patterns, drawings-elliott, drawings-shapes, drawings-freehand, drawings-text, drawings-labels, drawings-marks, drawings-positions, drawings-measures, drawings-cycles, style-candles, indicators-1, indicators-2, indicators-3, indicators-4, indicators-5 |  |
+| 1 | Candles | advanced, advanced-dark, drawings-lines, drawings-channels, drawings-fibs, drawings-fibs-time, drawings-gann, drawings-patterns, drawings-elliott, drawings-shapes, drawings-freehand, drawings-text, drawings-labels, drawings-marks, drawings-positions, drawings-measures, drawings-cycles, style-candles, indicators-1, indicators-2, indicators-3, indicators-4, indicators-5, replica-tsxv-weekly-log, log-scale-tools |  |
 | 2 | Line | style-line |  |
 | 3 | Area | style-area |  |
 | 4 | Renko | style-renko | Bars computed by TradingView, stored as received. |

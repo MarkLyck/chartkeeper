@@ -6,6 +6,7 @@ import {
   fibRetracementLevels,
   formatCoeff,
   LEVEL_LAYOUT,
+  logLevels,
   parseFibLevels,
   tvFill,
 } from '../../src/renderer/viewer/drawings/fib';
@@ -26,6 +27,14 @@ const extensionProps = {
 };
 
 describe('fib retracement', () => {
+  it('spaces levels in log prices only for "levels based on log scale" on a log scale, at the prices TradingView labels (log-scale-tools scene)', () => {
+    const props = { ...retracementProps, level5: [0.236, '#000', true, ''], level6: [0.5, '#000', true, ''], level7: [0.786, '#000', true, ''], fibLevelsBasedOnLogScale: true };
+    const price = (log: boolean, coeff: number) => fibRetracementLevels(props, 330, 1117, LEVEL_LAYOUT.retracement, logLevels(props, log)).find((l) => l.coeff === coeff)!.price.toFixed(2);
+    expect([0.236, 0.5, 0.618, 0.786].map((c) => price(true, c))).toEqual(['837.69', '607.13', '525.77', '428.39']);
+    expect(price(false, 0.5)).toBe('723.50');
+    expect(logLevels({ fibLevelsBasedOnLogScale: false }, true)).toBe(false);
+  });
+
   it('puts 0.618 where TradingView labels it (319.44 for the drawings-fibs retracement)', () => {
     const levels = fibRetracementLevels(retracementProps, 309.5573, 335.4226);
     expect(levels.find((l) => l.coeff === 0.618)!.price.toFixed(2)).toBe('319.44');

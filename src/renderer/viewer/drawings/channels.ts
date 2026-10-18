@@ -64,19 +64,19 @@ export function drawParallelChannel(dc: DrawContext, p: Props, points: DrawingPo
 
 /**
  * Flat top/bottom and disjoint channel: trend line 1-2 and a second line between the same two times,
- * filled between. The flat tool's second line is level at point 3's price; the disjoint channel's
- * runs back from point 3's price under point 2 with the first line's slope mirrored.
+ * filled between. The flat tool's second line is level at point 3's height; the disjoint channel's
+ * runs back from point 3's height under point 2 with the first line's slope mirrored. TradingView
+ * mirrors on screen, so on a log scale the mirror is in log prices.
  */
-export function secondLine(tool: 'flat' | 'disjoint', p0: DrawingPoint, p1: DrawingPoint, p2: DrawingPoint): [DrawingPoint, DrawingPoint] {
-  if (tool === 'flat') return [{ ...p0, price: p2.price }, { ...p1, price: p2.price }];
-  return [{ ...p0, price: p2.price + (p1.price - p0.price) }, { ...p1, price: p2.price }];
+export function secondLine(tool: 'flat' | 'disjoint', a: Pt, b: Pt, c: Pt): [Pt, Pt] {
+  if (tool === 'flat') return [{ x: a.x, y: c.y }, { x: b.x, y: c.y }];
+  return [{ x: a.x, y: c.y + (b.y - a.y) }, { x: b.x, y: c.y }];
 }
 
 function twoLineChannel(tool: 'flat' | 'disjoint') {
   return (dc: DrawContext, p: Props, points: DrawingPoint[]): void => {
-    const [p0, p1, p2] = points as [DrawingPoint, DrawingPoint, DrawingPoint];
-    const [q0, q1] = secondLine(tool, p0, p1, p2);
-    const [a, b, c, d] = [dc.pt(p0), dc.pt(p1), dc.pt(q0), dc.pt(q1)];
+    const [a, b, third] = points.map((pt) => dc.pt(pt)) as [Pt, Pt, Pt];
+    const [c, d] = secondLine(tool, a, b, third);
     const left = p.extendLeft === true;
     const right = p.extendRight === true;
     const [ea, eb] = extendToPane(a, b, left, right, dc);

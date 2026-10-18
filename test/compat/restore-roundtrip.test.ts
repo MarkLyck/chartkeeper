@@ -97,7 +97,8 @@ describe('restore keeps every feature', () => {
     browser = await launchChromium();
     for (const expected of account.expected) {
       const payload = payloads.get(expected.uid)!;
-      const chart = await SignedOutChart.open(browser, console.warn);
+      const series = expected.charts[0]!.series;
+      const chart = await SignedOutChart.open(browser, console.warn, { symbol: String(series.symbol), interval: String(series.interval) });
       try {
         tradingViewBuild ??= await chart.buildTime();
         const saved = await chart.load(expected.name, payload.content, payload.studyMetaInfoMap);

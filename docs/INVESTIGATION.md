@@ -101,6 +101,30 @@ Pane `sources` hold:
 - Drawings, when they are stored in the content:
   `{type: "LineToolTrendLine", id, state: {linecolor, linewidth, ...}, points: [{time_t, offset, price, interval}], zorder, ownerSource, linkKey}`.
 
+### Price scales
+
+Each pane lists its price scales in `rightAxisesState` and `leftAxisesState`
+(`[{state, sources: [<source id>, ...]}]`, TradingView's spelling) and
+`overlayPriceScales` (`{<source id>: state}`). Observed on TSX:JX 1W
+(2026-10-18) by calling `getMainSourcePriceScale().setMode()`,
+`setAutoScale(false)` and `setVisiblePriceRange()` and saving:
+
+- `m_isLog`, `m_isPercentage`, `m_isIndexedTo100`, `m_isInverted` hold the
+  mode. Percentage and indexed-to-100 leave `m_isLog` as it was. The main
+  series repeats the flags in `priceAxisProperties`.
+- With autoscale off, `m_priceRange` `{m_minValue, m_maxValue}` is the range
+  between the top and bottom margins (`m_topMargin`, `m_bottomMargin`), in the
+  mode's units: `log10(price + 0.0001) + 4` on a log scale (`logFormula`),
+  percent on a percentage scale, prices otherwise. A visible range of
+  300 to 4,000 on a log scale saved 6.567 to 7.490.
+- lightweight-charts uses the same modes and log formula, but its
+  `setVisibleRange` takes these internal units while `getVisibleRange` returns
+  prices.
+- On a log scale TradingView draws drawings on screen between their points.
+  Fib retracement and extension levels stay in prices unless
+  `fibLevelsBasedOnLogScale` is on; a disjoint channel mirrors its first line
+  on screen.
+
 ## Drawings ("line tools") storage
 
 Source: bundle `16242.*.js`, modules `355502` (`getChartStorage`), `628770`
@@ -370,3 +394,12 @@ These were derived from source code, not observed with a real account:
    refuses, signing in with email and password works.
 
 `npm run test:live` (see README) checks 1 to 3 against a test account.
+
+Observed, not explained: loading a TSX:JX layout with `loadLayoutState` into a
+signed-out chart that showed NASDAQ:AAPL left every drawing's `state.symbol`
+as `NASDAQ:AAPL` in 2 of 5 runs (2026-10-18), while the main series showed
+TSX:JX. Opening the page at the layout's own symbol, as opening a saved layout
+does, kept `TSX:JX` in 6 of 6 runs, so `npm run test:compat` opens each layout
+that way. Switching layouts inside TradingView over a chart of another symbol
+may hit the same race; it would affect the original layout as much as a
+restored one.

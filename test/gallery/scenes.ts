@@ -8,12 +8,17 @@
  * edge (0 = last bar, negative = future), `price` is a fraction of the price
  * range of the visible bars (0 = lowest low, 1 = highest high) or a field of
  * that bar. A `swing` anchor picks the highest high or lowest low in a bar range.
+ * A `year` anchor is a fixed decimal year (2020.5 is early July 2020) and price,
+ * for scenes that copy a real chart; years past the last bar land on future bars.
  */
 import { CHART_STYLES, LINE_TOOLS, type FreeChartStyleId, type LineToolType, type SignedOutStudy } from './catalog';
 
 export type Props = Record<string, unknown>;
 export type PriceRef = number | 'open' | 'high' | 'low' | 'close';
-export type Anchor = readonly [bar: number, price: PriceRef] | { readonly swing: 'high' | 'low'; readonly from: number; readonly to: number };
+export type Anchor =
+  | readonly [bar: number, price: PriceRef]
+  | { readonly swing: 'high' | 'low'; readonly from: number; readonly to: number }
+  | { readonly year: number; readonly price: number };
 
 export interface DrawingSpec {
   readonly type: LineToolType;
@@ -41,6 +46,10 @@ export interface ChartSpec {
   readonly series?: Props;
   /** Deep-merged into the chart's chartProperties. */
   readonly chartProperties?: Props;
+  /** Deep-merged into the main series' price scale state (`rightAxisesState[0].state`), e.g. `{ m_isLog: true }`. */
+  readonly priceScale?: Props;
+  /** Bars to load, when the scene shows more than the usual 600. */
+  readonly dataBars?: number;
   readonly studies: readonly StudySpec[];
   readonly drawings: readonly DrawingSpec[];
 }
@@ -51,6 +60,8 @@ export interface Scene {
   readonly theme: 'light' | 'dark';
   /** One chart: signed-out TradingView allows one chart per tab (MULTI_CHART_REASON in catalog.ts). */
   readonly charts: readonly [ChartSpec];
+  /** Browser window size, when the scene needs a wider chart than the usual 1406 x 681. */
+  readonly viewport?: { readonly width: number; readonly height: number };
 }
 
 const chart = (c: Pick<ChartSpec, 'symbol'> & Partial<ChartSpec>): ChartSpec => ({
@@ -548,4 +559,115 @@ const advancedDark = scene({
   ],
 });
 
-export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes];
+/** A fixed decimal year and price (see `Anchor`). */
+const y = (year: number, price: number): Anchor => ({ year, price });
+/** TradingView's Elliott wave properties at a degree: 0 Supermillennium ... 6 Primary, 7 Intermediate, 8 Minor ... 14 Minuscule. */
+const wave = (color: string, degree: number, linewidth = 1): Props => ({ color, degree, linewidth, showWave: true });
+const label = (t: string): Props => ({ text: t, color: '#FFFFFF', fontsize: 20 });
+
+/**
+ * A copy of a user's real chart (S&P/TSX Venture Composite, 1W, log scale, read off their screenshot):
+ * 25 years of weekly bars with the view scrolled far into the future, long-period sine lines, time
+ * cycles, a descending channel, a fib time zone, Elliott waves in many degrees projected to 2043,
+ * text labels, a box and projection paths, at the prices the user's chart has them.
+ */
+const replicaTsxv = scene({
+  name: 'replica-tsxv-weekly-log',
+  description: "Replica of a user's chart: TSX Venture weekly on a log scale scrolled to 2045, sine lines, time cycles, a descending channel, fib time zone, Elliott waves in eight degrees reaching 2043, text, a box and projection paths.",
+  theme: 'dark',
+  viewport: { width: 2006, height: 761 },
+  charts: [
+    chart({
+      symbol: 'TSX:JX',
+      interval: 'W',
+      dataBars: 2000,
+      visibleBars: 1297,
+      rightMarginBars: 950,
+      priceScale: { m_isLog: true },
+      drawings: [
+        d('LineToolRectangle', [y(2001.5, 501), y(2045, 532)], { color: 'rgba(0, 0, 0, 0)', backgroundColor: 'rgba(42, 46, 57, 0.85)', fillBackground: true, extendLeft: true, extendRight: true, linewidth: 1 }),
+        d('LineToolSineLine', [y(2005.0, 3135), y(2020.6, 307)], line('#B2283A', 4)),
+        d('LineToolSineLine', [y(2012.3, 1884), y(2016.15, 1045)], line('#8C8A21', 1)),
+        d('LineToolSineLine', [y(2010.0, 1018), y(2012.0, 464)], line('#2962FF', 2)),
+        d('LineToolTimeCycles', [y(2002.0, 532), y(2002.95, 532)], line('#D4B91C', 1, { fillBackground: false })),
+        d('LineToolTimeCycles', [y(2012.3, 532), y(2016.2, 532)], line('rgba(120, 123, 134, 0.45)', 1, { fillBackground: false })),
+        d('LineToolTrendLine', [y(2006.8, 3134), y(2026.7, 702)], line('#B2B5BE', 1)),
+        d('LineToolTrendLine', [y(2002.7, 877), y(2026.7, 304)], line('#B2B5BE', 1)),
+        d('LineToolTrendLine', [y(2021.05, 1117), y(2026.75, 690)], line('#E0E3EB', 1)),
+        d('LineToolTrendLine', [y(2023.2, 640), y(2025.2, 650)], line('#E0E3EB', 1)),
+        d('LineToolRay', [y(2015.3, 297), y(2026.6, 702)], line('#787B86', 1, { linestyle: 1 })),
+        d('LineToolRay', [y(2013.0, 390), y(2026.0, 1000)], line('#787B86', 1, { linestyle: 1 })),
+        d('LineToolCircle', [y(2016.1, 516), y(2016.5, 516)], { color: '#26A69A', backgroundColor: 'rgba(38, 166, 154, 0.2)', fillBackground: true, linewidth: 1 }),
+        d('LineToolCircle', [y(2020.2, 340), y(2020.65, 340)], { color: '#26A69A', backgroundColor: 'rgba(38, 166, 154, 0.2)', fillBackground: true, linewidth: 1 }),
+        d('LineToolVertLine', [y(2023.85, 470)], line('#D1D4DC', 1, { linestyle: 2, showTime: false })),
+        d('LineToolVertLine', [y(2026.65, 740)], line('#787B86', 1, { showTime: false })),
+        d('LineToolFibTimeZone', [y(2023.9, 470), y(2024.18, 470)], {}),
+        d('LineToolElliottTripleCombo', [y(2021.05, 1117), y(2021.6, 783), y(2021.85, 1045), y(2022.75, 560), y(2023.0, 670), y(2023.87, 467)], wave('#8BC34A', 7)),
+        d('LineToolElliottImpulse', [y(2020.22, 330), y(2020.3, 520), y(2020.38, 400), y(2020.62, 820), y(2020.72, 640), y(2021.05, 1117)], wave('#8BC34A', 14)),
+        d('LineToolElliottImpulse', [y(2023.87, 467), y(2024.05, 574), y(2024.18, 512), y(2024.35, 650), y(2024.5, 532), y(2024.8, 640)], wave('#E0E3EB', 12)),
+        d('LineToolElliottDoubleCombo', [y(2024.2, 600), y(2024.55, 540), y(2024.7, 615), y(2024.9, 500)], wave('#FF9800', 8)),
+        d('LineToolElliottImpulse', [y(2024.9, 500), y(2025.05, 640), y(2025.2, 520), y(2025.6, 1072), y(2025.8, 765), y(2026.1, 1180)], wave('#2962FF', 7, 2)),
+        d('LineToolElliottImpulse', [y(2025.2, 520), y(2025.3, 600), y(2025.36, 560), y(2025.48, 820), y(2025.53, 740), y(2025.6, 1000)], wave('#00BCD4', 13)),
+        d('LineToolElliottTriangle', [y(2025.6, 1000), y(2025.9, 760), y(2026.15, 1100), y(2026.35, 820), y(2026.8, 826), y(2026.95, 760)], wave('#FF9800', 11)),
+        d('LineToolElliottDoubleCombo', [y(2026.1, 1180), y(2026.3, 760), y(2026.5, 1000), y(2026.62, 740)], wave('#E0E3EB', 7)),
+        d('LineToolElliottImpulse', [y(2026.62, 740), y(2026.9, 900), y(2027.1, 800), y(2027.8, 1400), y(2028.1, 1200), y(2028.6, 1690)], wave('#B2B5BE', 9)),
+        d('LineToolElliottImpulse', [y(2020.22, 330), y(2021.05, 1117), y(2023.87, 467), y(2028.6, 2500), y(2031.55, 980), y(2036.2, 3270)], wave('#A5D6A7', 10)),
+        d('LineToolElliottCorrection', [y(2028.6, 1690), y(2029.35, 1066), y(2029.75, 1366), y(2031.4, 770)], wave('#F23645', 6)),
+        d('LineToolElliottCorrection', [y(2036.2, 3270), y(2039.2, 1158), y(2041.1, 2200), y(2043.1, 916)], wave('#B5E7A0', 6)),
+        d('LineToolRectangle', [y(2027.7, 2353), y(2029.7, 1618)], { color: '#5B9CF6', backgroundColor: 'rgba(0, 0, 0, 0)', fillBackground: false, linewidth: 1 }),
+        d('LineToolText', [y(2021.1, 1180)], label('1')),
+        d('LineToolText', [y(2024.0, 455)], label('2')),
+        d('LineToolText', [y(2028.6, 1880)], label('3')),
+        d('LineToolText', [y(2031.75, 945)], label('4')),
+        d('LineToolText', [y(2035.3, 3240)], label('5')),
+        d('LineToolPath', [y(2023.95, 470), y(2028.6, 1690)], { lineColor: 'rgba(178, 181, 190, 0.6)', lineWidth: 1 }),
+        d('LineToolPolyline', [y(2031.4, 770), y(2033.5, 1250), y(2034.6, 1050), y(2036.2, 2000)], { linecolor: '#B2B5BE', linewidth: 1, linestyle: 2, fillBackground: false }),
+        d('LineToolArrowMarkUp', [y(2020.22, 330)], { arrowColor: '#089981', color: '#089981', showLabel: false }),
+        d('LineToolArrowMarkDown', [y(2026.1, 1180)], { arrowColor: '#F23645', color: '#F23645', showLabel: false }),
+      ],
+    }),
+  ],
+});
+
+/**
+ * Tools whose geometry depends on prices, not only on points, on a log scale: fibs (with and without
+ * TradingView's "levels based on log scale"), channels, Gann, measures, a position, and the Elliott
+ * degrees the replica does not use.
+ */
+const logScaleTools = scene({
+  name: 'log-scale-tools',
+  description: 'Price-dependent tools on a log scale (TSX Venture weekly): fib retracement and extension with and without log-based levels, fib channel, parallel and disjoint channels, Gann box, price and date ranges, a long position, a horizontal line, and Elliott degrees 0 to 5 and 11.',
+  charts: [
+    chart({
+      symbol: 'TSX:JX',
+      interval: 'W',
+      dataBars: 2000,
+      visibleBars: 1000,
+      rightMarginBars: 60,
+      priceScale: { m_isLog: true },
+      drawings: [
+        d('LineToolFibRetracement', [y(2011.2, 2400), y(2016.05, 480)], { showPrices: true, fillBackground: true, transparency: 85, fibLevelsBasedOnLogScale: false }),
+        d('LineToolFibRetracement', [y(2020.22, 330), y(2021.05, 1117)], { showPrices: true, fillBackground: true, transparency: 85, fibLevelsBasedOnLogScale: true }),
+        d('LineToolTrendBasedFibExtension', [y(2016.05, 480), y(2018.1, 920), y(2020.22, 330)], { showPrices: false, fillBackground: false, fibLevelsBasedOnLogScale: false }),
+        d('LineToolTrendBasedFibExtension', [y(2023.87, 467), y(2024.6, 760), y(2025.1, 560)], { showPrices: true, fillBackground: true, transparency: 90, fibLevelsBasedOnLogScale: true }),
+        d('LineToolFibChannel', [y(2008.0, 2700), y(2012.0, 1200), y(2008.0, 1500)], { fillBackground: true, transparency: 90 }),
+        d('LineToolParallelChannel', [y(2012.5, 1100), y(2016.0, 480), y(2012.5, 1600)], { backgroundColor: 'rgba(41, 98, 255, 0.15)' }),
+        d('LineToolDisjointAngle', [y(2021.2, 1000), y(2023.8, 480), y(2021.2, 700)], line(C.green, 2, { backgroundColor: 'rgba(8, 153, 129, 0.15)' })),
+        d('LineToolGannSquare', [y(2008.8, 600), y(2010.8, 2000)], { color: C.blue, fillHorzBackground: true, fillVertBackground: true }),
+        d('LineToolPriceRange', [y(2024.0, 500), y(2024.6, 1050)], { linecolor: C.green, backgroundColor: 'rgba(8, 153, 129, 0.2)' }),
+        d('LineToolDateAndPriceRange', [y(2018.5, 450), y(2019.9, 800)], { linecolor: C.purple, backgroundColor: 'rgba(156, 39, 176, 0.2)' }),
+        d('LineToolRiskRewardLong', [y(2025.6, 800), y(2026.6, 800)], position(20000, 40000)),
+        d('LineToolHorzLine', [y(2014.0, 1000)], line(C.orange, 2, { showLabel: true, text: '1,000' })),
+        d('LineToolElliottImpulse', [y(2008.9, 650), y(2009.4, 1300), y(2009.6, 1050), y(2010.4, 1800), y(2010.6, 1550), y(2011.2, 2400)], wave(C.teal, 0, 2)),
+        d('LineToolElliottImpulse', [y(2016.05, 480), y(2016.4, 780), y(2016.6, 640), y(2017.1, 920), y(2017.5, 780), y(2018.1, 920)], wave(C.pink, 2, 2)),
+        d('LineToolElliottCorrection', [y(2011.2, 2400), y(2012.3, 1300), y(2013.0, 1700), y(2015.0, 700)], wave(C.gold, 4, 2)),
+        d('LineToolElliottDoubleCombo', [y(2021.05, 1117), y(2021.6, 783), y(2021.9, 1045), y(2023.0, 520)], wave(C.purple, 3, 2)),
+        d('LineToolElliottTripleCombo', [y(2018.1, 920), y(2018.4, 600), y(2018.7, 760), y(2019.1, 520), y(2019.4, 640), y(2020.0, 450)], wave(C.olive, 5, 2)),
+        d('LineToolElliottTriangle', [y(2023.87, 467), y(2024.4, 680), y(2024.7, 520), y(2025.0, 640), y(2025.2, 560), y(2025.4, 600)], wave(C.red, 11, 2)),
+        d('LineToolElliottCorrection', [y(2026.1, 1180), y(2026.3, 760), y(2026.5, 1000), y(2026.62, 740)], wave('#5C6BC0', 1, 2)),
+      ],
+    }),
+  ],
+});
+
+export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes, replicaTsxv, logScaleTools];

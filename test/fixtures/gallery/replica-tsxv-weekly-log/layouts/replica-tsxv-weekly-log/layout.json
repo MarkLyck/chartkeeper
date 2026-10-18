@@ -1,0 +1,3092 @@
+{
+  "uid": "replica-tsxv-weekly-log",
+  "id": 1,
+  "name": "replica-tsxv-weekly-log",
+  "description": "Replica of a user's chart: TSX Venture weekly on a log scale scrolled to 2045, sine lines, time cycles, a descending channel, fib time zone, Elliott waves in eight degrees reaching 2043, text, a box and projection paths.",
+  "lastModified": 1792337687,
+  "content": {
+    "name": "replica-tsxv-weekly-log",
+    "layout": "s",
+    "charts": [
+      {
+        "panes": [
+          {
+            "sources": [
+              {
+                "type": "MainSeries",
+                "id": "_seriesId",
+                "zorder": 0,
+                "haStyle": {
+                  "studyId": "BarSetHeikenAshi@tv-basicstudies-60"
+                },
+                "renkoStyle": {
+                  "studyId": "BarSetRenko@tv-prostudies-73"
+                },
+                "pbStyle": {
+                  "studyId": "BarSetPriceBreak@tv-prostudies-34"
+                },
+                "kagiStyle": {
+                  "studyId": "BarSetKagi@tv-prostudies-73"
+                },
+                "pnfStyle": {
+                  "studyId": "BarSetPnF@tv-prostudies-73"
+                },
+                "rangeStyle": {
+                  "studyId": "BarSetRange@tv-basicstudies-72"
+                },
+                "svpStyle": {
+                  "studyId": "VbPSessions@tv-volumebyprice-126"
+                },
+                "volFootprintStyle": {
+                  "studyId": "Footprint@tv-volumebyprice-104"
+                },
+                "tpoStyle": {
+                  "studyId": "TPOSessions@tv-volumebyprice-104"
+                },
+                "formattingDeps": {
+                  "pricescale": 100,
+                  "minmov": 1,
+                  "fractional": false,
+                  "minmove2": 0,
+                  "variable_tick_size": "0.01"
+                },
+                "studyBindings": {
+                  "17": null,
+                  "18": {},
+                  "20": null
+                },
+                "state": {
+                  "style": 1,
+                  "esdShowDividends": false,
+                  "esdShowSplits": false,
+                  "esdShowEarnings": false,
+                  "esdShowBreaks": false,
+                  "showContinuousContractSwitches": true,
+                  "showContinuousContractSwitchesBreaks": false,
+                  "showFuturesContractExpiration": true,
+                  "showLastNews": true,
+                  "showCountdown": false,
+                  "visible": true,
+                  "showPriceLine": true,
+                  "priceLineWidth": 1,
+                  "showPrevClosePriceLine": false,
+                  "prevClosePriceLineWidth": 1,
+                  "minTick": "default",
+                  "dividendsAdjustment": false,
+                  "backAdjustment": false,
+                  "settlementAsClose": true,
+                  "sessionId": "regular",
+                  "bidAsk": {
+                    "visible": false,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "bidLineColor": "#2962FF",
+                    "askLineColor": "#F7525F"
+                  },
+                  "prePostMarket": {
+                    "visible": true,
+                    "lineStyle": 1,
+                    "lineWidth": 1,
+                    "preMarketColor": "#FB8C00",
+                    "postMarketColor": "#2962FF",
+                    "overnightMarketColor": "#8e24aa"
+                  },
+                  "highLowAvgPrice": {
+                    "highLowPriceLinesVisible": false,
+                    "highLowPriceLabelsVisible": false,
+                    "averageClosePriceLineVisible": false,
+                    "averageClosePriceLabelVisible": false,
+                    "highLowPriceLinesWidth": 1,
+                    "averagePriceLineWidth": 1,
+                    "highLowPriceLinesColor": "",
+                    "averagePriceLineColor": ""
+                  },
+                  "statusViewStyle": {
+                    "fontSize": 16,
+                    "showExchange": true,
+                    "showInterval": true,
+                    "symbolTextSource": "description"
+                  },
+                  "lineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "lineWithMarkersStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "steplineStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "colorType": "gradient",
+                    "color": "#2962FF",
+                    "gradientStartColor": "#D500F9",
+                    "gradientEndColor": "#00BCE5"
+                  },
+                  "baselineStyle": {
+                    "topLineWidth": 2,
+                    "bottomLineWidth": 2,
+                    "topLineStyle": 0,
+                    "bottomLineStyle": 0,
+                    "priceSource": "close",
+                    "transparency": 50,
+                    "baseLevelPercentage": 50,
+                    "baselineColor": "#8C8C8C",
+                    "topFillColor1": "rgba(8, 153, 129, 0.28)",
+                    "topFillColor2": "rgba(8, 153, 129, 0.05)",
+                    "bottomFillColor1": "rgba(242, 54, 69, 0.05)",
+                    "bottomFillColor2": "rgba(242, 54, 69, 0.28)",
+                    "topLineColor": "#089981",
+                    "bottomLineColor": "#F23645"
+                  },
+                  "areaStyle": {
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "priceSource": "close",
+                    "transparency": 100,
+                    "color1": "rgba(41, 98, 255, 0.28)",
+                    "color2": "#2962FF",
+                    "linecolor": "#2962FF"
+                  },
+                  "hlcAreaStyle": {
+                    "highLineVisible": true,
+                    "highLineStyle": 0,
+                    "highLineWidth": 2,
+                    "lowLineVisible": true,
+                    "lowLineStyle": 0,
+                    "lowLineWidth": 2,
+                    "closeLineStyle": 0,
+                    "closeLineWidth": 2,
+                    "highLineColor": "#00bcd4",
+                    "lowLineColor": "#e91e63",
+                    "closeLineColor": "#2962FF",
+                    "highCloseFillColor": "rgba(0, 188, 212, 0.25)",
+                    "closeLowFillColor": "rgba(233, 30, 99, 0.25)"
+                  },
+                  "barStyle": {
+                    "barColorsOnPrevClose": false,
+                    "dontDrawOpen": false,
+                    "thinBars": true,
+                    "downColor": "#F23645",
+                    "upColor": "#089981"
+                  },
+                  "hlcBarsStyle": {
+                    "thinBars": true,
+                    "color": "#2962FF"
+                  },
+                  "candleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "volCandlesStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hollowCandleStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "haStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "showRealLastPrice": false,
+                    "barColorsOnPrevClose": false,
+                    "inputs": {},
+                    "inputInfo": {},
+                    "drawBody": true,
+                    "borderColor": "#378658",
+                    "upColor": "#089981",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645"
+                  },
+                  "hiloStyle": {
+                    "showBorders": true,
+                    "showLabels": true,
+                    "drawBody": true,
+                    "color": "#2962FF",
+                    "borderColor": "#2962FF",
+                    "labelColor": "#2962FF"
+                  },
+                  "columnStyle": {
+                    "barColorsOnPrevClose": true,
+                    "priceSource": "close",
+                    "baselinePosition": "bottom",
+                    "upColor": "rgba(8, 153, 129, 0.5)",
+                    "downColor": "rgba(242, 54, 69, 0.5)"
+                  },
+                  "renkoStyle": {
+                    "inputs": {
+                      "source": "close",
+                      "sources": "Close",
+                      "boxSize": 3,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "wicks": true
+                    },
+                    "inputInfo": {
+                      "source": {
+                        "name": "Source"
+                      },
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "wicks": {
+                        "name": "Wicks"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#336854",
+                    "downColorProjection": "#7f323f",
+                    "borderUpColorProjection": "#336854",
+                    "borderDownColorProjection": "#7f323f",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645"
+                  },
+                  "pbStyle": {
+                    "inputs": {
+                      "lb": 3
+                    },
+                    "inputInfo": {
+                      "lb": {
+                        "name": "Number of line"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "upColorProjection": "#336854",
+                    "downColorProjection": "#7f323f",
+                    "borderUpColorProjection": "#336854",
+                    "borderDownColorProjection": "#7f323f"
+                  },
+                  "kagiStyle": {
+                    "inputs": {
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "reversalAmount": 1
+                    },
+                    "inputInfo": {
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#336854",
+                    "downColorProjection": "#7f323f"
+                  },
+                  "pnfStyle": {
+                    "inputs": {
+                      "sources": "Close",
+                      "reversalAmount": 3,
+                      "boxSize": 1,
+                      "style": "ATR",
+                      "atrLength": 14,
+                      "percentageLTP": 1,
+                      "oneStepBackBuilding": false
+                    },
+                    "inputInfo": {
+                      "sources": {
+                        "name": "Source"
+                      },
+                      "boxSize": {
+                        "name": "Box size"
+                      },
+                      "reversalAmount": {
+                        "name": "Reversal amount"
+                      },
+                      "style": {
+                        "name": "Style"
+                      },
+                      "atrLength": {
+                        "name": "ATR length"
+                      },
+                      "percentageLTP": {
+                        "name": "Percentage"
+                      },
+                      "oneStepBackBuilding": {
+                        "name": "One step back building"
+                      }
+                    },
+                    "downColor": "#F23645",
+                    "upColor": "#089981",
+                    "upColorProjection": "#336854",
+                    "downColorProjection": "#7f323f"
+                  },
+                  "rangeStyle": {
+                    "barStyle": 0,
+                    "thinBars": true,
+                    "inputs": {
+                      "range": 10,
+                      "phantomBars": false
+                    },
+                    "inputInfo": {
+                      "range": {
+                        "name": "Range"
+                      },
+                      "phantomBars": {
+                        "name": "Phantom bars"
+                      }
+                    },
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "upColorProjection": "#336854",
+                    "downColorProjection": "#7f323f",
+                    "candlesUpColor": "#089981",
+                    "candlesDownColor": "#F23645",
+                    "candlesBorderUpColor": "#089981",
+                    "candlesBorderDownColor": "#F23645",
+                    "candlesWickUpColor": "#089981",
+                    "candlesWickDownColor": "#F23645"
+                  },
+                  "tpoStyle": {
+                    "color": "#2962FF",
+                    "linestyle": 0,
+                    "linewidth": 2,
+                    "styles": {
+                      "splitByBlocks": false,
+                      "splitByBlocksMode": 0
+                    },
+                    "inputs": {
+                      "period": "Day",
+                      "periodsNum": 1,
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSession2": "",
+                      "customSession3": "",
+                      "customSession4": "",
+                      "customSession5": "",
+                      "rowSize": "Auto",
+                      "ticksPerRow": 100,
+                      "vaPercent": 70,
+                      "blockSize": "30m",
+                      "mergePoints": "[]",
+                      "extendPoorHigh": false,
+                      "extendPoorLow": false,
+                      "extendPOC": false,
+                      "extendTpoVah": false,
+                      "extendTpoVal": false,
+                      "extendVolumePoc": false,
+                      "extendVolumeVah": false,
+                      "extendVolumeVal": false,
+                      "extendSingleprints": false
+                    },
+                    "tpo": {
+                      "colors": {
+                        "gradientColors": [
+                          "#e91e63",
+                          "#00c853",
+                          "#00bcd4",
+                          "#651FFF"
+                        ]
+                      },
+                      "showBlocks": true,
+                      "showLetters": true,
+                      "nonVaOpacity": 30
+                    },
+                    "levels": {
+                      "showPOC": true,
+                      "pocColor": "#DBDBDB",
+                      "showPoorHigh": false,
+                      "poorHighColor": "#7C4DFF",
+                      "showPoorLow": false,
+                      "poorLowColor": "#7C4DFF",
+                      "showSingleprints": false,
+                      "singleprintsColor": "rgba(224, 64, 251, 0.15)",
+                      "showVAH": true,
+                      "vahColor": "#DBDBDB",
+                      "showVAL": true,
+                      "valColor": "#DBDBDB",
+                      "showMidpoint": false,
+                      "showOpenPrice": false,
+                      "showClosePrice": false,
+                      "initialBalanceRange": {
+                        "levels": 2,
+                        "visible": true
+                      }
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#DBDBDB",
+                      "showValues": true,
+                      "vah": {
+                        "visible": false,
+                        "color": "#DBDBDB",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "val": {
+                        "visible": false,
+                        "color": "#DBDBDB",
+                        "linestyle": 2,
+                        "linewidth": 2
+                      },
+                      "poc": {
+                        "visible": false,
+                        "color": "#DBDBDB",
+                        "linestyle": 0,
+                        "linewidth": 2
+                      },
+                      "volumeColor": "rgba(38, 198, 218, 0.5)",
+                      "valueAreaColor": "rgba(38, 198, 218, 0.75)",
+                      "placement": "left_to_right"
+                    },
+                    "summary": {
+                      "visible": false,
+                      "belowSeries": true,
+                      "infoBlocks": {
+                        "hlRange": {
+                          "visible": false
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "rotationFactor": {
+                          "visible": false
+                        },
+                        "totalVolume": {
+                          "visible": false
+                        },
+                        "tpoCountAbovePoc": {
+                          "visible": false
+                        },
+                        "tpoCountBelowPoc": {
+                          "visible": false
+                        },
+                        "tpoCountTotal": {
+                          "visible": false
+                        },
+                        "vaRange": {
+                          "visible": false
+                        },
+                        "vahPrice": {
+                          "visible": true
+                        },
+                        "valPrice": {
+                          "visible": true
+                        },
+                        "initialBalanceHigh": {
+                          "visible": true
+                        },
+                        "initialBalanceLow": {
+                          "visible": true
+                        },
+                        "initialBalanceRange": {
+                          "visible": true
+                        }
+                      }
+                    },
+                    "priceSource": "close"
+                  },
+                  "svpStyle": {
+                    "inputs": {
+                      "profilesSessions": "All",
+                      "customSession": "0930-1600",
+                      "customSessionTZ": "Exchange",
+                      "volume": "Up/Down",
+                      "vaVolume": 70,
+                      "extendPocRight": false,
+                      "extendVAHRight": false,
+                      "extendVALRight": false,
+                      "rowsLayout": "Number Of Rows",
+                      "rows": 24
+                    },
+                    "volumeProfile": {
+                      "visible": true,
+                      "valuesColor": "#DBDBDB",
+                      "showValues": false,
+                      "volumeColorUp": "rgba(38, 198, 218, 0.5)",
+                      "volumeColorDown": "rgba(236, 64, 122, 0.5)",
+                      "valueAreaColorUp": "rgba(38, 198, 218, 0.75)",
+                      "valueAreaColorDown": "rgba(236, 64, 122, 0.75)",
+                      "histogramBoxColor": "rgba(38, 198, 218, 0.05)",
+                      "placement": "left_to_right",
+                      "percentWidth": 100
+                    },
+                    "vah": {
+                      "visible": false,
+                      "color": "#DBDBDB",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "val": {
+                      "visible": false,
+                      "color": "#DBDBDB",
+                      "linestyle": 2,
+                      "linewidth": 2
+                    },
+                    "poc": {
+                      "visible": true,
+                      "color": "#DBDBDB",
+                      "linestyle": 0,
+                      "linewidth": 2
+                    },
+                    "developingPoc": {
+                      "visible": false,
+                      "color": "#DBDBDB",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    },
+                    "developingVA": {
+                      "visible": false,
+                      "color": "#00bcd4",
+                      "linestyle": 0,
+                      "linewidth": 1
+                    }
+                  },
+                  "volFootprintStyle": {
+                    "drawWick": true,
+                    "drawBorder": true,
+                    "barColorsOnPrevClose": false,
+                    "drawBody": true,
+                    "upColor": "#089981",
+                    "downColor": "#F23645",
+                    "borderColor": "#378658",
+                    "borderUpColor": "#089981",
+                    "borderDownColor": "#F23645",
+                    "wickColor": "#737375",
+                    "wickUpColor": "#089981",
+                    "wickDownColor": "#F23645",
+                    "deltaAdjust": true,
+                    "showSummary": true,
+                    "summaryMode": 0,
+                    "extendedSummary": {
+                      "belowSeries": true,
+                      "blockInfo": {
+                        "volume": {
+                          "visible": true
+                        },
+                        "volumePercentage": {
+                          "visible": false
+                        },
+                        "buyVolume": {
+                          "visible": false
+                        },
+                        "buyVolumePercentage": {
+                          "visible": false
+                        },
+                        "sellVolume": {
+                          "visible": false
+                        },
+                        "sellVolumePercentage": {
+                          "visible": false
+                        },
+                        "delta": {
+                          "visible": true
+                        },
+                        "deltaPercentage": {
+                          "visible": false
+                        },
+                        "minDelta": {
+                          "visible": false
+                        },
+                        "maxDelta": {
+                          "visible": false
+                        },
+                        "sessionCVD": {
+                          "visible": true
+                        },
+                        "pocPrice": {
+                          "visible": true
+                        },
+                        "hlRange": {
+                          "visible": false
+                        }
+                      },
+                      "openInterestBlockInfo": {
+                        "openInterest": {
+                          "visible": false
+                        }
+                      },
+                      "extendedOpenInterestBlockInfo": {
+                        "openInterestHigh": {
+                          "visible": false
+                        },
+                        "openInterestLow": {
+                          "visible": false
+                        }
+                      }
+                    },
+                    "type": "Buy and sell",
+                    "displayMode": 0,
+                    "pointOfControl": true,
+                    "bgColors": {
+                      "adjBuyBgColors": [
+                        "#082621",
+                        "#004D40",
+                        "#06806B",
+                        "#22AB94"
+                      ],
+                      "adjSellBgColors": [
+                        "#331F20",
+                        "#991F29",
+                        "#CC2F3C",
+                        "#F7525F"
+                      ],
+                      "adjTotalBgColors": [
+                        "#142E61",
+                        "#143EB2",
+                        "#1E53E5",
+                        "#3179F5"
+                      ],
+                      "buyBgColor": "#004D40",
+                      "sellBgColor": "#991F29",
+                      "totalBgColor": "#143EB2",
+                      "pocColor": "#DBDBDB"
+                    },
+                    "imbalanceHighlight": {
+                      "buyColor": "#089981",
+                      "sellColor": "#F23645",
+                      "visible": true
+                    },
+                    "unfinishedAuction": {
+                      "highColor": "#D500F9",
+                      "lowColor": "#00e5ff"
+                    },
+                    "inputs": {
+                      "rowSize": "Auto",
+                      "atrLength": 14,
+                      "imbalancePercent": 300,
+                      "ticksPerRow": 100,
+                      "showVA": true,
+                      "vaPercent": 70,
+                      "calcStackedImbalance": false,
+                      "showUnfinishedAuction": false,
+                      "stackedImbalanceCount": 3,
+                      "ignore_zero_volume_for_imbalance_calc": false,
+                      "minimal_imbalance_volume": 0
+                    }
+                  },
+                  "baseLineColor": "#636363",
+                  "prevClosePriceLineColor": "#555555",
+                  "priceLineColor": "",
+                  "timeframe": "",
+                  "shortName": "JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "symbol": "TSX:JX",
+                  "interval": "W",
+                  "priceAxisProperties": {
+                    "autoScale": true,
+                    "autoScaleDisabled": false,
+                    "lockScale": false,
+                    "percentage": false,
+                    "percentageDisabled": false,
+                    "log": true,
+                    "logDisabled": false,
+                    "alignLabels": true,
+                    "isInverted": false,
+                    "indexedTo100": false
+                  }
+                }
+              },
+              {
+                "type": "LineToolRectangle",
+                "id": "c1d01",
+                "state": {
+                  "color": "rgba(0, 0, 0, 0)",
+                  "fillBackground": true,
+                  "backgroundColor": "rgba(42, 46, 57, 0.85)",
+                  "linewidth": 1,
+                  "transparency": 50,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textColor": "#9c27b0",
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "extendLeft": true,
+                  "extendRight": true,
+                  "middleLine": {
+                    "showLine": false,
+                    "lineWidth": 1,
+                    "lineColor": "#9c27b0",
+                    "lineStyle": 2
+                  },
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "text": ""
+                },
+                "points": [
+                  {
+                    "time_t": 1007994600,
+                    "offset": 0,
+                    "price": 501,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2367063000,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -5000,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog00",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolSineLine",
+                "id": "c1d02",
+                "state": {
+                  "linecolor": "#B2283A",
+                  "linewidth": 4,
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1104330600,
+                    "offset": 0,
+                    "price": 3135,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1596547800,
+                    "offset": 0,
+                    "price": 307,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4999,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog01",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolSineLine",
+                "id": "c1d03",
+                "state": {
+                  "linecolor": "#8C8A21",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1334583000,
+                    "offset": 0,
+                    "price": 1884,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1456151400,
+                    "offset": 0,
+                    "price": 1045,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4998,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog02",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolSineLine",
+                "id": "c1d04",
+                "state": {
+                  "linecolor": "#2962FF",
+                  "linewidth": 2,
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1262097000,
+                    "offset": 0,
+                    "price": 1018,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1325082600,
+                    "offset": 0,
+                    "price": 464,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4997,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog03",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTimeCycles",
+                "id": "c1d05",
+                "state": {
+                  "linecolor": "#D4B91C",
+                  "backgroundColor": "rgba(106, 168, 79, 0.5)",
+                  "transparency": 50,
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "fillBackground": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1009809000,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1039444200,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4996,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog04",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTimeCycles",
+                "id": "c1d06",
+                "state": {
+                  "linecolor": "rgba(120, 123, 134, 0.45)",
+                  "backgroundColor": "rgba(106, 168, 79, 0.5)",
+                  "transparency": 50,
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "fillBackground": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1334583000,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1457361000,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4995,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog05",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTrendLine",
+                "id": "c1d07",
+                "state": {
+                  "linecolor": "#B2B5BE",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1161005400,
+                    "offset": 0,
+                    "price": 3134,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1788874200,
+                    "offset": 0,
+                    "price": 702,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4994,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog06",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTrendLine",
+                "id": "c1d08",
+                "state": {
+                  "linecolor": "#B2B5BE",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1031578200,
+                    "offset": 0,
+                    "price": 877,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1788874200,
+                    "offset": 0,
+                    "price": 304,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4993,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog07",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTrendLine",
+                "id": "c1d09",
+                "state": {
+                  "linecolor": "#E0E3EB",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1790602200,
+                    "offset": 0,
+                    "price": 690,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4992,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog08",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolTrendLine",
+                "id": "c1d10",
+                "state": {
+                  "linecolor": "#E0E3EB",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1678714200,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1741613400,
+                    "offset": 0,
+                    "price": 650,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4991,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog09",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolRay",
+                "id": "c1d11",
+                "state": {
+                  "linecolor": "#787B86",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 1,
+                  "extendLeft": false,
+                  "extendRight": true,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1428931800,
+                    "offset": 0,
+                    "price": 297,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1785850200,
+                    "offset": 0,
+                    "price": 702,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4990,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog010",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolRay",
+                "id": "c1d12",
+                "state": {
+                  "linecolor": "#787B86",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 1,
+                  "extendLeft": false,
+                  "extendRight": true,
+                  "leftEnd": 0,
+                  "rightEnd": 0,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "bottom",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "alwaysShowStats": false,
+                  "showMiddlePoint": false,
+                  "showPriceLabels": false,
+                  "showPriceRange": false,
+                  "showPercentPriceRange": false,
+                  "showPipsPriceRange": false,
+                  "showBarsRange": false,
+                  "showDateTimeRange": false,
+                  "showDistance": false,
+                  "showAngle": false,
+                  "statsPosition": 2,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1356964200,
+                    "offset": 0,
+                    "price": 390,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1767018600,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4989,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog011",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolCircle",
+                "id": "c1d13",
+                "state": {
+                  "color": "#26A69A",
+                  "backgroundColor": "rgba(38, 166, 154, 0.2)",
+                  "textColor": "#FF9800",
+                  "fillBackground": true,
+                  "linewidth": 1,
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1454337000,
+                    "offset": 0,
+                    "price": 516,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1467034200,
+                    "offset": 0,
+                    "price": 516,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4988,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog012",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolCircle",
+                "id": "c1d14",
+                "state": {
+                  "color": "#26A69A",
+                  "backgroundColor": "rgba(38, 166, 154, 0.2)",
+                  "textColor": "#FF9800",
+                  "fillBackground": true,
+                  "linewidth": 1,
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1583760600,
+                    "offset": 0,
+                    "price": 340,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1598275800,
+                    "offset": 0,
+                    "price": 340,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4987,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog013",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolVertLine",
+                "id": "c1d15",
+                "state": {
+                  "linecolor": "#D1D4DC",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 2,
+                  "extendLine": false,
+                  "showTime": false,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textOrientation": "horizontal",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1699281000,
+                    "offset": 0,
+                    "price": 470,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4986,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog014",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolVertLine",
+                "id": "c1d16",
+                "state": {
+                  "linecolor": "#787B86",
+                  "textcolor": "#2962FF",
+                  "linewidth": 1,
+                  "linestyle": 0,
+                  "extendLine": false,
+                  "showTime": false,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textOrientation": "horizontal",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1787578200,
+                    "offset": 0,
+                    "price": 740,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4985,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog015",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolFibTimeZone",
+                "id": "c1d17",
+                "state": {
+                  "trendline": {
+                    "color": "#808080",
+                    "linestyle": 2,
+                    "linewidth": 1
+                  },
+                  "level1": [
+                    0,
+                    "#808080",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level2": [
+                    1,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level3": [
+                    2,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level4": [
+                    3,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level5": [
+                    5,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level6": [
+                    8,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level7": [
+                    13,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level8": [
+                    21,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level9": [
+                    34,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level10": [
+                    55,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "level11": [
+                    89,
+                    "#2962FF",
+                    true,
+                    0,
+                    2
+                  ],
+                  "fillBackground": false,
+                  "transparency": 80,
+                  "showLabels": true,
+                  "horzLabelsAlign": "right",
+                  "vertLabelsAlign": "bottom",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1700490600,
+                    "offset": 0,
+                    "price": 470,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1709562600,
+                    "offset": 0,
+                    "price": 470,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4984,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog016",
+                "sharingMode": 1,
+                "version": 2
+              },
+              {
+                "type": "LineToolElliottTripleCombo",
+                "id": "c1d18",
+                "state": {
+                  "color": "#8BC34A",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 7,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1627997400,
+                    "offset": 0,
+                    "price": 783,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1635773400,
+                    "offset": 0,
+                    "price": 1045,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1664199000,
+                    "offset": 0,
+                    "price": 560,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1672237800,
+                    "offset": 0,
+                    "price": 670,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1699885800,
+                    "offset": 0,
+                    "price": 467,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4983,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog017",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d19",
+                "state": {
+                  "color": "#8BC34A",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 14,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1584365400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1586784600,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1589203800,
+                    "offset": 0,
+                    "price": 400,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1597066200,
+                    "offset": 0,
+                    "price": 820,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1600090200,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4982,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog018",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d20",
+                "state": {
+                  "color": "#E0E3EB",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 12,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1699885800,
+                    "offset": 0,
+                    "price": 467,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1705329000,
+                    "offset": 0,
+                    "price": 574,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1709562600,
+                    "offset": 0,
+                    "price": 512,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1715002200,
+                    "offset": 0,
+                    "price": 650,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1719235800,
+                    "offset": 0,
+                    "price": 532,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1728999000,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4981,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog019",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottDoubleCombo",
+                "id": "c1d21",
+                "state": {
+                  "color": "#FF9800",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 8,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1710163800,
+                    "offset": 0,
+                    "price": 600,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1721050200,
+                    "offset": 0,
+                    "price": 540,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1725888600,
+                    "offset": 0,
+                    "price": 615,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1731940200,
+                    "offset": 0,
+                    "price": 500,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4980,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog020",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d22",
+                "state": {
+                  "color": "#2962FF",
+                  "linewidth": 2,
+                  "showWave": true,
+                  "degree": 7,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1731940200,
+                    "offset": 0,
+                    "price": 500,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1736778600,
+                    "offset": 0,
+                    "price": 640,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1741613400,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1754400600,
+                    "offset": 0,
+                    "price": 1072,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1760448600,
+                    "offset": 0,
+                    "price": 765,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1770042600,
+                    "offset": 0,
+                    "price": 1180,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4979,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog021",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d23",
+                "state": {
+                  "color": "#00BCD4",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 13,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1741613400,
+                    "offset": 0,
+                    "price": 520,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1744637400,
+                    "offset": 0,
+                    "price": 600,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1746451800,
+                    "offset": 0,
+                    "price": 560,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1750685400,
+                    "offset": 0,
+                    "price": 820,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1751895000,
+                    "offset": 0,
+                    "price": 740,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1754400600,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4978,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog022",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottTriangle",
+                "id": "c1d24",
+                "state": {
+                  "color": "#FF9800",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 11,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1754400600,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1763994600,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1771857000,
+                    "offset": 0,
+                    "price": 1100,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1777901400,
+                    "offset": 0,
+                    "price": 820,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1792503000,
+                    "offset": 0,
+                    "price": 826,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1797341400,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4977,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog023",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottDoubleCombo",
+                "id": "c1d25",
+                "state": {
+                  "color": "#E0E3EB",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 7,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1770042600,
+                    "offset": 0,
+                    "price": 1180,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1776087000,
+                    "offset": 0,
+                    "price": 760,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1782739800,
+                    "offset": 0,
+                    "price": 1000,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1786368600,
+                    "offset": 0,
+                    "price": 740,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4976,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog024",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d26",
+                "state": {
+                  "color": "#B2B5BE",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 9,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1786368600,
+                    "offset": 0,
+                    "price": 740,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1795527000,
+                    "offset": 0,
+                    "price": 900,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1802179800,
+                    "offset": 0,
+                    "price": 800,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1823952600,
+                    "offset": 0,
+                    "price": 1400,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1833629400,
+                    "offset": 0,
+                    "price": 1200,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1849354200,
+                    "offset": 0,
+                    "price": 1690,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4975,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog025",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottImpulse",
+                "id": "c1d27",
+                "state": {
+                  "color": "#A5D6A7",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 10,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1584365400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1610980200,
+                    "offset": 0,
+                    "price": 1117,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1699885800,
+                    "offset": 0,
+                    "price": 467,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1849354200,
+                    "offset": 0,
+                    "price": 2500,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1942493400,
+                    "offset": 0,
+                    "price": 980,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2088855000,
+                    "offset": 0,
+                    "price": 3270,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4974,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog026",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottCorrection",
+                "id": "c1d28",
+                "state": {
+                  "color": "#F23645",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 6,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1849354200,
+                    "offset": 0,
+                    "price": 1690,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1872941400,
+                    "offset": 0,
+                    "price": 1066,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1885642200,
+                    "offset": 0,
+                    "price": 1366,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1937655000,
+                    "offset": 0,
+                    "price": 770,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4973,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog027",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolElliottCorrection",
+                "id": "c1d29",
+                "state": {
+                  "color": "#B5E7A0",
+                  "linewidth": 1,
+                  "showWave": true,
+                  "degree": 6,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 2088855000,
+                    "offset": 0,
+                    "price": 3270,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2183808600,
+                    "offset": 0,
+                    "price": 1158,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2243683800,
+                    "offset": 0,
+                    "price": 2200,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2306583000,
+                    "offset": 0,
+                    "price": 916,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4972,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog028",
+                "sharingMode": 1,
+                "version": 4
+              },
+              {
+                "type": "LineToolRectangle",
+                "id": "c1d30",
+                "state": {
+                  "color": "#5B9CF6",
+                  "fillBackground": false,
+                  "backgroundColor": "rgba(0, 0, 0, 0)",
+                  "linewidth": 1,
+                  "transparency": 50,
+                  "horzLabelsAlign": "center",
+                  "vertLabelsAlign": "middle",
+                  "textColor": "#9c27b0",
+                  "fontSize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "extendLeft": false,
+                  "extendRight": false,
+                  "middleLine": {
+                    "showLine": false,
+                    "lineWidth": 1,
+                    "lineColor": "#9c27b0",
+                    "lineStyle": 2
+                  },
+                  "linestyle": 0,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "text": ""
+                },
+                "points": [
+                  {
+                    "time_t": 1820928600,
+                    "offset": 0,
+                    "price": 2353,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1883827800,
+                    "offset": 0,
+                    "price": 1618,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4971,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog029",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolText",
+                "id": "c1d31",
+                "state": {
+                  "color": "#FFFFFF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 20,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "1",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1612189800,
+                    "offset": 0,
+                    "price": 1180,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4970,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog030",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolText",
+                "id": "c1d32",
+                "state": {
+                  "color": "#FFFFFF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 20,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "2",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1703687400,
+                    "offset": 0,
+                    "price": 455,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4969,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog031",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolText",
+                "id": "c1d33",
+                "state": {
+                  "color": "#FFFFFF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 20,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "3",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1849354200,
+                    "offset": 0,
+                    "price": 1880,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4968,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog032",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolText",
+                "id": "c1d34",
+                "state": {
+                  "color": "#FFFFFF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 20,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "4",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1948541400,
+                    "offset": 0,
+                    "price": 945,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4967,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog033",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolText",
+                "id": "c1d35",
+                "state": {
+                  "color": "#FFFFFF",
+                  "backgroundColor": "rgba(41, 98, 255, 0.25)",
+                  "borderColor": "#707070",
+                  "backgroundTransparency": 70,
+                  "fontsize": 20,
+                  "bold": false,
+                  "italic": false,
+                  "fillBackground": false,
+                  "drawBorder": false,
+                  "wordWrap": false,
+                  "wordWrapWidth": 200,
+                  "text": "5",
+                  "anchored": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 2060429400,
+                    "offset": 0,
+                    "price": 3240,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4966,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog034",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolPath",
+                "id": "c1d36",
+                "state": {
+                  "lineColor": "rgba(178, 181, 190, 0.6)",
+                  "lineWidth": 1,
+                  "lineStyle": 0,
+                  "leftEnd": 0,
+                  "rightEnd": 1,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1702305000,
+                    "offset": 0,
+                    "price": 470,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 1849354200,
+                    "offset": 0,
+                    "price": 1690,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4965,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog035",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolPolyline",
+                "id": "c1d37",
+                "state": {
+                  "linecolor": "#B2B5BE",
+                  "backgroundColor": "rgba(0, 188, 212, 0.2)",
+                  "transparency": 80,
+                  "linewidth": 1,
+                  "linestyle": 2,
+                  "fillBackground": false,
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null,
+                  "filled": false
+                },
+                "points": [
+                  {
+                    "time_t": 1937655000,
+                    "offset": 0,
+                    "price": 770,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2004183000,
+                    "offset": 0,
+                    "price": 1250,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2038656600,
+                    "offset": 0,
+                    "price": 1050,
+                    "interval": "W"
+                  },
+                  {
+                    "time_t": 2088855000,
+                    "offset": 0,
+                    "price": 2000,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4964,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog036",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolArrowMarkUp",
+                "id": "c1d38",
+                "state": {
+                  "color": "#089981",
+                  "arrowColor": "#089981",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "showLabel": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1584365400,
+                    "offset": 0,
+                    "price": 330,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4963,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog037",
+                "sharingMode": 1
+              },
+              {
+                "type": "LineToolArrowMarkDown",
+                "id": "c1d39",
+                "state": {
+                  "color": "#F23645",
+                  "arrowColor": "#F23645",
+                  "fontsize": 14,
+                  "bold": false,
+                  "italic": false,
+                  "showLabel": false,
+                  "text": "",
+                  "symbolStateVersion": 2,
+                  "zOrderVersion": 2,
+                  "frozen": false,
+                  "title": "",
+                  "interval": "W",
+                  "symbol": "TSX:JX",
+                  "currencyId": null,
+                  "unitId": null,
+                  "metricId": null,
+                  "visible": true,
+                  "adjustedToSplitTime": null
+                },
+                "points": [
+                  {
+                    "time_t": 1770042600,
+                    "offset": 0,
+                    "price": 1180,
+                    "interval": "W"
+                  }
+                ],
+                "zorder": -4962,
+                "ownerSource": "_seriesId",
+                "linkKey": "lkreplicatsxvweeklylog038",
+                "sharingMode": 1
+              }
+            ],
+            "mainSourceId": "_seriesId",
+            "stretchFactor": 2000,
+            "leftAxisesState": [],
+            "rightAxisesState": [
+              {
+                "state": {
+                  "id": "S7kxmrRvncl2",
+                  "m_priceRange": null,
+                  "m_isAutoScale": true,
+                  "m_isPercentage": false,
+                  "m_isIndexedTo100": false,
+                  "m_isLog": true,
+                  "m_isLockScale": false,
+                  "m_isInverted": false,
+                  "m_topMargin": 0.1,
+                  "m_bottomMargin": 0.08,
+                  "alignLabels": true,
+                  "logFormula": {
+                    "logicalOffset": 4,
+                    "coordOffset": 0.0001
+                  },
+                  "hasCalculatedPriceRange": true
+                },
+                "sources": [
+                  "c1d01",
+                  "c1d02",
+                  "c1d03",
+                  "c1d04",
+                  "c1d05",
+                  "c1d06",
+                  "c1d07",
+                  "c1d08",
+                  "c1d09",
+                  "c1d10",
+                  "c1d11",
+                  "c1d12",
+                  "c1d13",
+                  "c1d14",
+                  "c1d15",
+                  "c1d16",
+                  "c1d17",
+                  "c1d18",
+                  "c1d19",
+                  "c1d20",
+                  "c1d21",
+                  "c1d22",
+                  "c1d23",
+                  "c1d24",
+                  "c1d25",
+                  "c1d26",
+                  "c1d27",
+                  "c1d28",
+                  "c1d29",
+                  "c1d30",
+                  "c1d31",
+                  "c1d32",
+                  "c1d33",
+                  "c1d34",
+                  "c1d35",
+                  "c1d36",
+                  "c1d37",
+                  "c1d38",
+                  "c1d39",
+                  "_seriesId"
+                ]
+              }
+            ],
+            "overlayPriceScales": {},
+            "priceScaleRatio": null,
+            "isCollapsed": false,
+            "isMaximized": false,
+            "mode": 0
+          }
+        ],
+        "timeScale": {
+          "m_barSpacing": 0.683,
+          "m_rightOffset": 950,
+          "rightOffsetPercentage": 5,
+          "usePercentageRightOffset": false
+        },
+        "chartProperties": {
+          "paneProperties": {
+            "backgroundType": "solid",
+            "vertGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(242, 242, 242, 0.2)"
+            },
+            "horzGridProperties": {
+              "style": 1,
+              "visible": true,
+              "color": "rgba(242, 242, 242, 0.2)"
+            },
+            "crossHairProperties": {
+              "style": 2,
+              "transparency": 0,
+              "width": 1,
+              "color": "#9C9C9C"
+            },
+            "topMargin": 10,
+            "bottomMargin": 8,
+            "axisProperties": {
+              "autoScale": true,
+              "autoScaleDisabled": false,
+              "lockScale": false,
+              "percentage": false,
+              "percentageDisabled": false,
+              "indexedTo100": false,
+              "log": false,
+              "logDisabled": false,
+              "alignLabels": true,
+              "isInverted": false
+            },
+            "legendProperties": {
+              "showStudyArguments": true,
+              "showStudyTitles": true,
+              "showStudyValues": true,
+              "showSeriesTitle": true,
+              "showSeriesOHLC": true,
+              "showLegend": true,
+              "showLastDayChange": false,
+              "showBarChange": true,
+              "showVolume": false,
+              "showBackground": true,
+              "showPriceSource": true,
+              "backgroundTransparency": 50,
+              "showLogo": false,
+              "showTradingButtons": false,
+              "showTradingButtonsMobile": false,
+              "showSeriesLegendCloseOnMobile": true,
+              "barChangeUpColor": "#089981",
+              "barChangeDownColor": "#F23645",
+              "useBarChangeCustomColors": false
+            },
+            "separatorColor": "#2E2E2E",
+            "background": "#0F0F0F",
+            "backgroundGradientStartColor": "#1F1F1F",
+            "backgroundGradientEndColor": "#0F0F0F"
+          },
+          "scalesProperties": {
+            "fontSize": 12,
+            "scaleSeriesOnly": false,
+            "showSeriesLastValue": true,
+            "seriesLastValueMode": 1,
+            "showSeriesPrevCloseValue": false,
+            "showStudyLastValue": true,
+            "showSymbolLabels": false,
+            "showStudyPlotLabels": false,
+            "showBidAskLabels": false,
+            "showPrePostMarketPriceLabel": true,
+            "showFundamentalNameLabel": false,
+            "showFundamentalLastValue": true,
+            "barSpacing": 6,
+            "axisHighlightColor": "rgba(41, 98, 255, 0.25)",
+            "axisHoverHighlightColor": "",
+            "axisLineToolLabelBackgroundColorCommon": "#2962FF",
+            "axisLineToolLabelBackgroundColorActive": "#143EB2",
+            "showPriceScaleCrosshairLabel": true,
+            "showTimeScaleCrosshairLabel": true,
+            "saveLeftEdge": false,
+            "textColor": "#B8B8B8",
+            "lineColor": "rgba(242, 242, 242, 0)",
+            "backgroundColor": "#ffffff"
+          },
+          "publishedChartsTimelineProperties": {
+            "type": "BarsMarksContainer",
+            "id": "PublishedChartsTimeline",
+            "zorder": 10000003,
+            "pinnedTooltips": {}
+          },
+          "chartEventsSourceProperties": {
+            "visible": false,
+            "futureOnly": true,
+            "breaks": {
+              "color": "#555555",
+              "visible": false,
+              "style": 2,
+              "width": 1
+            }
+          },
+          "tradingProperties": {
+            "showPositions": true,
+            "positionAndBracketsPL": true,
+            "positionPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "bracketsPL": {
+              "visibility": true,
+              "display": 0
+            },
+            "showOrders": true,
+            "showProjectMarketOrder": true,
+            "showExecutions": true,
+            "showExecutionsLabels": false,
+            "showReverse": true,
+            "extendLeft": true,
+            "lineLength": 5,
+            "horizontalAlignment": 2,
+            "lineWidth": 1,
+            "lineStyle": 0
+          },
+          "priceScaleSelectionStrategyName": "auto",
+          "inactivityGaps": false
+        },
+        "sessions": {
+          "properties": {
+            "sessionHighlight": {
+              "backgrounds": {
+                "preMarket": {
+                  "color": "#FF9800",
+                  "transparency": 92
+                },
+                "postMarket": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "nightMarket": {
+                  "color": "#D500F9",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": true
+                },
+                "electronic": {
+                  "color": "#2962FF",
+                  "transparency": 92
+                },
+                "outOfSession": {
+                  "color": "#2962FF",
+                  "transparency": 92,
+                  "visible": true,
+                  "available": false
+                }
+              },
+              "vertlines": {
+                "sessBreaks": {
+                  "color": "#4985e7",
+                  "style": 2,
+                  "visible": false,
+                  "width": 1,
+                  "available": true
+                }
+              }
+            }
+          }
+        },
+        "version": 3,
+        "timezone": "Etc/UTC",
+        "shouldBeSavedEvenIfHidden": false,
+        "linkingGroup": null,
+        "lineToolsGroups": {
+          "groups": []
+        },
+        "chartId": "1"
+      }
+    ],
+    "symbolLock": 0,
+    "intervalLock": 0,
+    "trackTimeLock": 0,
+    "dateRangeLock": 0,
+    "crosshairLock": 1,
+    "layoutsSizes": {
+      "s": [
+        {
+          "percent": 1
+        }
+      ]
+    },
+    "symbolAliasServiceState": []
+  },
+  "studyMetaInfoMap": {},
+  "listEntry": {
+    "image_url": "replica-tsxv-weekly-log",
+    "url": "replica-tsxv-weekly-log",
+    "id": 1,
+    "name": "replica-tsxv-weekly-log"
+  }
+}

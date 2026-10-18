@@ -29,6 +29,8 @@ export interface DrawContext {
   formatPrice(price: number): string;
   /** Smallest price step of the symbol, for tools that store distances in ticks. */
   priceStep: number;
+  /** True when the pane's price scale is logarithmic. */
+  logScale: boolean;
   /** True on a dark chart background. */
   dark: boolean;
   background: string;
