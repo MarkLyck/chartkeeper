@@ -2,10 +2,11 @@
  * Starts the packaged app from release/ (what the installer contains), opens
  * the reference backup in the viewer, and takes a screenshot. Fails on any
  * page error. It also asks for the end-to-end tests' fake TradingView, signed
- * in, and fails if the packaged app listens. Run after `electron-builder`:
+ * in, and fails if the packaged app listens. On macOS it first checks the code
+ * signature of the app and of the copy inside the DMG. Run after `electron-builder`:
  * npx tsx scripts/packaged-smoke.ts
  */
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, promises as fs, readdirSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,6 +30,28 @@ function packagedBinary(): string {
   return found;
 }
 
+/**
+ * macOS kills an app at launch when its signature doesn't cover its code, and
+ * the fuses rewrite Electron Framework after Electron built it, so an unsigned
+ * build crashes on every Mac. GitHub's macOS runners don't enforce signatures,
+ * so launching the app there proves nothing: check the signature itself, on
+ * the app and on the copy users get from the DMG.
+ */
+async function verifyMacSignatures(appPath: string) {
+  const verify = (app: string) => execFileSync('codesign', ['--verify', '--deep', '--strict', '--verbose=2', app], { stdio: 'inherit' });
+  verify(appPath);
+  const dmg = readdirSync(release).find((f) => f.endsWith('.dmg'));
+  if (!dmg) throw new Error(`No DMG in ${release}`);
+  const mount = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-dmg-'));
+  execFileSync('hdiutil', ['attach', '-nobrowse', '-readonly', '-mountpoint', mount, path.join(release, dmg)], { stdio: 'ignore' });
+  try {
+    verify(path.join(mount, 'ChartKeeper.app'));
+  } finally {
+    execFileSync('hdiutil', ['detach', mount, '-force'], { stdio: 'ignore' });
+  }
+  console.log(`signatures OK: ${appPath} and ${dmg}`);
+}
+
 async function waitForCdp(port: number, ms: number) {
   const until = Date.now() + ms;
   while (Date.now() < until) {
@@ -44,6 +67,8 @@ async function waitForCdp(port: number, ms: number) {
 }
 
 async function main() {
+  const binary = packagedBinary();
+  if (process.platform === 'darwin') await verifyMacSignatures(path.resolve(binary, '../../..'));
   const base = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-smoke-'));
   const userData = path.join(base, 'userData');
   const backups = path.join(base, 'Backups');
@@ -57,7 +82,7 @@ async function main() {
   const env = { ...process.env, CHARTKEEPER_USER_DATA: userData, [FAKE_TRADINGVIEW_ENV]: '1', [SEED_ENV]: fakeSeed } as Record<string, string>;
   delete env.ELECTRON_RUN_AS_NODE;
   const args = [`--remote-debugging-port=${port}`, ...(process.platform === 'linux' ? ['--no-sandbox'] : [])];
-  const child = spawn(packagedBinary(), args, { env, stdio: 'ignore', detached: process.platform !== 'win32' });
+  const child = spawn(binary, args, { env, stdio: 'ignore', detached: process.platform !== 'win32' });
   const errors: string[] = [];
   try {
     await waitForCdp(port, 60000);

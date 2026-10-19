@@ -41,13 +41,15 @@ export function registerIpc({ status, tasks, shell }: IpcDeps): void {
     if (!r.canceled && r.filePaths[0]) await store.update({ settings: { backupFolder: r.filePaths[0] } });
     return status.read();
   });
-  handle('signIn', () =>
-    status.exclusive('signin', async () => {
+  handle('signIn', async () => {
+    const r = await status.exclusive('signin', async () => {
       await signIn(account, shell.window);
       shell.show();
-      return status.read();
-    }),
-  );
+    });
+    // Read once the task is over: a state read inside it says "busy", and if this reply
+    // reached the window after the "no longer busy" push, every button would stay disabled.
+    return r.ok ? { ok: true as const, value: await status.read() } : r;
+  });
   handle('signOut', async () => {
     // Not while a backup or restore is using the session.
     await status.exclusive('signin', () => account.signOut());
