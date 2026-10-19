@@ -166,6 +166,11 @@ describe('the account', () => {
     expect(signedOut).toBe(true);
   });
 
+  it('answers a sign-in with the state after it, not busy, so the buttons are enabled whatever order the window hears it in', async () => {
+    expect(await call('signIn')).toMatchObject({ ok: true, value: { signedIn: true, busy: null } });
+    expect(status.busy).toBeNull();
+  });
+
   it('lists the layouts a restore can replace, with the free slots', async () => {
     tv.account = { ...tv.account!, plan: 'essential' };
     expect(await call('restoreTargets')).toEqual({ ok: true, value: { layouts: [{ uid: 'AbCd1234', name: 'Min AAPL' }], used: 1, limit: 5, plan: 'essential', free: true } });
