@@ -24,6 +24,8 @@ export interface BackupOptions {
 
 /** Requests a part of the backup is expected to take before its real size is known. A chart's prices take about as long as three requests. */
 const COST = { layout: 5, list: 1, chartPrices: 3 } as const;
+/** A layout's own requests: the layout, its drawing token and its drawing counts. Then one per drawing bucket. */
+const LAYOUT_FIXED = 3;
 
 interface BackupSummary {
   dir: string;
@@ -106,6 +108,11 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
         part = { done, total };
         say();
       },
+      /** Corrects the step's cost once its real size is known, without moving the bar. */
+      resize: (actual: number) => {
+        meter.total += actual - cost;
+        cost = actual;
+      },
       end: () => void (meter.done = start + cost),
     };
   };
@@ -131,6 +138,7 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
     for (const [i, entry] of entries.entries()) {
       const s = begin('layout', COST.layout, { name: entry.name, part: { done: i, total: entries.length } });
       const captured = await captureLayout(client, entry);
+      s.resize(LAYOUT_FIXED + Object.keys(captured.drawings.buckets).length);
       firstToken ??= { uid: captured.record.uid, token: captured.token };
       const manifestLayout = await writer.addLayout(captured);
       layouts.push(manifestLayout);

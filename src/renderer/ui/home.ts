@@ -47,24 +47,28 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
       button(t('home.restore'), () => ctx.go({ name: 'restore' }), { big: true, id: 'go-restore', disabled: locked }));
   }
 
-  /** Signed in: the last backup is the headline, the way a balance is. */
+  /**
+   * Signed in: the newest complete backup is the headline, the way a balance
+   * is. A run that failed after it gets the red line under it, so a failure
+   * never reads as a fresh backup.
+   */
   function backupHero(s: AppState): HTMLElement {
     const last = s.lastBackup;
-    const snap = last && snapshots?.find((x) => x.dir === last.dir);
-    const layouts = snap ? layoutsOf(snap) : [];
-    const figure = last ? capitalized(formatRelative(new Date(last.at))) : t('home.never');
+    const good = newestFirst(snapshots ?? []).find((x) => !isIncomplete(x));
+    const goodAt = good ? snapshotDate(good) : last?.ok ? new Date(last.at) : null;
     const line = !last
       ? h('p', { class: 'hero-sub', id: 'last-backup' }, t('home.noBackupYet'))
       : !last.ok
         ? h('p', { class: 'hero-sub last-backup-failed', id: 'last-backup' }, t('home.lastBackupFailed', { when: formatRelative(new Date(last.at)) }))
         : h('p', { class: 'hero-sub', id: 'last-backup' },
             h('span', { class: 'dot dot-ok', attrs: { 'aria-hidden': 'true' } }),
-            snap?.manifest
-              ? t('home.lastBackupSafe', { layouts: tn('count.layouts', layouts.length), drawings: tn('count.drawings', drawingsIn(snap)) })
+            good
+              ? t('home.lastBackupSafe', { layouts: tn('count.layouts', layoutsOf(good).length), drawings: tn('count.drawings', drawingsIn(good)) })
               : t('home.lastBackupNoCount'));
+    const label = last && !last.ok ? t('home.lastGoodLabel') : t('home.lastBackupLabel');
     return h('section', { class: 'hero' },
-      h('p', { class: 'eyebrow' }, t('home.lastBackupLabel')),
-      pageTitle(figure),
+      h('p', { class: 'eyebrow', attrs: { 'aria-hidden': 'true' } }, label),
+      pageTitle(goodAt ? capitalized(formatRelative(goodAt)) : t('home.never'), `${label}: `),
       line,
       history(),
       actions(s));

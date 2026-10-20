@@ -125,6 +125,10 @@ async function main() {
   await shot(page, 'backup-success-notes');
   await page.click('#backup-view');
   await page.waitForSelector('.snap-selected');
+  await mock(page, `m.setState({ busy: 'backup' });`);
+  expect(await page.isDisabled('#nav-restore'), 'the top bar still offers Restore while a daily backup runs');
+  await mock(page, `m.setState({ busy: null });`);
+  expect(await page.isEnabled('#nav-restore'), 'the top bar keeps Restore off after the daily backup ends');
   await page.click('#nav-home');
   await mock(page, `m.scenario.backup = 'format-changed';`);
   await page.click('#go-backup');

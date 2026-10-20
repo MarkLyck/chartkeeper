@@ -39,6 +39,7 @@ export const TEXT = {
   'home.needSignIn': 'Sign in to TradingView first to back up or restore. You can look at your backups without signing in.',
   'home.actions': 'What to do',
   'home.lastBackupLabel': 'Last backup',
+  'home.lastGoodLabel': 'Last complete backup',
   'home.never': 'None yet',
   'home.lastBackupSafe': '{layouts} and {drawings} are safe on this computer.',
   'home.lastBackupNoCount': 'Your layouts are safe on this computer.',

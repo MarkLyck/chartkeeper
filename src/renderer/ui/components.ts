@@ -33,7 +33,7 @@ export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boole
       attrs: { 'aria-current': name === active ? 'page' : undefined },
       on: { click: () => ctx.go({ name }) },
     }, label);
-  return h('header', { class: 'topbar' },
+  return h('header', { class: 'topbar', attrs: { 'data-active': active, 'data-can-leave': String(opts.canLeave !== false) } },
     h('div', { class: 'topbar-inner' },
       h('span', { class: 'brand' }, brandMark(), 'ChartKeeper'),
       opts.canLeave === false
@@ -47,9 +47,18 @@ export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boole
         s.signedIn ? (s.username ?? t('signin.signedIn')) : t('nav.signedOut'))));
 }
 
-/** The page's own heading. Focus lands on it so screen readers announce the new screen. */
-export function pageTitle(title: string): HTMLElement {
-  return h('div', { class: 'page-head' }, h('h1', { tabIndex: -1, class: 'screen-title' }, title));
+/** Redraws the top bar inside `root` for a new app state, keeping the screen and the lock it was drawn with. */
+export function refreshTopBar(ctx: Ctx, root: Element): void {
+  const bar = root.querySelector<HTMLElement>('.topbar');
+  if (!bar) return;
+  const focused = bar.contains(document.activeElement) ? document.activeElement?.id : null;
+  bar.replaceWith(topBar(ctx, bar.dataset.active as Route['name'], { canLeave: bar.dataset.canLeave === 'true' }));
+  if (focused) document.getElementById(focused)?.focus();
+}
+
+/** The page's own heading. Focus lands on it so screen readers announce the new screen; `spoken` goes before the title for them only. */
+export function pageTitle(title: string, spoken?: string): HTMLElement {
+  return h('div', { class: 'page-head' }, h('h1', { tabIndex: -1, class: 'screen-title' }, spoken ? h('span', { class: 'sr-only' }, spoken) : null, title));
 }
 
 /**
@@ -123,7 +132,7 @@ export function errorBox(ctx: Ctx, error: AppError, opts: { title?: string; note
   return h('section', { class: 'result result-error', attrs: { role: 'alert' } },
     icons.cross(),
     h('div', { class: 'result-body' },
-      h('h2', { class: 'result-title' }, title ?? text.title),
+      h('h2', { class: 'result-title', tabIndex: -1 }, title ?? text.title),
       title ? h('p', { class: 'result-lead' }, h('strong', {}, text.title)) : null,
       h('p', {}, text.body),
       note ? h('p', { class: 'note' }, note) : null,

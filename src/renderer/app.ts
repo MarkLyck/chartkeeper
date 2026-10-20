@@ -1,6 +1,7 @@
 import type { AppState, ChartKeeperApi } from '../shared/api';
 import { loadFonts } from './fonts';
 import { backupScreen } from './ui/backup';
+import { refreshTopBar } from './ui/components';
 import { homeScreen } from './ui/home';
 import { restoreScreen } from './ui/restore';
 import type { Ctx, Route, Screen } from './ui/screen';
@@ -47,6 +48,7 @@ function mount() {
 function applyState(next: AppState) {
   state = next;
   screen?.onState?.(next);
+  refreshTopBar(ctx, root);
 }
 
 async function start() {

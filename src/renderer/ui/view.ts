@@ -110,7 +110,8 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
   function chartArea(c: Extract<Main, { k: 'chart' }>): HTMLElement {
     if (c.load.k === 'loading') return h('div', { class: 'chart-box chart-empty' }, spinner(t('common.loading')));
     if (c.load.k === 'error') return errorBox(ctx, c.load.error);
-    const box = h('div', { class: 'chart-box', attrs: { role: 'img', 'aria-label': c.load.value.layout.name } });
+    const known = selected && layoutsOf(selected).find((l) => l.uid === c.uid);
+    const box = h('div', { class: 'chart-box', attrs: { role: 'img', 'aria-label': known ? layoutTitle(known) : c.load.value.layout.name } });
     const loaded = c.load.value;
     queueMicrotask(() => {
       if (box.isConnected) chart = renderLayout(box, loaded.layout, loaded.data);
