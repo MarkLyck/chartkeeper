@@ -11,6 +11,7 @@ import { emit, registerIpc } from '../../src/main/ipc';
 import type { Shell } from '../../src/main/shell';
 import { Store } from '../../src/main/store';
 import type { Tasks } from '../../src/main/tasks';
+import { Updater, type UpdateSource } from '../../src/main/update';
 import { INVOKE_CHANNELS, type AppState, type Invoke, type SnapshotSummary } from '../../src/shared/api';
 import { FakeTradingView } from '../fakes/fakeTradingView';
 import { referenceInAccount } from '../fakes/fixtures';
@@ -20,6 +21,7 @@ const electron = vi.hoisted(() => ({
   openedPaths: [] as string[],
   openedUrls: [] as string[],
   loginItems: [] as unknown[],
+  quits: 0,
   packaged: false,
   picked: { canceled: true, filePaths: [] as string[] },
 }));
@@ -32,6 +34,7 @@ vi.mock('electron', () => ({
       return electron.packaged;
     },
     setLoginItemSettings: (s: unknown) => electron.loginItems.push(s),
+    quit: () => void electron.quits++,
   },
   ipcMain: { handle: (channel: string, fn: (event: unknown, ...args: unknown[]) => unknown) => electron.handlers.set(channel, fn) },
   dialog: { showOpenDialog: async () => electron.picked },
@@ -51,6 +54,8 @@ let status: AppStatus;
 let tv: FakeTradingView;
 let signedOut: boolean;
 let trayUpdates: number;
+let preparedToQuit: boolean;
+let shell: Shell;
 let win: { full: boolean; isFullScreen(): boolean; setFullScreen(on: boolean): void } | null;
 const realPlatform = process.platform;
 
@@ -65,6 +70,7 @@ beforeEach(async () => {
   tv = new FakeTradingView().add(referenceInAccount('AbCd1234', 'Min AAPL'));
   signedOut = false;
   trayUpdates = 0;
+  preparedToQuit = false;
   const account = {
     username: 'demo_user',
     client: async () => new TvClient(new PoliteHttp(tv, fast), tv.account!),
@@ -72,9 +78,9 @@ beforeEach(async () => {
   } as unknown as TvAccount;
   status = new AppStatus(store, account, () => undefined);
   win = null;
-  const shell = { get window() { return win; }, updateTray: () => void trayUpdates++, show: () => undefined } as unknown as Shell;
-  Object.assign(electron, { openedPaths: [], openedUrls: [], loginItems: [], packaged: false, picked: { canceled: true, filePaths: [] } });
-  registerIpc({ status, tasks: {} as Tasks, shell });
+  shell = { get window() { return win; }, updateTray: () => void trayUpdates++, show: () => undefined, prepareToQuit: () => void (preparedToQuit = true) } as unknown as Shell;
+  Object.assign(electron, { openedPaths: [], openedUrls: [], loginItems: [], quits: 0, packaged: false, picked: { canceled: true, filePaths: [] } });
+  registerIpc({ status, tasks: {} as Tasks, shell, updater: null });
 });
 
 afterEach(() => setPlatform(realPlatform));
@@ -236,5 +242,60 @@ describe('full screen for the chart viewer', () => {
 
   it('does nothing without a window', async () => {
     await expect(call('setFullScreen', true)).resolves.toBeUndefined();
+  });
+});
+
+describe('updates', () => {
+  const withUpdater = async () => {
+    const source: UpdateSource & { downloads: number } = {
+      how: 'installer',
+      downloads: 0,
+      check: async () => ({ version: '1.0.0-rc.11', notes: '' }),
+      download: async () => void source.downloads++,
+      install: async () => undefined,
+    };
+    const updater = new Updater(source, status, () => undefined);
+    registerIpc({ status, tasks: {} as Tasks, shell, updater });
+    await updater.check();
+    return source;
+  };
+
+  it('hides the popup with Later and shows it again from the top bar', async () => {
+    await withUpdater();
+    expect((await call('postponeUpdate')).update).toMatchObject({ k: 'later', version: '1.0.0-rc.11' });
+    expect((await call('showUpdate')).update).toMatchObject({ k: 'available', version: '1.0.0-rc.11' });
+  });
+
+  it('answers Update now at once with the download running, and refuses it during a backup', async () => {
+    const source = await withUpdater();
+    let finish!: () => void;
+    const backup = status.exclusive('backup', () => new Promise<void>((r) => (finish = r)));
+    expect((await call('startUpdate')).update.k).toBe('available');
+    finish();
+    await backup;
+    expect((await call('startUpdate')).update.k).toBe('downloading');
+    await vi.waitFor(() => expect(status.update.k).toBe('installer-open'));
+    expect(source.downloads).toBe(1);
+  });
+
+  it('opens only ChartKeeper\'s releases page', async () => {
+    await call('openReleasePage');
+    expect(electron.openedUrls).toEqual(['https://github.com/MarkLyck/chartkeeper/releases']);
+  });
+
+  it('does not quit while a backup runs', async () => {
+    let finish!: () => void;
+    const backup = status.exclusive('backup', () => new Promise<void>((r) => (finish = r)));
+    await call('quitApp');
+    expect(electron.quits).toBe(0);
+    finish();
+    await backup;
+    await call('quitApp');
+    expect([electron.quits, preparedToQuit]).toEqual([1, true]);
+  });
+
+  it('does nothing in a run that does not look for updates', async () => {
+    expect((await call('startUpdate')).update).toEqual({ k: 'none' });
+    expect((await call('showUpdate')).update).toEqual({ k: 'none' });
   });
 });

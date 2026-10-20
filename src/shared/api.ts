@@ -30,8 +30,32 @@ export interface AppState {
   /** The browser used for signing in, or null when none was found (an in-app window is used then). */
   browserName: string | null;
   lastBackup: { at: string; ok: boolean; dir: string } | null;
-  busy: 'backup' | 'restore' | 'signin' | null;
+  busy: 'backup' | 'restore' | 'signin' | 'update' | null;
+  update: UpdateState;
 }
+
+/**
+ * How a new version gets installed. 'restart': ChartKeeper replaces itself and starts again (Windows, Linux).
+ * 'installer': it opens the downloaded installer for the user to drag in (macOS, where an app without a
+ * paid developer certificate can't replace itself).
+ */
+export type UpdateHow = 'restart' | 'installer';
+
+/** A newer release than the one running. `notes` is plain text. */
+export interface UpdateRelease {
+  version: string;
+  notes: string;
+  how: UpdateHow;
+}
+
+/** The update popup: shown for every state but 'none' and 'later'; 'later' leaves a button in the top bar to show it again. */
+export type UpdateState =
+  | { k: 'none' }
+  | ({ k: 'available' } & UpdateRelease)
+  | ({ k: 'later' } & UpdateRelease)
+  | ({ k: 'downloading'; percent: number } & UpdateRelease)
+  | ({ k: 'installer-open' } & UpdateRelease)
+  | ({ k: 'failed'; message: string } & UpdateRelease);
 
 /** A failure the window can explain. `kind` picks the wording; `message` is shown under Details. */
 export interface AppError {
@@ -86,6 +110,15 @@ export interface ChartKeeperApi {
   openOnTradingView(url: string): Promise<void>;
   /** Puts the window in full screen, or back as it was before; for the chart viewer. */
   setFullScreen(on: boolean): Promise<void>;
+  /** Downloads the new version and installs it, or opens its installer on a Mac. Refused while another task runs. */
+  startUpdate(): Promise<AppState>;
+  /** Hides the update popup; the top bar then offers it again. */
+  postponeUpdate(): Promise<AppState>;
+  showUpdate(): Promise<AppState>;
+  /** Opens ChartKeeper's newest release on GitHub in the browser. */
+  openReleasePage(): Promise<void>;
+  /** Quits, so the new version can replace this one from the installer (Mac). Refused while a task runs. */
+  quitApp(): Promise<void>;
   onProgress(cb: (e: Events['progress']) => void): () => void;
   onStateChanged(cb: (s: Events['state']) => void): () => void;
 }
@@ -116,6 +149,11 @@ export const INVOKE_CHANNELS = {
   openFolder: 'ck:openFolder',
   openOnTradingView: 'ck:openOnTradingView',
   setFullScreen: 'ck:setFullScreen',
+  startUpdate: 'ck:startUpdate',
+  postponeUpdate: 'ck:postponeUpdate',
+  showUpdate: 'ck:showUpdate',
+  openReleasePage: 'ck:openReleasePage',
+  quitApp: 'ck:quitApp',
 } as const satisfies { [K in keyof Invoke]: `ck:${K}` };
 
 export const EVENT_CHANNELS = { progress: 'ck:progress', state: 'ck:state' } as const satisfies { [K in keyof Events]: `ck:${K}` };

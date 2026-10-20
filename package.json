@@ -1,7 +1,7 @@
 {
   "name": "chartkeeper",
   "productName": "ChartKeeper",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.10",
   "description": "Back up, view offline, and restore your TradingView chart layouts.",
   "author": {
     "name": "MarkLyck",
@@ -27,12 +27,15 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.6.5",
     "@vitest/coverage-v8": "^5.0.5",
     "electron": "^44.9.0",
     "electron-builder": "^26.15.3",
+    "electron-updater": "^6.8.11",
     "esbuild": "^0.28.2",
     "font-awesome": "4.7.0",
+    "js-yaml": "^4.3.2",
     "lightweight-charts": "^5.2.1",
     "playwright-core": "^1.64.1",
     "tsx": "^4.23.15",
@@ -74,6 +77,12 @@
           "arch": [
             "universal"
           ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "universal"
+          ]
         }
       ],
       "category": "public.app-category.finance",
@@ -112,6 +121,11 @@
       "icon": "build/icon.png",
       "maintainer": "MarkLyck <MarkLyck@users.noreply.github.com>",
       "synopsis": "Back up and view your TradingView charts"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "MarkLyck",
+      "repo": "chartkeeper"
     }
   }
 }

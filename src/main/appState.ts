@@ -1,6 +1,6 @@
 import { app } from 'electron';
 import { TvError } from '../core/tv/errors';
-import type { AppError, AppState, Result } from '../shared/api';
+import type { AppError, AppState, Result, UpdateState } from '../shared/api';
 import type { TvAccount } from './account';
 import { findBrowser } from './browsers';
 import { SignInCancelled } from './browserSignIn';
@@ -34,6 +34,7 @@ export async function guarded<T>(fn: () => Promise<T>): Promise<Result<T>> {
 /** Settings, the last backup, the signed-in account and the task that is running: everything the window shows. */
 export class AppStatus {
   private running: Task | null = null;
+  private updateState: UpdateState = { k: 'none' };
 
   constructor(
     readonly store: Store,
@@ -44,6 +45,17 @@ export class AppStatus {
 
   get busy(): Task | null {
     return this.running;
+  }
+
+  get update(): UpdateState {
+    return this.updateState;
+  }
+
+  /** Only src/main/update.ts calls this, with the state its nextUpdate() returned. */
+  setUpdate(next: UpdateState): void {
+    if (next === this.updateState) return;
+    this.updateState = next;
+    this.changed();
   }
 
   async read(): Promise<AppState> {
@@ -57,6 +69,7 @@ export class AppStatus {
       browserName: findBrowser()?.name ?? null,
       lastBackup: this.store.lastBackup,
       busy: this.running,
+      update: this.updateState,
     };
   }
 

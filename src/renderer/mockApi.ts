@@ -5,6 +5,7 @@ import type { ChartData, Manifest, ManifestLayout } from '../core/model';
 import type { RestoreStep } from '../core/restore';
 import { checkRestore, restoredName } from '../core/restorePolicy';
 import { urls } from '../core/tv/endpoints';
+import { nextUpdate, type UpdateEvent } from '../main/update';
 import type {
   AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, ProgressEvent, RestoreOutcome, LayoutSlots, Result, SnapshotSummary,
 } from '../shared/api';
@@ -21,6 +22,7 @@ export interface MockScenario {
   backup: 'ok' | 'format-changed' | 'not-signed-in';
   slots: 'free' | 'full';
   restore: 'ok' | 'mismatch' | 'unchecked' | 'limit-reached';
+  update: 'ok' | 'fail';
 }
 
 export interface MockControl {
@@ -95,6 +97,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     browserName: 'Google Chrome',
     lastBackup: { at: snapshots.at(-1)!.manifest!.createdAt, ok: true, dir: snapshots.at(-1)!.dir },
     busy: null,
+    update: { k: 'none' },
   };
 
   const stateListeners = new Set<(s: AppState) => void>();
@@ -103,7 +106,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
   let emitted = 0;
 
   const control: MockControl = {
-    scenario: { signIn: 'ok', backup: 'ok', slots: 'free', restore: 'ok' },
+    scenario: { signIn: 'ok', backup: 'ok', slots: 'free', restore: 'ok', update: 'ok' },
     stepMs: 350,
     pauseAfter: null,
     release() {
@@ -194,6 +197,19 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
       setState({ busy: null });
     }
   };
+
+  const updateTo = (e: UpdateEvent) => setState({ update: nextUpdate(state.update, e) });
+
+  async function runUpdate() {
+    setState({ busy: 'update' });
+    updateTo({ k: 'start' });
+    for (const percent of [8, 27, 51, 76, 100]) {
+      await wait(control.stepMs);
+      updateTo({ k: 'progress', percent });
+    }
+    updateTo(control.scenario.update === 'fail' ? { k: 'failed', message: 'net::ERR_CONNECTION_RESET while downloading ChartKeeper-1.0.0-rc.11-mac-universal.dmg' } : { k: 'installed' });
+    setState({ busy: null });
+  }
 
   const slots = (): LayoutSlots => ({ used: control.scenario.slots === 'full' ? 5 : 4, limit: 5, plan: 'Essential', free: control.scenario.slots === 'free' });
 
@@ -311,6 +327,27 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     },
     async setFullScreen(on) {
       record('setFullScreen', on);
+    },
+    async startUpdate() {
+      record('startUpdate');
+      if (state.update.k === 'available' && !state.busy) void runUpdate();
+      return state;
+    },
+    async postponeUpdate() {
+      record('postponeUpdate');
+      updateTo({ k: 'postpone' });
+      return state;
+    },
+    async showUpdate() {
+      record('showUpdate');
+      updateTo({ k: 'show' });
+      return state;
+    },
+    async openReleasePage() {
+      record('openReleasePage');
+    },
+    async quitApp() {
+      record('quitApp');
     },
     onProgress(cb) {
       progressListeners.add(cb);
