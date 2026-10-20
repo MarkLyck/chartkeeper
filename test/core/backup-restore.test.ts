@@ -437,6 +437,13 @@ describe('restore', () => {
     expect(tv.requests.filter((q) => q.method === 'POST')).toHaveLength(1);
   });
 
+  it('stops at a save answer without a real layout id, and sends nothing with it', async () => {
+    const snap = await snapshot();
+    tv.failOn = (req) => (req.method === 'POST' ? { status: 200, contentType: 'application/json', body: '{"id":5,"image_url":""}' } : null);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), countOnPage: shownBy(tv) })).rejects.toMatchObject({ kind: 'format-changed' });
+    expect(tv.requests.at(-1)?.method, 'the save is the last request').toBe('POST');
+  });
+
   it('gives two restores on the same day different names', async () => {
     const snap = await snapshot();
     const a = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now: new Date(2026, 9, 17, 9, 5) });

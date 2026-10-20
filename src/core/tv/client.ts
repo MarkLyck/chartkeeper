@@ -54,7 +54,8 @@ const SizesResponseSchema = z.object({
   payload: z.object({ countSourcesTotal: z.number().optional(), charts: z.record(z.string(), z.unknown()).optional() }).passthrough().nullable(),
 });
 
-const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string(), last_modified: z.number().optional() });
+/** The new layout's id goes into later addresses and the restore journal, so it must look like one: TradingView's are 8 letters and digits. */
+const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string().regex(/^[A-Za-z0-9]{6,}$/), last_modified: z.number().optional() });
 
 function parseJson(res: HttpResponse, what: string): unknown {
   try {

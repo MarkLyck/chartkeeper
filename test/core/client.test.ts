@@ -47,6 +47,16 @@ describe('turning TradingView error answers into something the user can act on',
     await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'not-signed-in' });
   });
 
+  it.each([
+    ['an empty layout id', { id: 5, image_url: '' }],
+    ['a short layout id', { id: 5, image_url: 'Ab1' }],
+    ['a layout id with path characters', { id: 5, image_url: '../Ab12' }],
+    ['no layout id', { id: 5 }],
+  ])('reports a save answer with %s as a TradingView change', async (_what, body) => {
+    failWhen((r) => r.method === 'POST', answer(200, JSON.stringify(body)));
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'format-changed' });
+  });
+
   it('reports a web page where JSON was expected as a TradingView change', async () => {
     failWhen((r) => r.url.endsWith('/my-charts/'), answer(200, '<html>maintenance</html>', 'text/html'));
     await expect(client().listLayouts()).rejects.toMatchObject({ kind: 'format-changed', detail: expect.stringContaining('text/html') });
