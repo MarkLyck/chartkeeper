@@ -110,6 +110,15 @@ export interface ChartKeeperApi {
   openOnTradingView(url: string): Promise<void>;
   /** Puts the window in full screen, or back as it was before; for the chart viewer. */
   setFullScreen(on: boolean): Promise<void>;
+  /** Downloads the new version and installs it, or opens its installer on a Mac. Refused while another task runs. */
+  startUpdate(): Promise<AppState>;
+  /** Hides the update popup; the top bar then offers it again. */
+  postponeUpdate(): Promise<AppState>;
+  showUpdate(): Promise<AppState>;
+  /** Opens ChartKeeper's newest release on GitHub in the browser. */
+  openReleasePage(): Promise<void>;
+  /** Quits, so the new version can replace this one from the installer (Mac). Refused while a task runs. */
+  quitApp(): Promise<void>;
   onProgress(cb: (e: Events['progress']) => void): () => void;
   onStateChanged(cb: (s: Events['state']) => void): () => void;
 }
@@ -140,6 +149,11 @@ export const INVOKE_CHANNELS = {
   openFolder: 'ck:openFolder',
   openOnTradingView: 'ck:openOnTradingView',
   setFullScreen: 'ck:setFullScreen',
+  startUpdate: 'ck:startUpdate',
+  postponeUpdate: 'ck:postponeUpdate',
+  showUpdate: 'ck:showUpdate',
+  openReleasePage: 'ck:openReleasePage',
+  quitApp: 'ck:quitApp',
 } as const satisfies { [K in keyof Invoke]: `ck:${K}` };
 
 export const EVENT_CHANNELS = { progress: 'ck:progress', state: 'ck:state' } as const satisfies { [K in keyof Events]: `ck:${K}` };

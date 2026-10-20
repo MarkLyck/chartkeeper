@@ -2,6 +2,8 @@ import type { UpdateInfo } from 'electron-updater';
 import type { UpdateHow, UpdateRelease, UpdateState } from '../shared/api';
 import type { AppStatus } from './appState';
 
+export const RELEASES_PAGE = 'https://github.com/MarkLyck/chartkeeper/releases/latest';
+
 /** Where new versions come from: electron-updater in the app (src/main/updateSource.ts), a fake in tests. */
 export interface UpdateSource {
   readonly how: UpdateHow;

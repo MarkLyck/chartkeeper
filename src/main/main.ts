@@ -12,8 +12,12 @@ import { SIGNIN_PARTITION } from './signIn';
 import { defaultSettings, lockDown, Store } from './store';
 import { Tasks } from './tasks';
 import { tvSession } from './tvSession';
+import { Updater } from './update';
+import { updateSource } from './updateSource';
 
 if (process.env.CHARTKEEPER_USER_DATA) app.setPath('userData', process.env.CHARTKEEPER_USER_DATA);
+/** Long enough for the window to be up first; the check only shows something when a newer version exists. */
+const UPDATE_CHECK_DELAY_MS = 3000;
 const startHidden = process.argv.includes('--hidden') || app.getLoginItemSettings().wasOpenedAtLogin === true;
 
 async function main() {
@@ -31,17 +35,20 @@ async function main() {
   const status = new AppStatus(store, account, () => void shell.pushState());
   const shell = new Shell(status, startHidden, () => void tasks.backup(true));
   const tasks = new Tasks(status, shell, fake?.socketFactory);
+  const source = updateSource();
+  const updater = source && new Updater(source, status, log);
 
   shellReady = shell;
   tvSession();
   await fake?.intercept({ tradingView: tvSession(), signIn: session.fromPartition(SIGNIN_PARTITION) });
-  registerIpc({ status, tasks, shell, safari: fake?.safari });
+  registerIpc({ status, tasks, shell, updater, safari: fake?.safari });
   // The AppImage's path changes with each version, so the autostart entry is refreshed on every start.
   if (process.platform === 'linux' && store.settings.dailyBackup) void applyAutostart(true);
   shell.start();
   const schedule = fake?.schedule ?? DAILY_CHECK;
   setInterval(() => void tasks.scheduledCheck(), schedule.everyMs);
   setTimeout(() => void tasks.scheduledCheck(), schedule.firstCheckMs);
+  if (updater) setTimeout(() => void updater.check(), UPDATE_CHECK_DELAY_MS);
   app.on('activate', () => shell.show());
   app.on('before-quit', () => {
     shell.prepareToQuit();
