@@ -71,8 +71,11 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
     return await new Promise<CdpCookie[]>((resolve, reject) => {
       const timer = setTimeout(() => reject(Object.assign(new Error('Signing in took too long. Please try again.'), { browserLog })), opts.timeoutMs ?? 15 * 60_000);
       child.once('exit', () => reject(new SignInCancelled()));
-      // A browser that answered and then ends the pipe is closing, and its exit says so; one that never answered can't be used.
-      cdp.onClosed(() => !cdp.answered && reject(new BrowserUnusable()));
+      // A browser that ends the pipe is closing, and its exit says so. One that never answered
+      // and is still running a moment later can't be driven.
+      cdp.onClosed(() => {
+        if (!cdp.answered) setTimeout(() => child.exitCode === null && child.signalCode === null && reject(new BrowserUnusable()), 1000);
+      });
       child.once('error', (e) => reject(e));
       const poll = async () => {
         try {
