@@ -437,8 +437,10 @@ describe('the daily backup against a fake TradingView', () => {
     const [snap] = await snapshotsOnDisk(backups);
     expect(snap!.manifest).toMatchObject({ status: 'complete', layouts: [{ name: 'Min AAPL' }] });
     await window.locator('#last-backup', { hasText: '1 layout' }).waitFor();
-    const stored = JSON.parse(await fs.readFile(path.join(userData, 'settings.json'), 'utf8'));
-    expect(stored).toMatchObject({ settings: { dailyBackup: true }, lastBackup: { ok: true, dir: snap!.dir } });
+    // The window can show the backup a moment before the settings file is written.
+    const readStored = async () => JSON.parse(await fs.readFile(path.join(userData, 'settings.json'), 'utf8'));
+    await expect.poll(readStored, { timeout: 10_000 }).toMatchObject({ settings: { dailyBackup: true }, lastBackup: { ok: true, dir: snap!.dir } });
+    const stored = await readStored();
     expect(stored.lastScheduledAttemptAt).toEqual(expect.any(String));
     await shot(window, '13-daily-backup');
 
