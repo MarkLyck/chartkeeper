@@ -175,15 +175,15 @@ describe('every flow against a fake TradingView', () => {
       const r = document.querySelector('.chart-stage')?.getBoundingClientRect();
       return r !== undefined && r.x === 0 && r.y === 0 && r.width === innerWidth && r.height === innerHeight;
     });
+    const windowFull = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().some((w) => w.isFullScreen()));
+    // Without a window manager (xvfb), Linux never reports the window full screen.
+    const wm = process.platform !== 'linux';
     await window.locator('#chart-full').click();
-    await expect.poll(() => window.evaluate(() => document.fullscreenElement !== null), { timeout: 10_000 }).toBe(true);
     await expect.poll(covers).toBe(true);
-    const nativeFull = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().some((w) => w.isFullScreen()));
-    // macOS animates into full screen; Escape is pressed once the window is there, as a person would.
-    if (process.platform === 'darwin') await expect.poll(nativeFull, { timeout: 10_000 }).toBe(true);
+    if (wm) await expect.poll(windowFull, { timeout: 10_000 }).toBe(true);
     await window.keyboard.press('Escape');
-    const state = async () => `page full: ${await window.evaluate(() => document.fullscreenElement !== null)}, stage full: ${await window.evaluate(() => document.querySelector('.is-full') !== null)}, window full: ${await nativeFull()}`;
-    await expect.poll(state, { timeout: 10_000 }).toBe('page full: false, stage full: false, window full: false');
+    const state = async () => `stage full: ${await window.evaluate(() => document.querySelector('.is-full') !== null)}, window full: ${await windowFull()}`;
+    await expect.poll(state, { timeout: 10_000 }).toBe('stage full: false, window full: false');
     await expect(covers()).resolves.toBe(false);
   });
 

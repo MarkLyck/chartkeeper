@@ -83,6 +83,19 @@ export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
     const u = new URL(url);
     if (u.protocol === 'https:' && u.hostname === 'www.tradingview.com') await osShell.openExternal(u.toString());
   });
+  // A window that was already full screen stays so when the chart leaves full screen.
+  let fullScreenForChart = false;
+  handle('setFullScreen', async (on) => {
+    const win = shell.window;
+    if (!win) return;
+    if (on === true && !win.isFullScreen()) {
+      fullScreenForChart = true;
+      win.setFullScreen(true);
+    } else if (on !== true && fullScreenForChart) {
+      fullScreenForChart = false;
+      win.setFullScreen(false);
+    }
+  });
 }
 
 export function isInside(root: string, target: string): boolean {

@@ -51,6 +51,7 @@ let status: AppStatus;
 let tv: FakeTradingView;
 let signedOut: boolean;
 let trayUpdates: number;
+let win: { full: boolean; isFullScreen(): boolean; setFullScreen(on: boolean): void } | null;
 const realPlatform = process.platform;
 
 const call = <K extends keyof Invoke>(method: K, ...args: Parameters<Invoke[K]>) => electron.handlers.get(INVOKE_CHANNELS[method])!({}, ...args) as ReturnType<Invoke[K]>;
@@ -70,7 +71,8 @@ beforeEach(async () => {
     signOut: async () => void (signedOut = true),
   } as unknown as TvAccount;
   status = new AppStatus(store, account, () => undefined);
-  const shell = { window: null, updateTray: () => void trayUpdates++, show: () => undefined } as unknown as Shell;
+  win = null;
+  const shell = { get window() { return win; }, updateTray: () => void trayUpdates++, show: () => undefined } as unknown as Shell;
   Object.assign(electron, { openedPaths: [], openedUrls: [], loginItems: [], packaged: false, picked: { canceled: true, filePaths: [] } });
   registerIpc({ status, tasks: {} as Tasks, shell });
 });
@@ -200,5 +202,28 @@ describe('events to the window', () => {
     emit(win(true), 'progress', { kind: 'restore', step: 'check' });
     emit(win(false), 'progress', { kind: 'restore', step: 'verify' });
     expect(sent).toEqual([['ck:progress', { kind: 'restore', step: 'verify' }]]);
+  });
+});
+
+describe('full screen for the chart viewer', () => {
+  const fakeWindow = (full: boolean) => ({ full, isFullScreen() { return this.full; }, setFullScreen(on: boolean) { this.full = on; } });
+
+  it('puts the window in full screen and back', async () => {
+    win = fakeWindow(false);
+    await call('setFullScreen', true);
+    expect(win.full).toBe(true);
+    await call('setFullScreen', false);
+    expect(win.full).toBe(false);
+  });
+
+  it('leaves a window that was already full screen as it was', async () => {
+    win = fakeWindow(true);
+    await call('setFullScreen', true);
+    await call('setFullScreen', false);
+    expect(win.full).toBe(true);
+  });
+
+  it('does nothing without a window', async () => {
+    await expect(call('setFullScreen', true)).resolves.toBeUndefined();
   });
 });

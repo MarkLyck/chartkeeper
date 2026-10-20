@@ -188,7 +188,9 @@ async function main() {
   await page.waitForTimeout(300);
   expect((await page.evaluate(() => document.activeElement?.id)) === 'stage-prev', 'the previous layout button loses focus after it is pressed');
   await page.keyboard.press('Escape');
-  await page.waitForFunction(() => !document.querySelector('.is-full') && document.fullscreenElement === null);
+  await page.waitForFunction(() => !document.querySelector('.is-full'));
+  const fullScreenCalls = (await calls(page)).filter((c) => c.method === 'setFullScreen').map((c) => c.args[0]);
+  expect(JSON.stringify(fullScreenCalls) === '[true,false]', `the window was asked to go full screen and back as ${JSON.stringify(fullScreenCalls)}`);
   expect(!(await stageCovers()) && !(await page.isVisible('.stage-nav')), 'Escape does not leave full screen');
   await page.click('#layout-1');
   await page.waitForSelector('.layout-selected#layout-1');

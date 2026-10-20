@@ -40,9 +40,8 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     if (on === expanded) return;
     expanded = on;
     el.classList.toggle('is-full', on);
-    // The stage covers the window either way; real full screen is a bonus the system may refuse.
-    if (on) void document.documentElement.requestFullscreen().catch(() => {});
-    else if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    // The window itself goes full screen, not the page: on macOS the page's own full screen can end without the page being told.
+    void ctx.api.setFullScreen(on);
     renderBar();
   }
 
@@ -50,11 +49,6 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     setExpanded(!expanded);
     document.getElementById('chart-full')?.focus();
   }
-
-  const onFullscreenChange = () => {
-    if (!document.fullscreenElement) setExpanded(false);
-    else if (!expanded) void document.exitFullscreen().catch(() => {});
-  };
 
   function stepLayout(by: -1 | 1) {
     if (!selected || content.k !== 'chart') return;
@@ -82,7 +76,6 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     act();
   };
   document.addEventListener('keydown', onKey);
-  document.addEventListener('fullscreenchange', onFullscreenChange);
 
   function selectSnapshot(s: SnapshotSummary) {
     setExpanded(false);
@@ -246,8 +239,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     destroy() {
       dropChart();
       document.removeEventListener('keydown', onKey);
-      document.removeEventListener('fullscreenchange', onFullscreenChange);
-      if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+      if (expanded) void ctx.api.setFullScreen(false);
     },
   };
 }
