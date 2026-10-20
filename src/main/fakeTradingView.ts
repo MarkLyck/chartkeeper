@@ -4,6 +4,7 @@ import type { SocketFactory } from '../core/tv/datafeed';
 import type { RateLimitOptions } from '../core/tv/http';
 import { log } from './log';
 import type { ScheduleTiming } from './schedule';
+import type { SafariSeam } from './signIn';
 
 export const FAKE_TRADINGVIEW_ENV = 'CHARTKEEPER_FAKE_TRADINGVIEW';
 
@@ -18,6 +19,8 @@ export interface FakeTradingView {
   socketFactory: SocketFactory;
   rate: RateLimitOptions;
   schedule: ScheduleTiming;
+  /** A fake Safari, for tests that sign in with Safari. */
+  safari?: SafariSeam;
 }
 
 /** A packaged app never runs against the fake, whatever the environment says. */

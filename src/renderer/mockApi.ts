@@ -217,6 +217,9 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
       }
       return { ok: true, value: setState({ busy: null, signedIn: true, username: 'demo_user' }) };
     },
+    async cancelSignIn() {
+      record('cancelSignIn');
+    },
     async signOut() {
       record('signOut');
       return setState({ signedIn: false, username: null });

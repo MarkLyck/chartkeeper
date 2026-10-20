@@ -30,7 +30,12 @@ export interface FakeSeed {
   signedIn: boolean;
   /** How often the app checks whether the daily backup is due. */
   scheduleEveryMs: number;
+  /** Sign in with a fake Safari whose data folder is this; the test writes its cookie files. */
+  safariDataDir?: string;
 }
+
+/** A sign-in TradingView has ended: the fake treats a session with this value as signed out. */
+export const EXPIRED_SESSION = 'expired-session';
 
 export type Scenario = 'normal' | 'format-changed' | 'rate-limited' | 'offline';
 
@@ -40,6 +45,8 @@ export interface FakeControl {
   setScenario(s: Scenario): void;
   /** Every request the app's sessions made, pages included: "GET https://...". */
   urls: string[];
+  /** Pages the app asked the fake Safari to open. */
+  safariOpened: string[];
 }
 
 const json = (status: number, body: unknown): HttpResponse => ({ status, contentType: 'application/json', body: JSON.stringify(body) });
@@ -120,10 +127,11 @@ export function createFakeTradingView(): FakeHooks {
       tv.failOn = SCENARIOS[s].failOn;
     },
     urls: [],
+    safariOpened: [],
   };
   (globalThis as { __chartkeeperFake?: FakeControl }).__chartkeeperFake = control;
   // Fake mode must never open a real browser on the real tradingview.com.
-  process.env.CHARTKEEPER_BROWSER = 'none';
+  process.env.CHARTKEEPER_BROWSER = seed.safariDataDir ? 'safari' : 'none';
 
   const answer = async (ses: Session, req: Request): Promise<Response> => {
     control.urls.push(`${req.method} ${req.url}`);
@@ -133,7 +141,7 @@ export function createFakeTradingView(): FakeHooks {
     const cors: Record<string, string> = origin ? { 'access-control-allow-origin': origin, 'access-control-allow-credentials': 'true' } : {};
     if (req.method === 'OPTIONS')
       return new Response(null, { status: 204, headers: { ...cors, 'access-control-allow-methods': 'GET, POST, PUT', 'access-control-allow-headers': 'content-type, x-build-time' } });
-    const signedIn = (await ses.cookies.get({ name: SESSION_COOKIE })).length > 0;
+    const signedIn = (await ses.cookies.get({ name: SESSION_COOKIE })).some((c) => c.value !== EXPIRED_SESSION);
     const p = req.method === 'GET' ? page(tv, url, signedIn, (await tv.buildTime()) ?? '') : null;
     if (p !== null) return new Response(p, { headers: { 'content-type': 'text/html; charset=utf-8' } });
     const res = signedIn ? await tv.send(await toHttpRequest(req)) : json(403, { detail: 'Authentication credentials were not provided.', code: 'not_authenticated' });
@@ -149,5 +157,6 @@ export function createFakeTradingView(): FakeHooks {
     socketFactory: fakeDataSocket({ bars: 300 }).factory,
     rate: { minIntervalMs: 0, jitterMs: 0, sleep: (ms) => new Promise((r) => setTimeout(r, Math.min(ms, 10))) },
     schedule: { firstCheckMs: seed.scheduleEveryMs, everyMs: seed.scheduleEveryMs },
+    safari: seed.safariDataDir ? { dataDir: seed.safariDataDir, open: async (url) => void control.safariOpened.push(url) } : undefined,
   };
 }

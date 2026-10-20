@@ -32,7 +32,7 @@ export interface AppState {
 
 /** A failure the window can explain. `kind` picks the wording; `message` is shown under Details. */
 export interface AppError {
-  kind: TvErrorKind | 'cancelled' | 'unexpected' | 'busy' | 'browser';
+  kind: TvErrorKind | 'cancelled' | 'unexpected' | 'busy' | 'browser' | 'safari-access';
   message: string;
   params: Record<string, string | number>;
 }
@@ -78,6 +78,8 @@ export interface ChartKeeperApi {
   setSettings(patch: Partial<Settings>): Promise<AppState>;
   chooseFolder(): Promise<AppState>;
   signIn(): Promise<Result<AppState>>;
+  /** Stops a sign-in that is waiting for the user; its signIn() call then ends as cancelled. */
+  cancelSignIn(): Promise<void>;
   signOut(): Promise<AppState>;
   backupNow(): Promise<Result<BackupOutcome>>;
   listSnapshots(): Promise<SnapshotSummary[]>;
@@ -106,6 +108,7 @@ export const INVOKE_CHANNELS = {
   setSettings: 'ck:setSettings',
   chooseFolder: 'ck:chooseFolder',
   signIn: 'ck:signIn',
+  cancelSignIn: 'ck:cancelSignIn',
   signOut: 'ck:signOut',
   backupNow: 'ck:backupNow',
   listSnapshots: 'ck:listSnapshots',

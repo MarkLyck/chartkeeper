@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
-import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser } from '../../src/main/browsers';
+import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser, SAFARI } from '../../src/main/browsers';
 import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
 import { isGoogleRefusal, isSignInPopup } from '../../src/main/signIn';
 
@@ -63,38 +63,40 @@ describe.skipIf(!haveBrowser)('signing in through a real browser window', () => 
 describe('finding a browser', () => {
   it('looks for Chrome first, then Edge, in the standard Windows folders', () => {
     const c = browserCandidates('win32', { PROGRAMFILES: 'C:\\Program Files', 'PROGRAMFILES(X86)': 'C:\\Program Files (x86)', LOCALAPPDATA: 'C:\\Users\\T\\AppData\\Local' }, 'C:\\Users\\T');
-    expect(c[0]).toEqual({ name: 'Google Chrome', path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
+    expect(c[0]).toEqual({ kind: 'chromium', name: 'Google Chrome', path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
     expect(c.find((b) => b.name === 'Microsoft Edge')!.path).toBe('C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe');
   });
 
-  it('finds Chrome in the user Applications folder on macOS', () => {
+  it('finds Chrome in the user Applications folder on macOS when it is the default browser', () => {
     const want = '/Users/t/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
-    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === want, null)).toEqual({ name: 'Google Chrome', path: want });
+    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === want, 'com.google.chrome')).toEqual({ kind: 'chromium', name: 'Google Chrome', path: want });
   });
 
   it('can be told which browser to use, or to use the in-app window', () => {
     expect(findBrowser('linux', { CHARTKEEPER_BROWSER: 'none' }, '/home/t', () => true)).toBeNull();
-    expect(findBrowser('linux', { CHARTKEEPER_BROWSER: '/opt/vivaldi/vivaldi' }, '/home/t', (p) => p === '/opt/vivaldi/vivaldi')).toEqual({ name: 'vivaldi', path: '/opt/vivaldi/vivaldi' });
+    expect(findBrowser('linux', { CHARTKEEPER_BROWSER: '/opt/vivaldi/vivaldi' }, '/home/t', (p) => p === '/opt/vivaldi/vivaldi')).toEqual({ kind: 'chromium', name: 'vivaldi', path: '/opt/vivaldi/vivaldi' });
+    expect(findBrowser('darwin', { CHARTKEEPER_BROWSER: 'safari' }, '/Users/t', () => true)).toEqual(SAFARI);
   });
 
   it('finds chromium on the PATH on Linux and returns null when nothing is installed', () => {
-    expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null)).toEqual({ name: 'Chromium', path: '/usr/bin/chromium' });
+    expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null)).toEqual({ kind: 'chromium', name: 'Chromium', path: '/usr/bin/chromium' });
     expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false, null)).toBeNull();
   });
 
-  it('finds Chromium-based browsers beyond Chrome, such as Dia and Arc on macOS', () => {
-    const dia = '/Applications/Dia.app/Contents/MacOS/Dia';
-    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === dia, null)).toEqual({ name: 'Dia', path: dia });
-    const arc = '/Users/t/Applications/Arc.app/Contents/MacOS/Arc';
-    expect(findBrowser('darwin', {}, '/Users/t', (p) => p === arc, null)).toEqual({ name: 'Arc', path: arc });
+  it('never signs in with Dia or Arc, which open a fresh profile on their own account sign-up', () => {
+    const installed = new Set(['/Applications/Dia.app/Contents/MacOS/Dia', '/Applications/Arc.app/Contents/MacOS/Arc']);
+    expect(findBrowsers('darwin', {}, '/Users/t', (p) => installed.has(p), 'company.thebrowser.dia')).toEqual([SAFARI]);
+    expect(findBrowsers('darwin', {}, '/Users/t', (p) => installed.has(p), 'company.thebrowser.browser')).toEqual([SAFARI]);
   });
 
-  it('tries the default browser first, then the others', () => {
+  it('on a Mac, uses the default browser when it is Chromium-based, and Safari otherwise', () => {
     const installed = new Set(['/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/Applications/Dia.app/Contents/MacOS/Dia', '/Applications/Vivaldi.app/Contents/MacOS/Vivaldi']);
     const names = (id: string | null) => findBrowsers('darwin', {}, '/Users/t', (p) => installed.has(p), id).map((b) => b.name);
-    expect(names('company.thebrowser.dia')).toEqual(['Dia', 'Google Chrome', 'Vivaldi']);
-    expect(names('com.apple.safari')).toEqual(['Google Chrome', 'Dia', 'Vivaldi']);
-    expect(names(null)).toEqual(['Google Chrome', 'Dia', 'Vivaldi']);
+    expect(names('com.vivaldi.vivaldi')).toEqual(['Vivaldi', 'Safari']);
+    expect(names('company.thebrowser.dia')).toEqual(['Safari']);
+    expect(names('com.apple.safari')).toEqual(['Safari']);
+    expect(names('org.mozilla.firefox')).toEqual(['Safari']);
+    expect(names(null)).toEqual(['Safari']);
   });
 
   it('prefers the default browser on Windows and Linux too', () => {
@@ -129,6 +131,7 @@ describe('finding a browser', () => {
     expect(parseWindowsDefaultBrowser(reg)).toBe('BraveHTML');
     expect(browserForDefaultId('win32', 'BraveHTML')).toBe('Brave');
     expect(browserForDefaultId('darwin', 'com.apple.safari')).toBeNull();
+    expect(browserForDefaultId('darwin', 'company.thebrowser.dia')).toBeNull();
   });
 });
 

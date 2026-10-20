@@ -7,7 +7,7 @@ import { EVENT_CHANNELS, INVOKE_CHANNELS, type Events, type Invoke } from '../sh
 import { guarded, type AppStatus } from './appState';
 import { setLinuxAutostart } from './schedule';
 import type { Shell } from './shell';
-import { signIn } from './signIn';
+import { cancelSignIn, signIn, type SafariSeam } from './signIn';
 import type { Tasks } from './tasks';
 
 /** Registers the handler for one method of the window's api, checked against its signature in src/shared/api.ts. */
@@ -23,10 +23,12 @@ export interface IpcDeps {
   status: AppStatus;
   tasks: Tasks;
   shell: Shell;
+  /** Where Safari sign-in looks, when not the real Safari (end-to-end tests). */
+  safari?: SafariSeam;
 }
 
 /** The app process's side of every call in src/shared/api.ts. */
-export function registerIpc({ status, tasks, shell }: IpcDeps): void {
+export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
   const { store, account } = status;
   handle('getState', () => status.read());
   handle('setSettings', async (patch) => {
@@ -43,13 +45,14 @@ export function registerIpc({ status, tasks, shell }: IpcDeps): void {
   });
   handle('signIn', async () => {
     const r = await status.exclusive('signin', async () => {
-      await signIn(account, shell.window);
+      await signIn(account, shell.window, safari);
       shell.show();
     });
     // Read once the task is over: a state read inside it says "busy", and if this reply
     // reached the window after the "no longer busy" push, every button would stay disabled.
     return r.ok ? { ok: true as const, value: await status.read() } : r;
   });
+  handle('cancelSignIn', async () => cancelSignIn());
   handle('signOut', async () => {
     // Not while a backup or restore is using the session.
     await status.exclusive('signin', () => account.signOut());
