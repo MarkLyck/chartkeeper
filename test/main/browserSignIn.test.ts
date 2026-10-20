@@ -83,6 +83,31 @@ describe('finding a browser', () => {
     expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false, null)).toBeNull();
   });
 
+  it('finds Chromium however a Linux distribution installs it', () => {
+    const found = (p: string, env: NodeJS.ProcessEnv = { PATH: '/usr/bin' }) => findBrowser('linux', env, '/home/t', (x) => x === p, null);
+    for (const p of [
+      '/var/lib/flatpak/exports/bin/org.chromium.Chromium',
+      '/home/t/.local/share/flatpak/exports/bin/org.chromium.Chromium',
+      '/var/lib/snapd/snap/bin/chromium',
+      '/usr/bin/chromium-freeworld',
+      '/usr/bin/ungoogled-chromium',
+      '/usr/lib/chromium/chromium',
+      '/usr/lib64/chromium-browser/chromium-browser',
+      '/home/t/.nix-profile/bin/chromium',
+      '/run/current-system/sw/bin/chromium',
+    ])
+      expect(found(p), p).toEqual({ kind: 'chromium', name: 'Chromium', path: p });
+    expect(found('/var/lib/flatpak/exports/bin/com.google.Chrome')?.name).toBe('Google Chrome');
+    expect(found('/var/lib/flatpak/exports/bin/com.brave.Browser')?.name).toBe('Brave');
+  });
+
+  it('knows Flatpak and Snap browsers as the Linux default browser', () => {
+    const lin = new Set(['/usr/bin/google-chrome', '/var/lib/flatpak/exports/bin/org.chromium.Chromium', '/snap/bin/chromium']);
+    const first = (id: string) => findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => lin.has(p), id)[0]?.name;
+    expect(first('org.chromium.Chromium.desktop')).toBe('Chromium');
+    expect(first('chromium_chromium.desktop')).toBe('Chromium');
+  });
+
   it('never signs in with Dia or Arc, which open a fresh profile on their own account sign-up', () => {
     const installed = new Set(['/Applications/Dia.app/Contents/MacOS/Dia', '/Applications/Arc.app/Contents/MacOS/Arc']);
     expect(findBrowsers('darwin', {}, '/Users/t', (p) => installed.has(p), 'company.thebrowser.dia')).toEqual([SAFARI]);
