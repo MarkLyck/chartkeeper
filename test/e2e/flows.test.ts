@@ -170,6 +170,19 @@ describe('every flow against a fake TradingView', () => {
     await shot(window, '03-view');
   });
 
+  it('shows the chart full screen and leaves it with Escape', async () => {
+    const covers = () => window.evaluate(() => {
+      const r = document.querySelector('.chart-stage')?.getBoundingClientRect();
+      return r !== undefined && r.x === 0 && r.y === 0 && r.width === innerWidth && r.height === innerHeight;
+    });
+    await window.locator('#chart-full').click();
+    await expect.poll(() => window.evaluate(() => document.fullscreenElement !== null), { timeout: 10_000 }).toBe(true);
+    await expect.poll(covers).toBe(true);
+    await window.keyboard.press('Escape');
+    await expect.poll(() => window.evaluate(() => document.fullscreenElement === null && !document.querySelector('.is-full')), { timeout: 10_000 }).toBe(true);
+    await expect(covers()).resolves.toBe(false);
+  });
+
   it('compares two backups and shows the drawing added between them', async () => {
     await app.evaluate((_e) => {
       const l = (globalThis as unknown as G).__chartkeeperFake.tv.layouts.get('AbCd1234')!;
