@@ -201,9 +201,14 @@ async function main() {
   await page.waitForSelector('.view-main .notice-error');
   await page.waitForTimeout(300);
   await shot(page, 'view-incomplete');
+  const setStep = (ms: number) => page.evaluate((v) => ((window as unknown as { __mock: { stepMs: number } }).__mock.stepMs = v), ms);
+  await setStep(2000);
   await page.click('#snap-0');
   await page.waitForSelector('#compare-pick');
   await page.selectOption('#compare-pick', { index: 2 });
+  await page.waitForSelector('.chart-box:not(.chart-empty)', { timeout: 5000 });
+  await setStep(120);
+  expect((await page.inputValue('#compare-pick')) !== '' && (await page.isEnabled('#compare-go')), 'a backup picked to compare with while the chart loads is forgotten when it arrives');
   await page.click('#compare-go');
   await page.waitForSelector('.compare .diff');
   const compared = await page.textContent('.compare');

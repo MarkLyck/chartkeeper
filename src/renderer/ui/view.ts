@@ -145,6 +145,10 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     return strip;
   }
 
+  // Kept while the same backup is shown: the main area redraws when a chart finishes loading, and a pick made meanwhile must stay.
+  let compareFor: { dir: string; el: HTMLElement } | null = null;
+  const compareControlOf = (s: SnapshotSummary) => (compareFor?.dir === s.dir ? compareFor.el : (compareFor = { dir: s.dir, el: compareControl(s) }).el);
+
   function compareControl(s: SnapshotSummary): HTMLElement {
     const sTime = snapshotDate(s)?.getTime() ?? 0;
     const older = snapshots.filter((o) => o !== s && o.manifest && (snapshotDate(o)?.getTime() ?? 0) < sTime);
@@ -220,7 +224,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
       : content.k === 'compare' ? comparePanel(ctx, content, s, snapshots, () => (content.k === 'compare' && content.returnTo ? void openLayout(content.returnTo) : setMain({ k: 'none' })))
       : layoutsOf(s).length ? h('p', { class: 'note' }, t('view.pickLayout')) : null;
     replace(main,
-      content.k === 'compare' ? null : h('div', { class: 'view-head' }, h('h2', { class: 'view-title' }, snapshotTitle(s)), compareControl(s)),
+      content.k === 'compare' ? null : h('div', { class: 'view-head' }, h('h2', { class: 'view-title' }, snapshotTitle(s)), compareControlOf(s)),
       isIncomplete(s) ? notice('error', s.manifest ? t('view.incompleteNote') : t('view.unreadable'), reason ? h('p', { class: 'tech' }, reason) : null) : null,
       content.k === 'compare' ? null : layoutStrip(s),
       body);
