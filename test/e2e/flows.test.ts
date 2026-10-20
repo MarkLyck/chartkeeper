@@ -178,8 +178,12 @@ describe('every flow against a fake TradingView', () => {
     await window.locator('#chart-full').click();
     await expect.poll(() => window.evaluate(() => document.fullscreenElement !== null), { timeout: 10_000 }).toBe(true);
     await expect.poll(covers).toBe(true);
+    const nativeFull = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().some((w) => w.isFullScreen()));
+    // macOS animates into full screen; Escape is pressed once the window is there, as a person would.
+    if (process.platform === 'darwin') await expect.poll(nativeFull, { timeout: 10_000 }).toBe(true);
     await window.keyboard.press('Escape');
-    await expect.poll(() => window.evaluate(() => document.fullscreenElement === null && !document.querySelector('.is-full')), { timeout: 10_000 }).toBe(true);
+    const state = async () => `page full: ${await window.evaluate(() => document.fullscreenElement !== null)}, stage full: ${await window.evaluate(() => document.querySelector('.is-full') !== null)}, window full: ${await nativeFull()}`;
+    await expect.poll(state, { timeout: 10_000 }).toBe('page full: false, stage full: false, window full: false');
     await expect(covers()).resolves.toBe(false);
   });
 
