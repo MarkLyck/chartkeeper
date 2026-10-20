@@ -170,6 +170,12 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     const tool = (id: string, label: string, key: string, icon: SVGSVGElement, onClick: () => void, disabled: boolean) =>
       h('button', { type: 'button', id, class: 'tool', disabled, title: `${label} (${key})`, attrs: { 'aria-label': label }, on: { click: onClick } }, icon);
     const full = expanded ? t('view.exitFullScreen') : t('view.fullScreen');
+    // Redrawing the bar drops focus; put it back once the stage is in the page again, so arrows and zoom can be pressed repeatedly from the keyboard.
+    const focused = bar.contains(document.activeElement) ? document.activeElement?.id : undefined;
+    if (focused) queueMicrotask(() => {
+      const again = document.getElementById(focused);
+      (again instanceof HTMLButtonElement && !again.disabled ? again : document.getElementById('chart-full'))?.focus();
+    });
     replace(bar,
       // The arrows come first so they stay put under the mouse while the names change.
       h('div', { class: 'stage-nav' },

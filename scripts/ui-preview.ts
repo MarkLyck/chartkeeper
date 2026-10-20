@@ -181,6 +181,12 @@ async function main() {
   expect(await stageCovers(), 'full screen ends when the right arrow opens the next layout');
   expect((await page.textContent('.stage-count')) === '2 of 3', 'full screen does not count the layouts');
   await shot(page, 'view-full-next');
+  await page.click('#stage-next');
+  await page.waitForSelector('.layout-selected#layout-2', { state: 'attached' });
+  await page.click('#stage-prev');
+  await page.waitForSelector('.layout-selected#layout-1', { state: 'attached' });
+  await page.waitForTimeout(300);
+  expect((await page.evaluate(() => document.activeElement?.id)) === 'stage-prev', 'the previous layout button loses focus after it is pressed');
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => !document.querySelector('.is-full') && document.fullscreenElement === null);
   expect(!(await stageCovers()) && !(await page.isVisible('.stage-nav')), 'Escape does not leave full screen');
