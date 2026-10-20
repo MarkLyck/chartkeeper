@@ -15,11 +15,11 @@ deletes anything you already have on TradingView.
 Download the file for your computer from the
 [releases page](https://github.com/MarkLyck/chartkeeper/releases):
 
-| Computer | File |
+| Computer | File name ends in |
 | --- | --- |
-| Windows | `ChartKeeper-1.0.0-win-x64.exe` |
-| Mac | `ChartKeeper-1.0.0-mac-universal.dmg` |
-| Linux | `ChartKeeper-1.0.0-linux-x86_64.AppImage` or `.deb` |
+| Windows | `-win-x64.exe` |
+| Mac | `-mac-universal.dmg` |
+| Linux | `-linux-x86_64.AppImage` or `.deb` |
 
 **Windows.** Double-click the `.exe` file. If Windows shows "Windows protected
 your PC", click **More info**, then **Run anyway**. Follow the steps and click
@@ -41,6 +41,22 @@ TradingView sign-in locked.
 
 Windows and Mac show these warnings because ChartKeeper is not signed with a
 paid developer certificate. The warnings only appear the first time.
+
+**Updates.** When a new version is out, ChartKeeper says so a few seconds
+after you open it. Click **Update now**. Your backups and settings stay as
+they are.
+
+- **Windows and Linux.** ChartKeeper downloads the new version, closes, and
+  opens again by itself. If you installed the `.deb` file, Linux asks for your
+  password first.
+- **Mac.** ChartKeeper saves the new version in your **Downloads** folder and
+  opens it. Click **Quit ChartKeeper**. In the window that opened, drag
+  **ChartKeeper** onto the **Applications** folder and click **Replace**. Then
+  open ChartKeeper from Applications.
+
+Click **Later** to keep using the version you have. The **Update available**
+button at the top of the window brings the message back. Versions up to
+1.0.0-rc.9 do not look for updates: install 1.0.0-rc.10 or newer by hand once.
 
 ## 2. Sign in to TradingView
 
@@ -250,6 +266,31 @@ window.
 
 `npx tsx scripts/capture-reference.ts` rebuilds the reference backup and the
 TradingView screenshot from a signed-out TradingView chart.
+
+### Releasing a new version
+
+Installed apps look at the newest release on GitHub when they start (prereleases
+included) and offer it when its version is higher than theirs. They read the
+`latest.yml`, `latest-mac.yml` and `latest-linux.yml` files that
+electron-builder writes next to the installers.
+
+1. Raise `"version"` in `package.json` (for example `1.0.0-rc.11`) and merge
+   to `main`.
+2. Wait until CI on `main` is green. It uploads the installers, the
+   `latest*.yml` files, the Mac `.zip` and the `.blockmap` files.
+3. Write the release notes in a file. Installed apps show them in the update
+   popup as plain text, so keep them short.
+4. Run `npx tsx scripts/release.ts --notes-file notes.md --dry-run`, then the
+   same without `--dry-run`. The script requires local `main` to equal
+   `origin/main`, downloads that commit's CI installers, checks that each
+   `latest*.yml` has the version and lists every installer with its size and
+   sha512, and creates the prerelease `v<version>` with all those files.
+
+On a Mac the update downloads the `.dmg` and opens it for the user, because
+the app has no paid developer certificate and macOS refuses to let it replace
+itself. Windows (NSIS) and Linux (AppImage, `.deb`) update in place through
+electron-updater. An app started with `npm start` looks for updates only when
+`CK_UPDATE_FEED` names a feed URL, which the end-to-end test uses.
 
 ### Compatibility test
 

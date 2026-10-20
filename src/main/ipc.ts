@@ -9,6 +9,7 @@ import { setLinuxAutostart } from './schedule';
 import type { Shell } from './shell';
 import { cancelSignIn, signIn, type SafariSeam } from './signIn';
 import type { Tasks } from './tasks';
+import { RELEASES_PAGE, type Updater } from './update';
 
 /** Registers the handler for one method of the window's api, checked against its signature in src/shared/api.ts. */
 export function handle<K extends keyof Invoke>(method: K, fn: (...args: Parameters<Invoke[K]>) => ReturnType<Invoke[K]>): void {
@@ -23,12 +24,14 @@ export interface IpcDeps {
   status: AppStatus;
   tasks: Tasks;
   shell: Shell;
+  /** Null when this run doesn't look for new versions (a development run without a test feed). */
+  updater: Updater | null;
   /** Where Safari sign-in looks, when not the real Safari (end-to-end tests). */
   safari?: SafariSeam;
 }
 
 /** The app process's side of every call in src/shared/api.ts. */
-export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
+export function registerIpc({ status, tasks, shell, updater, safari }: IpcDeps): void {
   const { store, account } = status;
   handle('getState', () => status.read());
   handle('setSettings', async (patch) => {
@@ -80,6 +83,25 @@ export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
   handle('openOnTradingView', async (url) => {
     const u = new URL(url);
     if (u.protocol === 'https:' && u.hostname === 'www.tradingview.com') await osShell.openExternal(u.toString());
+  });
+  handle('startUpdate', async () => {
+    // The download reports through state pushes; the reply carries the state it started with.
+    void updater?.start();
+    return status.read();
+  });
+  handle('postponeUpdate', async () => {
+    updater?.postpone();
+    return status.read();
+  });
+  handle('showUpdate', async () => {
+    updater?.show();
+    return status.read();
+  });
+  handle('openReleasePage', () => osShell.openExternal(RELEASES_PAGE));
+  handle('quitApp', async () => {
+    if (status.busy) return;
+    shell.prepareToQuit();
+    app.quit();
   });
   // A window that was already full screen stays so when the chart leaves full screen.
   let fullScreenForChart = false;

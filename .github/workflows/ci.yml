@@ -59,14 +59,19 @@ jobs:
       - name: Packaged app smoke test (virtual display)
         if: runner.os == 'Linux'
         run: xvfb-run -a npx tsx scripts/packaged-smoke.ts
+      # The update files: latest*.yml tells installed apps what the newest version is, and the Mac's
+      # list names the zip. scripts/release.ts checks them against the installers before a release.
       - uses: actions/upload-artifact@v4
         with:
           name: installer-${{ runner.os }}
           path: |
             release/*.exe
             release/*.dmg
+            release/*.zip
             release/*.AppImage
             release/*.deb
+            release/latest*.yml
+            release/*.blockmap
           if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()

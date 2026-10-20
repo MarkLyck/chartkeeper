@@ -11,12 +11,14 @@ export default defineConfig({
       reportsDirectory: '.test-output/coverage',
       include: ['src/core/**', 'src/main/**', 'src/renderer/**', 'src/shared/**'],
       exclude: [
-        // Electron-only: the app's bootstrap, its window and tray, its log file, its sign-in window and its page session.
+        // Electron-only: the app's bootstrap, its window and tray, its log file, its sign-in window, its page session
+        // and electron-updater (src/main/update.ts holds the update logic, tested with a fake source).
         'src/main/main.ts',
         'src/main/shell.ts',
         'src/main/log.ts',
         'src/main/signIn.ts',
         'src/main/tvSession.ts',
+        'src/main/updateSource.ts',
         // Window entry points and the dev-only preview mock.
         'src/renderer/app.ts',
         'src/renderer/viewer/harness.ts',

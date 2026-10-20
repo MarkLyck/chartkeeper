@@ -19,7 +19,8 @@ export function button(label: string, onClick: () => void, opts: { kind?: Button
 /**
  * The bar across the top of every screen: the name, the three places to go,
  * and who is signed in. While a backup or restore runs the places are left
- * out, so it can't be walked away from by accident.
+ * out, so it can't be walked away from by accident. After "Later" on the
+ * update popup, a button here shows it again.
  */
 export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boolean } = {}): HTMLElement {
   const s = ctx.state();
@@ -42,6 +43,10 @@ export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boole
             link('home', t('nav.home')),
             link('view', t('nav.backups')),
             link('restore', t('nav.restore'), locked && active !== 'restore')),
+      s.update.k === 'later'
+        ? h('button', { type: 'button', id: 'update-reopen', class: 'update-chip', on: { click: async () => ctx.update(await ctx.api.showUpdate()) } },
+            h('span', { class: 'dot dot-ok', attrs: { 'aria-hidden': 'true' } }), t('update.available'))
+        : null,
       h('span', { class: 'account' },
         h('span', { class: `dot ${s.signedIn ? 'dot-ok' : 'dot-off'}`, attrs: { 'aria-hidden': 'true' } }),
         s.signedIn ? (s.username ?? t('nav.signedIn')) : t('nav.signedOut'))));
