@@ -114,7 +114,7 @@ describe('finding a browser', () => {
     const [plain] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null);
     expect(signInProfileDir(snap!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/snap/chromium/common/chartkeeper-signin');
     expect(signInProfileDir(flat!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.var/app/org.chromium.Chromium/chartkeeper-signin');
-    expect(signInProfileDir(plain!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.config/ChartKeeper/signin-profile');
+    expect(signInProfileDir(plain!, '/home/t/.config/ChartKeeper', '/home/t')).toBe(path.join('/home/t/.config/ChartKeeper', 'signin-profile'));
   });
 
   it('looks for Chrome first, then Edge, in the standard Windows folders', () => {
