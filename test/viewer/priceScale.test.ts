@@ -66,10 +66,10 @@ describe("reading TradingView's saved price scale", () => {
 
 describe('mapping the scale onto lightweight-charts', () => {
   it('uses the matching lightweight-charts mode and inversion', () => {
-    expect(priceScaleOptions(parsePriceScale(TV.log))).toEqual({ mode: PriceScaleMode.Logarithmic, invertScale: false });
+    expect(priceScaleOptions(parsePriceScale(TV.log))).toEqual({ mode: PriceScaleMode.Logarithmic, invertScale: false, autoScale: true });
     expect(priceScaleOptions(parsePriceScale(TV.percent)).mode).toBe(PriceScaleMode.Percentage);
     expect(priceScaleOptions(parsePriceScale(TV.indexed)).mode).toBe(PriceScaleMode.IndexedTo100);
-    expect(priceScaleOptions(parsePriceScale(TV.inverted))).toEqual({ mode: PriceScaleMode.Normal, invertScale: true });
+    expect(priceScaleOptions(parsePriceScale(TV.inverted))).toEqual({ mode: PriceScaleMode.Normal, invertScale: true, autoScale: true });
     expect(priceScaleOptions(parsePriceScale(TV.normalManual))).toMatchObject({ autoScale: false });
   });
 

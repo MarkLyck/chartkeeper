@@ -8,9 +8,9 @@ const LWC_MODES: Readonly<Record<TvScaleMode, PriceScaleMode>> = {
   'indexed-to-100': PriceScaleMode.IndexedTo100,
 };
 
-/** lightweight-charts options for a saved TradingView price scale. */
+/** lightweight-charts options for a saved TradingView price scale. Autoscale is set either way, so applying them again undoes a drag on the price axis. */
 export function priceScaleOptions(scale: PriceScaleState): DeepPartial<PriceScaleOptions> {
-  return { mode: LWC_MODES[scale.mode], invertScale: scale.inverted, ...(scale.manualRange ? { autoScale: false } : {}) };
+  return { mode: LWC_MODES[scale.mode], invertScale: scale.inverted, autoScale: !scale.manualRange };
 }
 
 /** TradingView's and lightweight-charts' log transform for price ranges of 1 and more: log10(price + 0.0001) + 4. */
