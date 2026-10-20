@@ -209,6 +209,7 @@ describe('full screen for the chart viewer', () => {
   const fakeWindow = (full: boolean) => ({ full, isFullScreen() { return this.full; }, setFullScreen(on: boolean) { this.full = on; } });
 
   it('puts the window in full screen and back', async () => {
+    setPlatform('darwin');
     win = fakeWindow(false);
     await call('setFullScreen', true);
     expect(win.full).toBe(true);
@@ -217,10 +218,20 @@ describe('full screen for the chart viewer', () => {
   });
 
   it('leaves a window that was already full screen as it was', async () => {
+    setPlatform('win32');
     win = fakeWindow(true);
     await call('setFullScreen', true);
     await call('setFullScreen', false);
     expect(win.full).toBe(true);
+  });
+
+  it('never changes the window on Linux, where some window managers drop its title bar on the way back', async () => {
+    setPlatform('linux');
+    const asked: boolean[] = [];
+    win = { ...fakeWindow(false), setFullScreen: (on: boolean) => void asked.push(on) };
+    await call('setFullScreen', true);
+    await call('setFullScreen', false);
+    expect(asked).toEqual([]);
   });
 
   it('does nothing without a window', async () => {
