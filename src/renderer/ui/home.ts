@@ -10,7 +10,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
   let signingIn = false;
   let cancelling = false;
   let signInError: AppError | null = null;
-  let progressText: string | null = null;
+  let progress: { text: string; fraction: number | null } | null = null;
 
   const save = async (patch: Partial<Settings>) => ctx.update(await ctx.api.setSettings(patch));
 
@@ -62,7 +62,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
 
   function busyBanner(s: AppState): HTMLElement | null {
     if (s.busy !== 'backup' && s.busy !== 'restore') return null;
-    return notice('info', s.busy === 'backup' ? t('home.busyBackup') : t('home.busyRestore'), progressBar(null, progressText ?? t('common.loading')));
+    return notice('info', s.busy === 'backup' ? t('home.busyBackup') : t('home.busyRestore'), progressBar(progress?.fraction ?? null, progress?.text ?? t('common.loading')));
   }
 
   function settingsCard(s: AppState): HTMLElement {
@@ -121,7 +121,9 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
       render();
     },
     onProgress(e: ProgressEvent) {
-      progressText = e.kind === 'backup' ? backupStepText(e.progress.step, e.progress.name) : restoreStepText(e.step);
+      progress = e.kind === 'backup'
+        ? { text: backupStepText(e.progress.step, e.progress.name), fraction: e.progress.total ? e.progress.done / e.progress.total : null }
+        : { text: restoreStepText(e.step), fraction: null };
       render();
     },
   };

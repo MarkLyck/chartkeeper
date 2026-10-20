@@ -1,4 +1,5 @@
-import type { BackupProgress, BackupResult } from '../core/backup';
+import type { BackupResult } from '../core/backup';
+import type { BackupProgress } from '../core/backupProgress';
 import type { Manifest } from '../core/model';
 import type { RestoreResult, RestoreStep, TemplateRestoreResult } from '../core/restore';
 import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';

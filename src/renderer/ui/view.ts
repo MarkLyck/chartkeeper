@@ -6,7 +6,7 @@ import { changeText } from './changes';
 import { button, errorBox, notice, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
-import { incompleteReason, isIncomplete, layoutFacts, layoutsOf, newestFirst, snapshotDate, snapshotLines, snapshotTitle } from './snapshots';
+import { incompleteReason, isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines, snapshotTitle } from './snapshots';
 
 type Main =
   | { k: 'none' }
@@ -89,7 +89,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
         attrs: { 'aria-pressed': l.uid === current ? 'true' : 'false' },
         on: { click: () => void openLayout(l.uid) },
       },
-      h('span', { class: 'layout-name' }, l.name),
+      h('span', { class: 'layout-name' }, layoutTitle(l)),
       h('span', { class: 'layout-facts' }, layoutFacts(l)),
       l.priceData ? null : h('span', { class: 'badge badge-muted' }, t('view.noPrices')))));
   }
@@ -174,6 +174,8 @@ function comparePanel(ctx: Ctx, c: Extract<Main, { k: 'compare' }>, newer: Snaps
   if (c.load.k === 'loading') return h('div', { class: 'compare' }, head, spinner(t('common.loading')));
   if (c.load.k === 'error') return h('div', { class: 'compare' }, head, errorBox(ctx, c.load.error));
   const { layouts, other } = c.load.value;
+  const known = new Map([...(older ? layoutsOf(older) : []), ...layoutsOf(newer)].map((l) => [l.uid, l]));
+  const nameOf = (l: LayoutDiff) => layoutTitle(known.get(l.uid) ?? { name: l.name, symbols: [] });
   const changed = layouts.filter((l) => l.status !== 'same');
   const same = layouts.filter((l) => l.status === 'same');
   return h('div', { class: 'compare' },
@@ -181,10 +183,10 @@ function comparePanel(ctx: Ctx, c: Extract<Main, { k: 'compare' }>, newer: Snaps
     changed.length === 0 && other.length === 0 ? notice('success', t('view.compareNone')) : null,
     changed.map((l) =>
       h('section', { class: `diff diff-${l.status}` },
-        h('h4', { class: 'diff-title' }, h('span', { class: `badge badge-${l.status}` }, t(STATUS_KEYS[l.status])), l.name),
+        h('h4', { class: 'diff-title' }, h('span', { class: `badge badge-${l.status}` }, t(STATUS_KEYS[l.status])), nameOf(l)),
         l.changes.length ? h('ul', { class: 'change-list' }, l.changes.map(changeItem)) : null)),
     other.length
       ? h('section', { class: 'diff' }, h('h4', { class: 'diff-title' }, t('view.compareOther')), h('ul', { class: 'change-list' }, other.map(changeItem)))
       : null,
-    same.length ? h('p', { class: 'note' }, t('view.compareUnchanged', { names: same.map((l) => l.name).join(', ') })) : null);
+    same.length ? h('p', { class: 'note' }, t('view.compareUnchanged', { names: same.map(nameOf).join(', ') })) : null);
 }

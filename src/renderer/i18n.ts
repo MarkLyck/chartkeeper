@@ -1,4 +1,4 @@
-import type { BackupStep } from '../core/backup';
+import type { BackupProgress, BackupStep } from '../core/backupProgress';
 import type { RestoreStep } from '../core/restore';
 import type { AppError } from '../shared/api';
 import { LOCALE } from '../shared/locale';
@@ -62,14 +62,20 @@ export const TEXT = {
   'backupStep.layout': 'Saving the layout “{name}”…',
   'backupStep.userDrawings': 'Saving drawings that are shared between your layouts…',
   'backupStep.studyTemplates': 'Saving your indicator templates…',
-  'backupStep.drawingTemplates': 'Saving your drawing templates and colour themes…',
+  'backupStep.drawingTemplates': 'Looking for your drawing templates…',
+  'backupStep.themes': 'Saving your colour themes…',
   'backupStep.scripts': 'Saving your Pine scripts…',
   'backupStep.prices': 'Saving prices for “{name}” so you can view it offline…',
   'backupStep.finish': 'Finishing the backup…',
+  'backupPart.done': '{done} of {total} done',
+  'backupPart.drawingTemplates': 'TradingView must be asked about each drawing tool separately, so this step takes a few minutes. {done} of {total} tools checked.',
+  'backup.minutesLeft_one': 'About {n} minute left',
+  'backup.minutesLeft_other': 'About {n} minutes left',
+  'backup.underAMinute': 'Less than a minute left',
 
   'backup.title': 'Backup',
   'backup.running': 'Making a backup…',
-  'backup.runningNote': 'This usually takes a few minutes. You can leave the window open and do something else in the meantime.',
+  'backup.runningNote': 'You can leave the window open and do something else in the meantime.',
   'backup.starting': 'Starting…',
   'backup.done': 'Backup complete',
   'backup.doneSummary': '{layouts} and {drawings} are saved on this computer.',
@@ -78,6 +84,7 @@ export const TEXT = {
   'backup.failed': 'The backup could not be completed',
   'backup.failedPartial': 'What was saved before the problem is marked as incomplete, so you will not mistake it for a full backup.',
 
+  'view.unnamed': 'No name in TradingView',
   'view.title': 'My backups',
   'view.backups': 'Backups',
   'view.empty': 'There are no backups yet. Go back and press “Back up now”.',
@@ -278,6 +285,7 @@ export const BACKUP_STEP_KEYS = {
   userDrawings: 'backupStep.userDrawings',
   studyTemplates: 'backupStep.studyTemplates',
   drawingTemplates: 'backupStep.drawingTemplates',
+  themes: 'backupStep.themes',
   scripts: 'backupStep.scripts',
   prices: 'backupStep.prices',
   finish: 'backupStep.finish',
@@ -301,6 +309,16 @@ export function explainError(error: AppError): { title: string; body: string } {
 
 export function backupStepText(step: BackupStep, name: string | undefined): string {
   return fill(TEXT[BACKUP_STEP_KEYS[step]], { name: name ?? '' });
+}
+
+/** The line under the step: how far it is through its list. */
+export function backupPartText(p: BackupProgress): string | null {
+  if (!p.part || p.part.total === 0) return null;
+  return fill(TEXT[p.step === 'drawingTemplates' ? 'backupPart.drawingTemplates' : 'backupPart.done'], p.part);
+}
+
+export function formatTimeLeft(seconds: number): string {
+  return seconds < 60 ? TEXT['backup.underAMinute'] : tn('backup.minutesLeft', Math.round(seconds / 60));
 }
 
 export function restoreStepText(step: RestoreStep): string {

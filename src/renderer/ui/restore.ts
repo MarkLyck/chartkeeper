@@ -6,7 +6,7 @@ import { templateItemText, templateMissingText } from './changes';
 import { button, confirmDialog, details, errorBox, icons, notice, progressBar, screenHeader, spinner } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
-import { isIncomplete, layoutFacts, layoutsOf, newestFirst, snapshotDate, snapshotLines } from './snapshots';
+import { isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines } from './snapshots';
 
 interface Source {
   snapshot: SnapshotSummary;
@@ -78,7 +78,7 @@ export function restoreScreen(ctx: Ctx): Screen {
           h('legend', {}, t('restore.chooseLayout')),
           snap && layouts.length === 0 ? h('p', { class: 'note' }, t('view.noLayouts')) : null,
           layouts.map((l, i) => radio('layout', `pick-layout-${i}`, l === layout, () => set({ ...c, uid: l.uid }),
-            h('span', { class: 'choice-title' }, l.name), h('span', { class: 'choice-note' }, layoutFacts(l)))))),
+            h('span', { class: 'choice-title' }, layoutTitle(l)), h('span', { class: 'choice-note' }, layoutFacts(l)))))),
       h('div', { class: 'actions actions-end' },
         button(`${t('common.next')} →`, () => snap && layout && void toHow({ snapshot: snap, layout }), { kind: 'primary', id: 'restore-next', disabled: !layout })),
       snap ? templatesSection(snap) : h('div'),
@@ -135,7 +135,7 @@ export function restoreScreen(ctx: Ctx): Screen {
   }
 
   function howStep(c: Extract<Step, { k: 'how' }>): (HTMLElement | null)[] {
-    const intro = h('p', { class: 'lead' }, t('restore.restoring', { name: c.source.layout.name, when: backupWhen(c.source.snapshot) }));
+    const intro = h('p', { class: 'lead' }, t('restore.restoring', { name: layoutTitle(c.source.layout), when: backupWhen(c.source.snapshot) }));
     const back = button(`← ${t('common.back')}`, () => set({ k: 'choose', snapshotDir: c.source.snapshot.dir, uid: c.source.layout.uid }), { id: 'restore-back' });
     const title = h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.howTitle'));
     if (c.targets.k === 'loading') return [title, intro, spinner(t('restore.checking'))];
@@ -278,7 +278,7 @@ export function restoreScreen(ctx: Ctx): Screen {
       step.k === 'choose' ? chooseStep(step)
       : step.k === 'how' ? howStep(step)
       : step.k === 'running' ? [
-          h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.running', { name: step.source.layout.name })),
+          h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.running', { name: layoutTitle(step.source.layout) })),
           h('section', { class: 'card' }, progressBar(null, step.label), h('p', { class: 'note' }, t('restore.runningNote'))),
         ]
       : step.k === 'done' ? doneStep(step)

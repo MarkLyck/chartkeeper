@@ -105,9 +105,10 @@ async function main() {
 
   // Backup
   page = await open();
-  await mock(page, `m.pauseAfter = 3;`);
+  await mock(page, `m.pauseAfter = 9;`);
   await page.click('#go-backup');
-  await page.waitForSelector('.progress-fill[style*="width"]');
+  await page.waitForSelector('#backup-part:has-text("46 of 89 tools checked")');
+  expect(/minutes? left/.test((await page.textContent('#backup-left')) ?? ''), 'backup shows the time left');
   expect((await page.$('#nav-home')) === null, 'backup can be left while running');
   await shot(page, 'backup-progress');
   await mock(page, `m.release();`);
