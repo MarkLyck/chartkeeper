@@ -50,7 +50,7 @@ function daysAgo(days: number, hour: number, minute: number): Date {
   return d;
 }
 
-export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolean } = {}): { api: ChartKeeperApi; control: MockControl } {
+export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolean; history?: number } = {}): { api: ChartKeeperApi; control: MockControl } {
   const ref = fixture.manifest.layouts[0]!;
   const extra = (uid: string, name: string, symbol: string, drawings: number, studies: number): ManifestLayout => ({
     uid, name, dir: `layouts/${uid}`, symbols: [symbol], charts: 1, drawings, studies, lastModified: null, priceData: false,
@@ -73,7 +73,14 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     return { dir: `${FOLDER}/snapshots/${name}`, name, manifest, problem: null, safetyCopy: false };
   };
 
+  // Older daily backups, for a home screen with some history behind it. Drawings grow over time, with a few cleared away.
+  const older = Array.from({ length: init.history ?? 0 }, (_, i) => {
+    const back = (init.history ?? 0) - i;
+    const drawings = Math.max(1, Math.round(23 - back * 0.35 + 3 * Math.sin(back / 2.3)));
+    return snapshot(daysAgo(9 + back, 18, 0), [ref, { ...msft, drawings }, tsla], 'complete');
+  });
   const snapshots: SnapshotSummary[] = [
+    ...older,
     snapshot(daysAgo(9, 18, 0), [ref, msft, tsla], 'complete'),
     snapshot(daysAgo(3, 18, 0), [ref], 'incomplete', `TradingView says "S&P 500 – weekly" has 14 drawings but sent none. The backup was stopped so it isn't saved without them.`),
     snapshot(daysAgo(0, 9, 12), [ref, msft, spx], 'complete'),
@@ -86,7 +93,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     signedIn: init.signedIn ?? true,
     username: init.signedIn === false ? null : 'demo_user',
     browserName: 'Google Chrome',
-    lastBackup: { at: snapshots[2]!.manifest!.createdAt, ok: true, dir: snapshots[2]!.dir },
+    lastBackup: { at: snapshots.at(-1)!.manifest!.createdAt, ok: true, dir: snapshots.at(-1)!.dir },
     busy: null,
   };
 
@@ -328,7 +335,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
 
 /** Puts the mock on window before app.js runs. Options come from window.__CK_MOCK_INIT__ (set by the preview script). */
 export function installMockApi(): void {
-  const w = window as unknown as { __CK_FIXTURE__: PreviewFixture; __CK_MOCK_INIT__?: { signedIn?: boolean }; chartkeeper: ChartKeeperApi; __mock: MockControl };
+  const w = window as unknown as { __CK_FIXTURE__: PreviewFixture; __CK_MOCK_INIT__?: { signedIn?: boolean; history?: number }; chartkeeper: ChartKeeperApi; __mock: MockControl };
   const { api, control } = createMockApi(w.__CK_FIXTURE__, w.__CK_MOCK_INIT__ ?? {});
   w.chartkeeper = api;
   w.__mock = control;

@@ -13,6 +13,8 @@ const out = path.join(root, 'docs/screenshots');
 mkdirSync(out, { recursive: true });
 const pick: Record<string, string> = {
   'home-signed-out': 'home-signed-out',
+  home: 'home-history',
+  'backup-progress': 'backup-progress',
   'backup-done': 'backup-success',
   view: 'view-chart',
   compare: 'view-compare',

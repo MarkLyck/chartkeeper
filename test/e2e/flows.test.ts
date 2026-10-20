@@ -34,7 +34,8 @@ const storedIds = (l: FakeLayout) => Object.values(l.storage).flatMap((b) => Obj
 
 async function snapshotsOnDisk(backups: string, sub = 'snapshots'): Promise<{ name: string; dir: string; manifest: Manifest }[]> {
   const root = path.join(backups, sub);
-  const names = (await fs.readdir(root).catch(() => [] as string[])).sort();
+  // A run still writing sits in ".in-progress-<stamp>" until it is renamed; only finished backups count.
+  const names = (await fs.readdir(root).catch(() => [] as string[])).filter((n) => !n.startsWith('.in-progress-')).sort();
   return Promise.all(names.map(async (name) => ({ name, dir: path.join(root, name), manifest: JSON.parse(await fs.readFile(path.join(root, name, 'manifest.json'), 'utf8')) as Manifest })));
 }
 

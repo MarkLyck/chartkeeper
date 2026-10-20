@@ -3,7 +3,7 @@ import type { ManifestLayout } from '../../core/model';
 import type { AppError, RestoreOutcome, RestoreRequest, RestoreTargets, SnapshotSummary, TemplatesOutcome } from '../../shared/api';
 import { formatDateTime, restoreStepText, t, tn } from '../i18n';
 import { templateItemText, templateMissingText } from './changes';
-import { button, confirmDialog, details, errorBox, icons, notice, progressBar, screenHeader, spinner } from './components';
+import { button, confirmDialog, details, errorBox, icons, notice, pageTitle, progressBar, spinner, topBar } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines } from './snapshots';
@@ -264,7 +264,7 @@ export function restoreScreen(ctx: Ctx): Screen {
         : null,
       h('div', { class: 'actions' },
         button(t('restore.another'), () => set({ k: 'choose', snapshotDir: c.source.snapshot.dir, uid: null }), { id: 'restore-another' }),
-        button(t('nav.home'), () => ctx.go({ name: 'home' }), { id: 'restore-home' })),
+        button(t('nav.backToStart'), () => ctx.go({ name: 'home' }), { id: 'restore-home' })),
     ];
   }
 
@@ -283,7 +283,7 @@ export function restoreScreen(ctx: Ctx): Screen {
         ]
       : step.k === 'done' ? doneStep(step)
       : failedStep(step);
-    replace(el, screenHeader(ctx, t('restore.title'), { canLeave: step.k !== 'running' }), stepper(n), ...body);
+    replace(el, topBar(ctx, 'restore', { canLeave: step.k !== 'running' }), pageTitle(t('restore.title')), stepper(n), ...body);
   }
 
   void ctx.api.listSnapshots().then((list) => {

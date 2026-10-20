@@ -54,11 +54,11 @@ async function main() {
   const url = `file://${path.join(OUT, 'site', 'index.html')}`;
   const shots: string[] = [];
 
-  const open = async (opts: { signedIn?: boolean; size?: { width: number; height: number } } = {}): Promise<Page> => {
+  const open = async (opts: { signedIn?: boolean; history?: number; size?: { width: number; height: number } } = {}): Promise<Page> => {
     const page = await browser.newPage({ viewport: opts.size ?? { width: 1200, height: 800 } });
     page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
     page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
-    await page.addInitScript((init) => ((window as unknown as { __CK_MOCK_INIT__: unknown }).__CK_MOCK_INIT__ = init), { signedIn: opts.signedIn ?? true });
+    await page.addInitScript((init) => ((window as unknown as { __CK_MOCK_INIT__: unknown }).__CK_MOCK_INIT__ = init), { signedIn: opts.signedIn ?? true, history: opts.history ?? 0 });
     await page.goto(url);
     await page.waitForSelector('#go-view');
     await page.evaluate(() => ((window as unknown as { __mock: { stepMs: number } }).__mock.stepMs = 120));
@@ -66,6 +66,7 @@ async function main() {
   };
   const mock = (page: Page, fn: string) => page.evaluate(`(() => { const m = window.__mock; ${fn} })()`);
   const shot = async (page: Page, name: string) => {
+    await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(150);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow <= 0, `${name}: content is ${overflow}px wider than the window`);
@@ -76,7 +77,13 @@ async function main() {
   const calls = (page: Page) => page.evaluate(() => (window as unknown as { __mock: { calls: { method: string; args: unknown[] }[] } }).__mock.calls);
 
   // Home
-  let page = await open();
+  let page = await open({ history: 40 });
+  await page.waitForSelector('.spark');
+  await shot(page, 'home-history');
+  await page.close();
+
+  page = await open();
+  expect((await page.$('.spark')) === null, 'home draws a history line for fewer than a week of backups');
   await shot(page, 'home');
   await page.keyboard.press('Tab');
   await page.keyboard.press('Tab');
@@ -87,9 +94,9 @@ async function main() {
   await shot(page, 'home-signed-out');
   await mock(page, `m.scenario.signIn = 'browser';`);
   await page.click('#signin');
-  await page.waitForSelector('.signin .loading');
+  await page.waitForSelector('.signin-wait .loading');
   await shot(page, 'home-signing-in');
-  await page.waitForSelector('.signin .result-error');
+  await page.waitForSelector('.hero .result-error');
   await shot(page, 'home-signin-error');
   await mock(page, `m.scenario.signIn = 'ok';`);
   await page.click('#signin');
@@ -118,6 +125,10 @@ async function main() {
   await shot(page, 'backup-success-notes');
   await page.click('#backup-view');
   await page.waitForSelector('.snap-selected');
+  await mock(page, `m.setState({ busy: 'backup' });`);
+  expect(await page.isDisabled('#nav-restore'), 'the top bar still offers Restore while a daily backup runs');
+  await mock(page, `m.setState({ busy: null });`);
+  expect(await page.isEnabled('#nav-restore'), 'the top bar keeps Restore off after the daily backup ends');
   await page.click('#nav-home');
   await mock(page, `m.scenario.backup = 'format-changed';`);
   await page.click('#go-backup');

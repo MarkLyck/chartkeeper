@@ -186,6 +186,18 @@ describe('backup', () => {
     expect(new Set(seen.slice(1).map((p) => p.total))).toEqual(new Set([tv.requests.length - 1]));
   });
 
+  it('corrects the estimate for a layout with several charts, ending at the requests made', async () => {
+    tv.add(numericChartIds());
+    tv.studyTemplates = [];
+    tv.themes = {};
+    tv.scripts = [];
+    tv.drawingTemplates = {};
+    const seen: BackupProgress[] = [];
+    await backup({ includePrices: false, onProgress: (p) => seen.push(p) });
+    expect(seen.at(-1)!.total).toBe(tv.requests.length - 1);
+    expect(seen.filter((p) => p.step === 'layout').map((p) => p.part)).toEqual([{ done: 0, total: 2 }, { done: 1, total: 2 }]);
+  });
+
   it('moves the bar while it asks about every drawing tool, which is most of the requests', async () => {
     const seen: BackupProgress[] = [];
     await backup({ onProgress: (p) => seen.push(p) });
