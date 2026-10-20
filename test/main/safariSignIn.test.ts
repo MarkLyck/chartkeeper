@@ -58,10 +58,14 @@ describe("reading Safari's cookie file", () => {
     expect(signIns.map((cs) => cs.map((c) => `${c.domain} ${c.name}=${c.value}`))).toEqual([['.tradingview.com sessionid=s1']]);
   });
 
-  it('says so when macOS keeps ChartKeeper out of Safari, and treats a Mac where Safari never ran as signed out', async () => {
+  // Windows ignores chmod for folders; Safari only runs on macOS anyway.
+  it.skipIf(process.platform === 'win32')('says so when macOS keeps ChartKeeper out of Safari', async () => {
     await fs.chmod(dir, 0o000);
     await expect(safariTradingViewSignIns(dir)).rejects.toBeInstanceOf(SafariAccessDenied);
-    await expect(safariTradingViewSignIns(path.join(os.tmpdir(), 'ck-no-such-safari'))).resolves.toEqual([]);
+  });
+
+  it('treats a Mac where Safari never ran as signed out', async () => {
+    await expect(safariTradingViewSignIns(path.join(dir, 'no-such-safari'))).resolves.toEqual([]);
   });
 });
 
