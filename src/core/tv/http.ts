@@ -40,7 +40,8 @@ export interface PageTransport {
  * outside itself, because it is serialized with `toString()`.
  */
 export async function pageFetch(req: HttpRequest): Promise<HttpResponse> {
-  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual' };
+  // A name list read right before an add must be the account's current one, never a cached copy.
+  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual', cache: 'no-store' };
   if (req.json !== undefined) {
     init.headers = { 'Content-Type': 'application/json' };
     init.body = JSON.stringify(req.json);

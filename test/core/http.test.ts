@@ -156,6 +156,11 @@ describe('the code that runs inside the TradingView page', () => {
     expect(seen[0]!.body).toMatch(/name="content"\r\n\r\n\{"charts":\[\]\}\r\n/);
   });
 
+  it('never answers from the cache, so a name list read before an add is current', async () => {
+    await pageFetch({ method: 'GET', url: `${base}/themes/` });
+    expect(seen[0]!.headers['cache-control']).toBe('no-cache');
+  });
+
   it('does not follow the redirect TradingView sends a signed-out visitor', async () => {
     const res = await pageFetch({ method: 'GET', url: `${base}/my-charts/` });
     expect(res.status).toBe(302);

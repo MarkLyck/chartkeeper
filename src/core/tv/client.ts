@@ -25,7 +25,7 @@ export type OnEach = (done: number, total: number) => void;
 /** What adding a template or theme did: TradingView saves them by name, over any it has, so a taken name is left alone. */
 export type AddResult = 'added' | 'exists';
 
-const normalName = (s: string) => s.normalize('NFKC').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
+const normalName = (s: string) => s.normalize('NFKC').replace(/\s+/g, ' ').trim().toLowerCase();
 const nameTaken = (names: string[], name: string) => names.some((n) => normalName(n) === normalName(name));
 
 const LayoutJsonSchema = z.object({
