@@ -77,7 +77,9 @@ The app builds the form in `ChartSaver._getCommonSavingInfo` and
   a new layout.** The app never sends `id`.
 - Error handling in the app: `413` means the layout is too large, `403` with
   `code: "login_required"` means the session expired, `429` means rate limited.
-  Hitting the saved-layout limit opens the `savedChartsLimit` paywall.
+  Hitting the saved-layout limit opens the `savedChartsLimit` paywall. On a
+  free account with its one layout taken, the save answered `422`
+  `{"code":"saved_chart_limit_reached","detail":"Layouts limit reached"}`.
 
 ### Layout content
 

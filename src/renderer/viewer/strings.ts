@@ -1,3 +1,5 @@
+import { LOCALE } from '../../shared/locale';
+
 export type NotShownReason =
   | { code: 'hidden' }
   | { code: 'unknown-drawing' }
@@ -22,6 +24,9 @@ interface Strings {
   drawing: string;
   indicator: string;
   chart: string;
+  /** One sentence for all of a chart's drawings that belong to other symbols. `list` names the symbols. */
+  otherSymbols: (drawings: number, symbols: number, list: string) => string;
+  moreSymbols: (n: number) => string;
   reason: { [K in NotShownReason['code']]: (r: Extract<NotShownReason, { code: K }>) => string };
 }
 
@@ -47,6 +52,10 @@ export const STRINGS: Strings = {
   drawing: 'Drawing',
   indicator: 'Indicator',
   chart: 'Chart',
+  otherSymbols: (drawings, symbols, list) =>
+    `${formatCount(drawings)} ${drawings === 1 ? 'drawing' : 'drawings'} on ${formatCount(symbols)} other ${symbols === 1 ? 'symbol' : 'symbols'} ${drawings === 1 ? 'is' : 'are'} saved in this backup. ` +
+    `TradingView shows ${drawings === 1 ? 'it' : 'them'} when the chart is switched to that symbol: ${list}`,
+  moreSymbols: (n) => `and ${formatCount(n)} more`,
   reason: {
     hidden: () => 'Hidden in TradingView',
     'unknown-drawing': () => 'This kind of drawing cannot be shown offline yet',
@@ -66,6 +75,8 @@ export const STRINGS: Strings = {
     'approximate-symbol': () => "Drawn with the closest symbol your computer has; TradingView's artwork can look different",
   },
 };
+
+export const formatCount = (n: number) => n.toLocaleString(LOCALE);
 
 export function reasonText(reason: NotShownReason): string {
   const fn = STRINGS.reason[reason.code] as (r: NotShownReason) => string;

@@ -41,7 +41,7 @@ function stamp(d: Date): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}_${p(d.getHours())}-${p(d.getMinutes())}-${p(d.getSeconds())}`;
 }
 
-const point = (day: string, price: number) => ({ time: Date.parse(`${day}T00:00:00Z`) / 1000, offset: 0, price });
+const point = (day: string, price: number) => ({ time: Date.parse(`${day}T00:00:00Z`) / 1000, offset: 0, price, interval: 'D' });
 
 function daysAgo(days: number, hour: number, minute: number): Date {
   const d = new Date();

@@ -26,11 +26,11 @@ describe('comparing two backups', () => {
     expect(changes).toHaveLength(4);
     expect(changes).toContainEqual({
       kind: 'changed', what: 'drawing-moved', toolType: 'LineToolTrendLine',
-      from: [{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 315 }],
-      to: [{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 333 }],
+      from: [{ time: 1775606400, offset: 0, price: 255, interval: '1D' }, { time: 1785196800, offset: 0, price: 315, interval: '1D' }],
+      to: [{ time: 1775606400, offset: 0, price: 255, interval: '1D' }, { time: 1785196800, offset: 0, price: 333, interval: '1D' }],
     });
     expect(changes).toContainEqual(expect.objectContaining({ kind: 'removed', what: 'drawing', toolType: 'LineToolFibRetracement' }));
-    expect(changes).toContainEqual({ kind: 'added', what: 'drawing', toolType: 'LineToolText', text: 'Sell', symbol: 'NASDAQ:AAPL', points: [{ time: 1785000000, offset: 0, price: 320 }] });
+    expect(changes).toContainEqual({ kind: 'added', what: 'drawing', toolType: 'LineToolText', text: 'Sell', symbol: 'NASDAQ:AAPL', points: [{ time: 1785000000, offset: 0, price: 320, interval: null }] });
     expect(changes).toContainEqual({ kind: 'changed', what: 'study-inputs', shortName: 'MA', inputs: [{ key: 'length', from: '50', to: '100' }] });
   });
 

@@ -75,7 +75,7 @@ export class FakeTradingView implements PageTransport {
         const f = req.form!;
         // A save that names a layout, by its uid (image_url) or its number (id), overwrites it.
         const target = f.image_url ?? (f.id === undefined ? undefined : [...this.layouts.values()].find((l) => String(l.id) === f.id)?.uid);
-        if (!target && this.layoutLimit !== null && this.layouts.size >= this.layoutLimit) return json(403, { detail: 'savedChartsLimit', code: 'limit' });
+        if (!target && this.layoutLimit !== null && this.layouts.size >= this.layoutLimit) return json(422, { code: 'saved_chart_limit_reached', detail: 'Layouts limit reached' });
         const uid = target ?? `New${this.nextId}`;
         const existing = target ? this.layouts.get(target) : undefined;
         const l: FakeLayout = existing ?? { uid, id: this.nextId++, name: f.name!, content: { charts: [] }, studyMeta: {}, storage: {} };
