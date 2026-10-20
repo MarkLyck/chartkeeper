@@ -64,7 +64,7 @@ describe.skipIf(process.platform === 'win32')('a browser that cannot be driven',
   it('gives up at once when the browser closes its DevTools pipe, so the next browser can be tried', async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-deadpipe-'));
     const fake = path.join(dir, 'browser');
-    await fs.writeFile(fake, '#!/bin/sh\nexec 3>&- 4>&-\nsleep 30\n', { mode: 0o755 });
+    await fs.writeFile(fake, '#!/bin/sh\nexec 3>&- 4>&-\nexec sleep 30\n', { mode: 0o755 });
     let pid = 0;
     const started = Date.now();
     const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 200, onSpawn: (c) => (pid = c.pid ?? 0) });
@@ -72,9 +72,42 @@ describe.skipIf(process.platform === 'win32')('a browser that cannot be driven',
     expect(Date.now() - started).toBeLessThan(8000);
     expect(() => process.kill(pid, 0), 'the browser was left running').toThrow();
   }, 20000);
+
+  it('reports a window the user closed as cancelled, even when the browser is slow to exit after closing the pipe', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-slowexit-'));
+    const fake = path.join(dir, 'browser.js');
+    // Answers one DevTools call, closes the pipe like a closing browser, and exits two seconds later.
+    await fs.writeFile(fake, `#!${process.execPath}\nconst fs = require('node:fs');\nconst out = fs.createWriteStream(null, { fd: 4 });\nfs.createReadStream(null, { fd: 3 }).once('data', (d) => {\n  const id = JSON.parse(String(d).split('\\0')[0]).id;\n  out.end(JSON.stringify({ id, result: { cookies: [] } }) + '\\0', () => setTimeout(() => process.exit(0), 2000));\n});\n`, { mode: 0o755 });
+    const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 100 });
+    await expect(run).rejects.toBeInstanceOf(SignInCancelled);
+  }, 20000);
 });
 
 describe('finding a browser', () => {
+  it('looks in Chromium library folders for Chromium only', () => {
+    const lib = '/usr/lib64/chromium-browser/chrome';
+    expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === lib, null)).toBeNull();
+  });
+
+  it('keeps every install of a browser, so a broken one does not hide a working one of the same name', () => {
+    const lin = new Set(['/snap/bin/chromium', '/var/lib/flatpak/exports/bin/org.chromium.Chromium']);
+    expect(findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => lin.has(p), null).map((b) => b.path)).toEqual(['/snap/bin/chromium', '/var/lib/flatpak/exports/bin/org.chromium.Chromium']);
+  });
+
+  it('finds Chromium in per-user Nix profiles and Opera as a Flatpak', () => {
+    const env = { PATH: '/usr/bin', USER: 't' };
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/etc/profiles/per-user/t/bin/chromium', null)?.name).toBe('Chromium');
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/home/t/.local/state/nix/profiles/profile/bin/chromium', null)?.name).toBe('Chromium');
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/var/lib/flatpak/exports/bin/com.opera.Opera', null)?.name).toBe('Opera');
+  });
+
+  it('gives a browser chosen by path its sandbox profile too', () => {
+    const chosen = findBrowser('linux', { CHARTKEEPER_BROWSER: '/var/lib/flatpak/exports/bin/org.chromium.Chromium/' }, '/home/t', () => true);
+    expect(signInProfileDir(chosen!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.var/app/org.chromium.Chromium/chartkeeper-signin');
+    const snap = findBrowser('linux', { CHARTKEEPER_BROWSER: '/snap/bin/chromium' }, '/home/t', () => true);
+    expect(signInProfileDir(snap!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/snap/chromium/common/chartkeeper-signin');
+  });
+
   it('keeps the sign-in profile where a Snap or Flatpak browser can write', () => {
     const [snap] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/snap/bin/chromium', null);
     const [flat] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/var/lib/flatpak/exports/bin/org.chromium.Chromium', null);
