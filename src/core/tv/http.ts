@@ -1,8 +1,9 @@
 import { TvError } from './errors';
 import { isAllowedUrl } from './endpoints';
+import { writeRefusal } from './writePolicy';
 
 export interface HttpRequest {
-  method: 'GET' | 'POST' | 'PUT';
+  method: 'GET' | 'POST';
   url: string;
   /** Sent as application/json. */
   json?: unknown;
@@ -73,9 +74,10 @@ const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
  * Wraps a transport with ChartKeeper's request policy: only TradingView hosts,
- * one request at a time, a pause of 1.5 to 2.5 s between requests, and retries
- * with back-off on 429 and 5xx for reads. Writes are never retried, so a
- * timeout can't create two copies of a layout.
+ * only the writes `writeRefusal` allows, one request at a time, a pause of
+ * 1.5 to 2.5 s between requests, and retries with back-off on 429 and 5xx for
+ * reads. Writes are never retried, so a timeout can't create two copies of a
+ * layout.
  */
 export class PoliteHttp {
   private last = 0;
@@ -93,6 +95,8 @@ export class PoliteHttp {
 
   send(req: HttpRequest): Promise<HttpResponse> {
     if (!isAllowedUrl(req.url)) throw new Error(`Refusing to contact ${req.url}: not a TradingView address.`);
+    const refused = writeRefusal(req);
+    if (refused) throw new Error(`ChartKeeper refused to send ${req.method} ${req.url}: ${refused}`);
     const run = this.queue.then(() => this.sendWithRetry(req));
     this.queue = run.catch(() => undefined);
     return run;

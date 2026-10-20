@@ -4,6 +4,7 @@ import { TvContentSchema } from './content';
 import { formatChanged, TvError } from './errors';
 import { PLAN_LAYOUT_LIMITS, TEMPLATE_TOOLS, urls } from './endpoints';
 import type { HttpResponse, PageUser, PoliteHttp } from './http';
+import type { LayoutForm } from './writePolicy';
 
 /** One saved layout as listed by TradingView. */
 export interface LayoutListEntry {
@@ -290,7 +291,7 @@ export class TvClient {
   }
 
   /** Creates a new layout. Never retried. */
-  async createLayout(form: Record<string, string>): Promise<{ id: number; uid: string }> {
+  async createLayout(form: LayoutForm): Promise<{ id: number; uid: string }> {
     const res = await this.http.send({ method: 'POST', url: urls.saveLayout, form });
     if (res.status === 403 && /limit|paywall|over_limit|savedCharts/i.test(res.body))
       throw new TvError('limit-reached', 'Your TradingView plan has no free layout slot.', res.body.slice(0, 300));

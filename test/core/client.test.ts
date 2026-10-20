@@ -3,7 +3,8 @@ import { layoutSlots, parseBucket, parseLayoutJson, parseLayoutList, parseListEn
 import type { HttpRequest, HttpResponse } from '../../src/core/tv/http';
 import { PoliteHttp } from '../../src/core/tv/http';
 import { FakeTradingView } from '../fakes/fakeTradingView';
-import { referenceInAccount } from '../fakes/fixtures';
+import { saveForm } from '../../src/core/restore';
+import { referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
 const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
 let tv: FakeTradingView;
@@ -11,6 +12,7 @@ const client = () => new TvClient(new PoliteHttp(tv, fast), tv.account!);
 const answer = (status: number, body: string, contentType = 'application/json'): HttpResponse => ({ status, contentType, body });
 const failWhen = (match: (req: HttpRequest) => boolean, res: HttpResponse) => (tv.failOn = (req) => (match(req) ? res : null));
 const entry = parseListEntry({ image_url: 'Ab12', name: 'My layout' });
+const form = saveForm(referenceRecord(), { buckets: {}, reportedTotal: null }, 'x');
 
 beforeEach(() => {
   tv = new FakeTradingView().add(referenceInAccount('Ab12', 'My layout'));
@@ -31,18 +33,18 @@ describe('turning TradingView error answers into something the user can act on',
 
   it('says a layout is too large when the save is refused with 413', async () => {
     failWhen((r) => r.method === 'POST', answer(413, ''));
-    await expect(client().createLayout({ name: 'x', content: '{}' })).rejects.toMatchObject({ kind: 'too-large' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'too-large' });
   });
 
   it('says the plan is full when the save is refused for the layout limit', async () => {
     tv.layoutLimit = 1;
-    await expect(client().createLayout({ name: 'x', content: '{"charts":[]}' })).rejects.toMatchObject({ kind: 'limit-reached' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });
     expect(tv.layouts.size).toBe(1);
   });
 
   it('treats a plain 403 on save as an expired sign-in, not a full plan', async () => {
     failWhen((r) => r.method === 'POST', answer(403, '{"code":"login_required"}'));
-    await expect(client().createLayout({ name: 'x', content: '{}' })).rejects.toMatchObject({ kind: 'not-signed-in' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'not-signed-in' });
   });
 
   it('reports a web page where JSON was expected as a TradingView change', async () => {

@@ -111,12 +111,6 @@ export class FakeTradingView implements PageTransport {
         if (this.storageIgnoresCookies) return json(200, { success: true, payload: { sources: {} } });
         return json(200, { success: true, payload: { sources: l.storage[chartId] ?? {}, drawing_groups: {}, clientId: 'x' } });
       }
-      if (req.method === 'PUT') {
-        const body = req.json as { sources: Record<string, Record<string, unknown> | null> };
-        const bucket = (l.storage[chartId] ??= {});
-        for (const [id, v] of Object.entries(body.sources)) v === null ? delete bucket[id] : (bucket[id] = v);
-        return json(200, { success: true, payload: { serverUpdateTime: 1 } });
-      }
     }
 
     if (u.hostname === 'pine-facade.tradingview.com') {

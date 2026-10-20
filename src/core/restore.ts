@@ -10,6 +10,7 @@ import type { LayoutListEntry, TvClient } from './tv/client';
 import { drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { urls } from './tv/endpoints';
 import { TvError } from './tv/errors';
+import type { LayoutForm } from './tv/writePolicy';
 
 export type RestoreStep = 'check' | 'create' | 'verify';
 
@@ -45,7 +46,7 @@ export function contentWithDrawings(record: LayoutRecord, drawings: DrawingsReco
 }
 
 /** The symbol fields the save request carries, from the list entry or else the active chart's price series. */
-export function symbolFields(record: LayoutRecord): Record<string, string> {
+export function symbolFields(record: LayoutRecord) {
   const e = record.listEntry;
   const first = record.content.charts[0];
   const series = obj(first && mainSeriesOf(first)?.state);
@@ -64,7 +65,7 @@ export function symbolFields(record: LayoutRecord): Record<string, string> {
 }
 
 /** The complete form for TradingView's save request. */
-export function saveForm(record: LayoutRecord, drawings: DrawingsRecord, name: string): Record<string, string> {
+export function saveForm(record: LayoutRecord, drawings: DrawingsRecord, name: string): LayoutForm {
   const content = contentWithDrawings(record, drawings);
   return {
     ...symbolFields(record),

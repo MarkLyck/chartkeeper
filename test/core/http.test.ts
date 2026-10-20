@@ -27,6 +27,17 @@ describe('request policy', () => {
     expect(() => http.send({ method: 'GET', url: 'https://tradingview.com.evil.example/x' })).toThrow();
   });
 
+  it('refuses a write that could change or delete something on TradingView, and never hands it to the page', async () => {
+    const { http, sent } = fakeTransport(() => ok);
+    const send = async (req: HttpRequest) => http.send(req);
+    await expect(send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/save/', form: { name: 'x', image_url: 'Ab12' } })).rejects.toThrow(/refused to send POST .*"image_url"/);
+    await expect(send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/delete/', json: { uid: ['Ab12'] } })).rejects.toThrow(/not one of the addresses/);
+    await expect(send({ method: 'PUT', url: 'https://charts-storage.tradingview.com/charts-storage/layout/Ab12/sources', json: { sources: { a: null } } } as unknown as HttpRequest)).rejects.toThrow(/PUT requests/);
+    expect(sent).toEqual([]);
+    await http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
+    expect(sent.map((s) => s.req.method)).toEqual(['GET']);
+  });
+
   it('waits at least 1.5 seconds between requests', async () => {
     const { http, sent } = fakeTransport(() => ok);
     await Promise.all([1, 2, 3].map(() => http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' })));
