@@ -52,9 +52,10 @@ paid developer certificate. The warnings only appear the first time.
 3. When you are signed in, the window closes by itself and ChartKeeper shows
    "Signed in to TradingView as ...".
 
-ChartKeeper uses your default browser when it is Chrome, Edge, Brave or a
-similar browser. On Windows and Linux it otherwise uses another one of those
-that is installed.
+ChartKeeper uses your default browser when it is Chrome, Chromium, Edge, Brave
+or a similar browser. On Windows and Linux it otherwise uses another one of
+those that is installed. On Linux that includes browsers installed as a Snap or
+a Flatpak.
 
 On a Mac whose default browser is Safari, Dia, Arc, Firefox or another browser
 ChartKeeper can't open, it uses **Safari**:

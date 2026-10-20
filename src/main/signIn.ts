@@ -4,8 +4,8 @@ import path from 'node:path';
 import { TvError } from '../core/tv/errors';
 import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import type { TvAccount } from './account';
-import { findBrowsers } from './browsers';
-import { SignInCancelled, signInWithBrowser } from './browserSignIn';
+import { findBrowsers, signInProfileDir } from './browsers';
+import { BrowserUnusable, SignInCancelled, signInWithBrowser } from './browserSignIn';
 import { log } from './log';
 import { SafariAccessDenied, safariDataDir, signInWithSafari, type SafariCookie } from './safariSignIn';
 import { fromCdp, importCookies, type SessionCookie } from './tvSession';
@@ -56,7 +56,7 @@ export async function signIn(account: TvAccount, parent: BrowserWindow | null, s
         log(`sign-in with ${browser.name}`);
         const fromBrowser = await signInWithBrowser({
           browserPath: browser.path,
-          profileDir: path.join(app.getPath('userData'), 'signin-profile'),
+          profileDir: signInProfileDir(browser, app.getPath('userData'), os.homedir()),
           startUrl: urls.signIn,
           isSignedIn: (cs) => cs.some((c) => c.name === SESSION_COOKIE && isTv(c)),
           keep: isTv,
@@ -65,7 +65,7 @@ export async function signIn(account: TvAccount, parent: BrowserWindow | null, s
         cookies = fromBrowser.map(fromCdp);
         break;
       } catch (e) {
-        if (signal.aborted || !(e instanceof SignInCancelled && Date.now() - started < QUICK_EXIT_MS)) throw e;
+        if (signal.aborted || !(e instanceof BrowserUnusable || (e instanceof SignInCancelled && Date.now() - started < QUICK_EXIT_MS))) throw e;
         log(`${browser.name} could not start (${(e as Error).message}); trying the next browser`);
       }
     }
