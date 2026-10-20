@@ -3,10 +3,7 @@ import { autoUpdater, type ProgressInfo, type UpdateInfo } from 'electron-update
 import path from 'node:path';
 import { downloadVerified, installerFile } from './download';
 import { log } from './log';
-import { plainNotes, type UpdateSource } from './update';
-
-/** Points a development run at a test feed, such as the end-to-end test's local server. An installed app always asks GitHub. */
-export const UPDATE_FEED_ENV = 'CK_UPDATE_FEED';
+import { plainNotes, UPDATE_FEED_ENV, type UpdateSource } from './update';
 
 const GITHUB_DOWNLOADS = 'https://github.com/MarkLyck/chartkeeper/releases/download/';
 

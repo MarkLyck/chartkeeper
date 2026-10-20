@@ -2,6 +2,9 @@ import type { UpdateInfo } from 'electron-updater';
 import type { UpdateHow, UpdateRelease, UpdateState } from '../shared/api';
 import type { AppStatus } from './appState';
 
+/** Points a development run at a test feed, such as the end-to-end test's local server. An installed app always asks GitHub. */
+export const UPDATE_FEED_ENV = 'CK_UPDATE_FEED';
+
 export const RELEASES_PAGE = 'https://github.com/MarkLyck/chartkeeper/releases/latest';
 
 /** Where new versions come from: electron-updater in the app (src/main/updateSource.ts), a fake in tests. */

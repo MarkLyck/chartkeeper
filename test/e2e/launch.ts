@@ -35,7 +35,7 @@ export async function launchApp(extra: Partial<Parameters<typeof _electron.launc
     executablePath: electronPath,
     args: [path.join(ROOT, 'dist/main.js'), ...(process.platform === 'linux' ? ['--no-sandbox'] : [])],
     ...extra,
-    env: { ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== 'ELECTRON_RUN_AS_NODE')), CHARTKEEPER_USER_DATA: userData, ...fakeEnv } as Record<string, string>,
+    env: { ...Object.fromEntries(Object.entries(process.env).filter(([k]) => k !== 'ELECTRON_RUN_AS_NODE')), ...extra.env, CHARTKEEPER_USER_DATA: userData, ...fakeEnv } as Record<string, string>,
   });
   const window = await app.firstWindow();
   await window.waitForLoadState('domcontentloaded');
