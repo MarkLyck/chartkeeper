@@ -66,13 +66,13 @@ async function main() {
     return page;
   };
   const mock = (page: Page, fn: string) => page.evaluate(`(() => { const m = window.__mock; ${fn} })()`);
-  const shot = async (page: Page, name: string) => {
+  const shot = async (page: Page, name: string, fullPage = true) => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await page.waitForTimeout(150);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(overflow <= 0, `${name}: content is ${overflow}px wider than the window`);
     const file = path.join(OUT, `${name}.png`);
-    await page.screenshot({ path: file, fullPage: true, animations: 'disabled' });
+    await page.screenshot({ path: file, fullPage, animations: 'disabled' });
     shots.push(file);
   };
   const calls = (page: Page) => page.evaluate(() => (window as unknown as { __mock: { calls: { method: string; args: unknown[] }[] } }).__mock.calls);
@@ -332,6 +332,78 @@ async function main() {
   await page.click('#restore-start');
   await page.waitForSelector('.result-error');
   await shot(page, 'restore-error-limit');
+  await page.close();
+
+  // Update popup. Shown as the window shows it: the popup and its backdrop cover the window, not the whole page.
+  const release = {
+    version: '1.0.0-rc.11',
+    notes: "What's new\n• Backups of large layouts are faster\n• Drawings made on a daily chart are placed right on a 5-minute chart",
+    how: 'installer',
+  };
+  const setUpdate = (page: Page, update: object) => mock(page, `m.setState({ update: ${JSON.stringify(update)} });`);
+  const dialogOpen = (page: Page) => page.$eval('#update-dialog', (d) => (d as HTMLDialogElement).open);
+  const focusInDialog = (page: Page) => page.evaluate(() => !!document.activeElement?.closest('#update-dialog'));
+  page = await open();
+  await setUpdate(page, { k: 'available', ...release });
+  await page.waitForSelector('#update-dialog[open]');
+  expect((await page.evaluate(() => document.activeElement?.id)) === 'update-title', 'the update popup does not move focus to its title');
+  expect((await page.textContent('#update-version'))?.includes('1.0.0-rc.11') === true, 'the update popup does not name the new version');
+  await shot(page, 'update-available', false);
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Tab');
+    expect(await focusInDialog(page), `Tab ${i + 1} left the update popup`);
+  }
+  for (let i = 0; i < 6; i++) {
+    await page.keyboard.press('Shift+Tab');
+    expect(await focusInDialog(page), `Shift+Tab ${i + 1} left the update popup`);
+  }
+  await mock(page, `m.setState({ busy: 'backup' });`);
+  expect(await page.isDisabled('#update-now'), 'Update now is enabled while a backup runs');
+  expect((await page.textContent('#update-dialog'))?.includes('A backup is running') === true, 'the update popup does not say to wait for the backup');
+  await shot(page, 'update-available-busy', false);
+  await mock(page, `m.setState({ busy: null });`);
+  await page.waitForSelector('#update-now:enabled');
+  await page.keyboard.press('Escape');
+  await page.waitForSelector('#update-reopen');
+  expect(!(await dialogOpen(page)), 'Escape did not close the update popup');
+  expect((await calls(page)).some((c) => c.method === 'postponeUpdate'), 'Escape did not count as Later');
+  await shot(page, 'update-later', false);
+  await page.click('#update-reopen');
+  await page.waitForSelector('#update-dialog[open]');
+  await page.click('#update-later');
+  await page.waitForSelector('#update-reopen');
+  await page.click('#update-reopen');
+  await page.click('#update-now');
+  await page.waitForSelector('#update-dialog .progress');
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(100);
+  expect(await dialogOpen(page), 'Escape closed the popup while the download runs');
+  await page.waitForSelector('#update-quit', { timeout: 10000 });
+  await shot(page, 'update-installer-open', false);
+  await page.click('#update-quit');
+  expect((await calls(page)).some((c) => c.method === 'quitApp'), 'Quit ChartKeeper did not ask the app to quit');
+  await setUpdate(page, { k: 'downloading', percent: 42, ...release });
+  await page.waitForSelector('[role=progressbar][aria-valuenow="42"]');
+  await shot(page, 'update-downloading', false);
+  await mock(page, `m.setState({ platform: 'win32' });`);
+  await setUpdate(page, { k: 'downloading', percent: 100, ...release, how: 'restart' });
+  expect((await page.textContent('#update-dialog'))?.includes('opens again by itself') === true, 'a finished download on Windows does not say ChartKeeper restarts');
+  await shot(page, 'update-restarting', false);
+  await setUpdate(page, { k: 'failed', message: 'net::ERR_CONNECTION_RESET while downloading ChartKeeper-1.0.0-rc.11-mac-universal.dmg', ...release });
+  await page.waitForSelector('#update-github');
+  await page.click('#update-dialog .details summary');
+  await shot(page, 'update-failed', false);
+  await page.click('#update-github');
+  expect((await calls(page)).some((c) => c.method === 'openReleasePage'), 'Download from GitHub did not open the releases page');
+  await page.click('#update-close');
+  await page.waitForSelector('#update-reopen');
+  await page.close();
+
+  page = await open({ size: { width: 1000, height: 700 } });
+  await setUpdate(page, { k: 'available', ...release, how: 'restart' });
+  await page.waitForSelector('#update-dialog[open]');
+  await shot(page, 'update-available-1000x700', false);
   await page.close();
   await browser.close();
   console.log(`${shots.length} screenshots in ${path.relative(ROOT, OUT)}`);

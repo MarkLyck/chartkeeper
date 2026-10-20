@@ -5,6 +5,7 @@ import { refreshTopBar } from './ui/components';
 import { homeScreen } from './ui/home';
 import { restoreScreen } from './ui/restore';
 import type { Ctx, Route, Screen } from './ui/screen';
+import { updateDialog } from './ui/update';
 import { viewScreen } from './ui/view';
 
 const api = (window as unknown as { chartkeeper: ChartKeeperApi }).chartkeeper;
@@ -23,6 +24,9 @@ const ctx: Ctx = {
     mount();
   },
 };
+
+const update = updateDialog(ctx);
+document.body.append(update.el);
 
 function build(r: Route): Screen {
   switch (r.name) {
@@ -49,6 +53,7 @@ function applyState(next: AppState) {
   state = next;
   screen?.onState?.(next);
   refreshTopBar(ctx, root);
+  update.refresh(next);
 }
 
 async function start() {
@@ -56,6 +61,7 @@ async function start() {
   api.onStateChanged(applyState);
   api.onProgress((e) => screen?.onProgress?.(e));
   mount();
+  update.refresh(state);
 }
 
 void start();
