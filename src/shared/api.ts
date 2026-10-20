@@ -4,6 +4,8 @@ import type { Manifest } from '../core/model';
 import type { RestoreResult, RestoreStep, TemplateRestoreResult } from '../core/restore';
 import type { LoadedLayout, SnapshotComparison } from '../core/snapshotView';
 export type { LoadedLayout } from '../core/snapshotView';
+import type { LayoutSlots } from '../core/tv/client';
+export type { LayoutSlots } from '../core/tv/client';
 import type { TvErrorKind } from '../core/tv/errors';
 
 /**
@@ -45,26 +47,16 @@ export interface SnapshotSummary {
   name: string;
   manifest: Manifest | null;
   problem: string | null;
-  /** A copy ChartKeeper took of a layout just before replacing it. */
+  /** A copy older versions of ChartKeeper took of a layout just before replacing it. */
   safetyCopy: boolean;
 }
 
 export type BackupOutcome = BackupResult;
 
-export interface TvLayoutInfo {
+export interface RestoreRequest {
+  snapshotDir: string;
   uid: string;
-  name: string;
 }
-
-export interface RestoreTargets {
-  layouts: TvLayoutInfo[];
-  used: number;
-  limit: number | null;
-  plan: string | null;
-  free: boolean;
-}
-
-export type RestoreRequest = { snapshotDir: string; uid: string } & ({ mode: 'new' } | { mode: 'replace'; targetUid: string; confirmedName: string });
 
 export type RestoreOutcome = RestoreResult;
 
@@ -86,7 +78,8 @@ export interface ChartKeeperApi {
   listSnapshots(): Promise<SnapshotSummary[]>;
   loadLayout(snapshotDir: string, uid: string): Promise<Result<LoadedLayout>>;
   compare(olderDir: string, newerDir: string): Promise<Result<CompareOutcome>>;
-  restoreTargets(): Promise<Result<RestoreTargets>>;
+  /** How many saved layouts the TradingView plan allows and how many are in use. */
+  layoutSlots(): Promise<Result<LayoutSlots>>;
   restore(req: RestoreRequest): Promise<Result<RestoreOutcome>>;
   restoreTemplates(snapshotDir: string): Promise<Result<TemplatesOutcome>>;
   openFolder(dir: string): Promise<void>;
@@ -117,7 +110,7 @@ export const INVOKE_CHANNELS = {
   listSnapshots: 'ck:listSnapshots',
   loadLayout: 'ck:loadLayout',
   compare: 'ck:compare',
-  restoreTargets: 'ck:restoreTargets',
+  layoutSlots: 'ck:layoutSlots',
   restore: 'ck:restore',
   restoreTemplates: 'ck:restoreTemplates',
   openFolder: 'ck:openFolder',

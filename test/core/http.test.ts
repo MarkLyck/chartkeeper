@@ -13,7 +13,6 @@ function fakeTransport(responses: (req: HttpRequest) => HttpResponse) {
       return responses(req);
     },
     user: async () => null,
-    buildTime: async () => null,
   };
   const rate = { minIntervalMs: 1500, jitterMs: 1000, now: () => clock, sleep: async (ms: number) => void (clock += ms) };
   return { http: new PoliteHttp(transport, rate), sent };
@@ -26,6 +25,17 @@ describe('request policy', () => {
     const { http } = fakeTransport(() => ok);
     expect(() => http.send({ method: 'GET', url: 'https://evil.example.com/steal' })).toThrow(/not a TradingView address/);
     expect(() => http.send({ method: 'GET', url: 'https://tradingview.com.evil.example/x' })).toThrow();
+  });
+
+  it('refuses a write that could change or delete something on TradingView, and never hands it to the page', async () => {
+    const { http, sent } = fakeTransport(() => ok);
+    const send = async (req: HttpRequest) => http.send(req);
+    await expect(send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/save/', form: { name: 'x', image_url: 'Ab12' } })).rejects.toThrow(/refused to send POST .*"image_url"/);
+    await expect(send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/delete/', json: { uid: ['Ab12'] } })).rejects.toThrow(/not one of the addresses/);
+    await expect(send({ method: 'PUT', url: 'https://charts-storage.tradingview.com/charts-storage/layout/Ab12/sources', json: { sources: { a: null } } } as unknown as HttpRequest)).rejects.toThrow(/PUT requests/);
+    expect(sent).toEqual([]);
+    await http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
+    expect(sent.map((s) => s.req.method)).toEqual(['GET']);
   });
 
   it('waits at least 1.5 seconds between requests', async () => {
@@ -62,8 +72,7 @@ describe('network failures', () => {
         throw new Error('net::ERR_INTERNET_DISCONNECTED');
       },
       user: async () => null,
-      buildTime: async () => null,
-    };
+      };
     return { http: new PoliteHttp(transport, { minIntervalMs: 0, jitterMs: 0, now: () => clock, sleep: async (ms) => void (clock += ms) }), sent };
   };
 
@@ -87,8 +96,7 @@ describe('network failures', () => {
         return ok;
       },
       user: async () => null,
-      buildTime: async () => null,
-    };
+      };
     const http = new PoliteHttp(transport, { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} });
     const save = http.send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/save/', form: {} });
     const list = http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
@@ -136,9 +144,9 @@ describe('the code that runs inside the TradingView page', () => {
   });
 
   it('sends JSON with its content type, and returns status, type and body', async () => {
-    const res = await pageFetch({ method: 'PUT', url: `${base}/sources`, json: { sources: { a: null } }, headers: { 'X-BUILD-TIME': 'bt' } });
+    const res = await pageFetch({ method: 'POST', url: `${base}/study-templates`, json: { name: 'RSI' } });
     expect(res).toEqual({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
-    expect(seen[0]).toMatchObject({ method: 'PUT', body: '{"sources":{"a":null}}', headers: { 'content-type': 'application/json', 'x-build-time': 'bt' } });
+    expect(seen[0]).toMatchObject({ method: 'POST', body: '{"name":"RSI"}', headers: { 'content-type': 'application/json' } });
   });
 
   it('sends a form as multipart fields, like the web app', async () => {
@@ -146,6 +154,11 @@ describe('the code that runs inside the TradingView page', () => {
     expect(seen[0]!.headers['content-type']).toMatch(/^multipart\/form-data; boundary=/);
     expect(seen[0]!.body).toMatch(/name="name"\r\n\r\nMy layout\r\n/);
     expect(seen[0]!.body).toMatch(/name="content"\r\n\r\n\{"charts":\[\]\}\r\n/);
+  });
+
+  it('never answers from the cache, so a name list read before an add is current', async () => {
+    await pageFetch({ method: 'GET', url: `${base}/themes/` });
+    expect(seen[0]!.headers['cache-control']).toBe('no-cache');
   });
 
   it('does not follow the redirect TradingView sends a signed-out visitor', async () => {

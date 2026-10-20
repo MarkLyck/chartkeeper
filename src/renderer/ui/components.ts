@@ -3,7 +3,7 @@ import { explainError, t } from '../i18n';
 import { h, type Child } from './dom';
 import type { Ctx, Route } from './screen';
 
-type ButtonKind = 'primary' | 'secondary' | 'link' | 'danger';
+type ButtonKind = 'primary' | 'secondary' | 'link';
 
 export function button(label: string, onClick: () => void, opts: { kind?: ButtonKind; id?: string; disabled?: boolean; big?: boolean } = {}): HTMLButtonElement {
   const kind = opts.kind ?? 'secondary';
@@ -166,28 +166,3 @@ export function spinner(label: string): HTMLElement {
   return h('p', { class: 'loading', attrs: { role: 'status' } }, h('span', { class: 'spinner', attrs: { 'aria-hidden': 'true' } }), label);
 }
 
-/** A modal yes/no question. Resolves true only for an explicit yes. */
-export function confirmDialog(opts: { title: string; body: string; yes: string; no: string; danger?: boolean }): Promise<boolean> {
-  return new Promise((resolve) => {
-    const dialog = h('dialog', { class: 'dialog', attrs: { 'aria-labelledby': 'dialog-title' } });
-    const close = (answer: boolean) => {
-      dialog.close();
-      dialog.remove();
-      resolve(answer);
-    };
-    dialog.append(
-      h('h2', { id: 'dialog-title', class: 'dialog-title' }, opts.title),
-      h('p', {}, opts.body),
-      h('div', { class: 'actions actions-end' },
-        button(opts.no, () => close(false), { id: 'dialog-no' }),
-        button(opts.yes, () => close(true), { kind: opts.danger ? 'danger' : 'primary', id: 'dialog-yes' })),
-    );
-    dialog.addEventListener('cancel', (e) => {
-      e.preventDefault();
-      close(false);
-    });
-    document.body.append(dialog);
-    dialog.showModal();
-    (dialog.querySelector('#dialog-no') as HTMLButtonElement).focus();
-  });
-}

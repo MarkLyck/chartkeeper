@@ -6,8 +6,9 @@ computer. You can look at your charts without internet, and you can put a
 chart back on TradingView from any backup.
 
 ChartKeeper is not made by TradingView. It uses the same requests as the
-TradingView website. It only reads your charts when it takes a backup, and it
-only changes something on TradingView when you ask it to restore a chart.
+TradingView website. It only reads your charts when it takes a backup. When
+you restore a chart, it adds a new layout. ChartKeeper never changes or
+deletes anything you already have on TradingView.
 
 ## 1. Install
 
@@ -127,23 +128,36 @@ and indicators were added, removed or moved between two backups.
 
 1. Click **Restore a chart**.
 2. Pick the backup and the layout.
-3. Choose **As a new layout** (recommended). This adds a new layout called
-   "<name> (restored <date>)" and doesn't change anything else.
-   If your TradingView plan has no free layout slot, ChartKeeper tells you
-   and explains your options.
+3. Check the name the new layout will get: "<name> (restored <date> <time>)".
+   If your TradingView plan has no free layout slot, ChartKeeper tells you.
+   Then delete a layout you no longer use on TradingView, or upgrade your
+   plan, and try again.
 4. Click **Restore**. ChartKeeper then opens the new layout itself and checks
    that all drawings and indicators came back. You see the result as a
    table.
 
 ![Restore result](docs/screenshots/restore-done.png)
 
-**Replace one of my layouts.** You can also replace one of your existing layouts. To
-do that, you must type the layout's name to confirm. ChartKeeper first saves
-a safety copy of the layout it replaces, in the folder `safety-copies`.
-
 **Templates.** **Restore my templates and themes** adds drawing templates,
 indicator templates and colour themes from a backup that are missing in your
-account. It never changes existing ones.
+account. If you already have one with the same name, even with other capital
+letters, ChartKeeper leaves yours alone.
+
+**Your charts on TradingView are safe.** ChartKeeper never changes or deletes
+anything on TradingView:
+
+- A restore always makes a new layout. It never saves over a layout you have.
+- Templates and themes are only added under names you don't have yet.
+- ChartKeeper checks every request before it goes to TradingView. Only four
+  kinds of request may change anything there, and each one only adds
+  something new. ChartKeeper lets one through only while it is sending that
+  request itself. Any other request that would change something is stopped
+  on your computer, including any that TradingView's own pages try, such as
+  the page ChartKeeper opens to check a restored chart.
+
+Earlier versions of ChartKeeper could replace a layout, and kept a copy of
+the old layout in the folder `safety-copies`. You can still look at those
+copies under **Backups**.
 
 ## What is not backed up
 
@@ -188,6 +202,15 @@ save prices so charts can be viewed offline** in the settings.
 - `src/core/` holds the TradingView client, backup, restore, diff and snapshot
   format, with no Electron code. `src/core/tv/` is the only folder that knows
   TradingView URLs and response shapes.
+- `src/core/tv/writePolicy.ts` lists the only writes ChartKeeper may send, and
+  each one creates something new. `PoliteHttp` refuses every other write
+  before it reaches the page. The private session lets a write out only when
+  it is one of those four and ChartKeeper's hidden page registered it right
+  before sending it (`expectWrite` in `src/main/tvSession.ts`), once. Every
+  other write is cancelled, so TradingView's own code in any page can't send
+  one.
+  `test/core/neverChangesTradingView.test.ts` backs up and restores a fake
+  account and checks that nothing that existed changed.
 - `src/main/` is the Electron app process (sign-in, private session, tray,
   daily schedule). `src/renderer/` is the window, and `src/renderer/viewer/`
   is the offline chart viewer (Lightweight Charts, Apache 2.0). It draws

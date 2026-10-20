@@ -81,7 +81,7 @@ describe('restore keeps every feature', () => {
   it('the restore sends TradingView every drawing, indicator and chart setting', async () => {
     for (const expected of account.expected) {
       const before = tv.requests.length;
-      await restoreLayout(client(), snapshot, expected.uid, { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'journal.json')), buildTime: null });
+      await restoreLayout(client(), snapshot, expected.uid, { journal: new RestoreJournal(path.join(root, 'journal.json')) });
       const saves = tv.requests.slice(before).filter((r) => r.method === 'POST' && r.url.endsWith('/api/v1/charts/save/'));
       expect(saves, `one save request for ${expected.uid}`).toHaveLength(1);
       const form = saves[0]!.form!;

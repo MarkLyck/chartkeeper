@@ -1,14 +1,14 @@
 import { TvError } from './errors';
 import { isAllowedUrl } from './endpoints';
+import { writeRefusal } from './writePolicy';
 
 export interface HttpRequest {
-  method: 'GET' | 'POST' | 'PUT';
+  method: 'GET' | 'POST';
   url: string;
   /** Sent as application/json. */
   json?: unknown;
   /** Sent as multipart/form-data, like the web app's FormData requests. */
   form?: Record<string, string>;
-  headers?: Record<string, string>;
 }
 
 export interface HttpResponse {
@@ -33,7 +33,6 @@ export interface PageUser {
 export interface PageTransport {
   send(req: HttpRequest): Promise<HttpResponse>;
   user(): Promise<PageUser | null>;
-  buildTime(): Promise<string | null>;
 }
 
 /**
@@ -41,9 +40,10 @@ export interface PageTransport {
  * outside itself, because it is serialized with `toString()`.
  */
 export async function pageFetch(req: HttpRequest): Promise<HttpResponse> {
-  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual', headers: { ...(req.headers ?? {}) } };
+  // A name list read right before an add must be the account's current one, never a cached copy.
+  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual', cache: 'no-store' };
   if (req.json !== undefined) {
-    (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
+    init.headers = { 'Content-Type': 'application/json' };
     init.body = JSON.stringify(req.json);
   } else if (req.form) {
     const fd = new FormData();
@@ -75,9 +75,10 @@ const realSleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
 /**
  * Wraps a transport with ChartKeeper's request policy: only TradingView hosts,
- * one request at a time, a pause of 1.5 to 2.5 s between requests, and retries
- * with back-off on 429 and 5xx for reads. Writes are never retried, so a
- * timeout can't create two copies of a layout.
+ * only the writes `writeRefusal` allows, one request at a time, a pause of
+ * 1.5 to 2.5 s between requests, and retries with back-off on 429 and 5xx for
+ * reads. Writes are never retried, so a timeout can't create two copies of a
+ * layout.
  */
 export class PoliteHttp {
   private last = 0;
@@ -95,6 +96,8 @@ export class PoliteHttp {
 
   send(req: HttpRequest): Promise<HttpResponse> {
     if (!isAllowedUrl(req.url)) throw new Error(`Refusing to contact ${req.url}: not a TradingView address.`);
+    const refused = writeRefusal(req);
+    if (refused) throw new Error(`ChartKeeper refused to send ${req.method} ${req.url}: ${refused}`);
     const run = this.queue.then(() => this.sendWithRetry(req));
     this.queue = run.catch(() => undefined);
     return run;

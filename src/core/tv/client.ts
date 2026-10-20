@@ -4,6 +4,7 @@ import { TvContentSchema } from './content';
 import { formatChanged, TvError } from './errors';
 import { PLAN_LAYOUT_LIMITS, TEMPLATE_TOOLS, urls } from './endpoints';
 import type { HttpResponse, PageUser, PoliteHttp } from './http';
+import type { LayoutForm } from './writePolicy';
 
 /** One saved layout as listed by TradingView. */
 export interface LayoutListEntry {
@@ -20,6 +21,12 @@ const obj = z.record(z.string(), z.unknown());
 
 /** Told how many of a list's items are fetched: first (0, n) once the list is known, then after each item. */
 export type OnEach = (done: number, total: number) => void;
+
+/** What adding a template or theme did: TradingView saves them by name, over any it has, so a taken name is left alone. */
+export type AddResult = 'added' | 'exists';
+
+const normalName = (s: string) => s.normalize('NFKC').replace(/\s+/g, ' ').trim().toLowerCase();
+const nameTaken = (names: string[], name: string) => names.some((n) => normalName(n) === normalName(name));
 
 const LayoutJsonSchema = z.object({
   content: z.string().nullable().optional(),
@@ -47,13 +54,8 @@ const SizesResponseSchema = z.object({
   payload: z.object({ countSourcesTotal: z.number().optional(), charts: z.record(z.string(), z.unknown()).optional() }).passthrough().nullable(),
 });
 
-const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string(), last_modified: z.number().optional() });
-
-export interface SaveLayoutInput {
-  fields: Record<string, string>;
-  /** Overwrite this layout. Omit to create a new one. */
-  replaceUid?: string;
-}
+/** The new layout's id goes into later addresses and the restore journal, so it must look like one: TradingView's are 8 letters and digits. */
+const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string().regex(/^[A-Za-z0-9]{6,}$/), last_modified: z.number().optional() });
 
 function parseJson(res: HttpResponse, what: string): unknown {
   try {
@@ -213,15 +215,19 @@ export class TvClient {
     return { total: r.payload?.countSourcesTotal ?? null, chartIds: Object.keys(r.payload?.charts ?? {}) };
   }
 
+  private async studyTemplateList(): Promise<Record<string, unknown>[]> {
+    return parse(z.object({ custom: z.array(obj).default([]) }).passthrough(), await this.getJson(urls.studyTemplates, 'indicator templates'), 'indicator templates').custom;
+  }
+
   async studyTemplates(onEach?: OnEach): Promise<Record<string, unknown>[]> {
-    const list = parse(z.object({ custom: z.array(obj).default([]) }).passthrough(), await this.getJson(urls.studyTemplates, 'indicator templates'), 'indicator templates');
+    const list = await this.studyTemplateList();
     const out: Record<string, unknown>[] = [];
-    onEach?.(0, list.custom.length);
-    for (const t of list.custom) {
+    onEach?.(0, list.length);
+    for (const t of list) {
       const id = t.id;
       if (typeof id !== 'number' && typeof id !== 'string') throw formatChanged('indicator template without id', JSON.stringify(t).slice(0, 200));
       out.push({ ...t, ...parse(obj, await this.getJson(urls.studyTemplate(id), `indicator template "${String(t.name)}"`), 'indicator template') });
-      onEach?.(out.length, list.custom.length);
+      onEach?.(out.length, list.length);
     }
     return out;
   }
@@ -230,19 +236,29 @@ export class TvClient {
     return parse(z.array(z.string()), await this.getJson(urls.drawingTemplates(tool), `${tool} templates`), `${tool} templates`);
   }
 
-  async addDrawingTemplate(tool: string, name: string, content: unknown): Promise<void> {
-    const res = await this.http.send({ method: 'POST', url: urls.saveDrawingTemplate, form: { name, tool, content: JSON.stringify(content) } });
-    check(res, `drawing template "${name}"`);
-  }
-
-  async addStudyTemplate(t: { name: string; content: unknown; meta_info: unknown }): Promise<void> {
+  /** Adds an indicator template unless one has that name. Never overwrites. */
+  async addStudyTemplate(t: { name: string; content: unknown; meta_info: unknown }): Promise<AddResult> {
+    const names = parse(z.array(z.object({ name: z.string() }).passthrough()), await this.studyTemplateList(), 'indicator template names').map((e) => e.name);
+    if (nameTaken(names, t.name)) return 'exists';
     const res = await this.http.send({ method: 'POST', url: urls.studyTemplates, json: { name: t.name, content: t.content, meta_info: t.meta_info ?? { indicators: [] } } });
     check(res, `indicator template "${t.name}"`);
+    return 'added';
   }
 
-  async addTheme(name: string, content: unknown): Promise<void> {
+  /** Adds a drawing template unless the tool has one with that name. Never overwrites. */
+  async addDrawingTemplate(tool: string, name: string, content: unknown): Promise<AddResult> {
+    if (nameTaken(await this.drawingTemplateNames(tool), name)) return 'exists';
+    const res = await this.http.send({ method: 'POST', url: urls.saveDrawingTemplate, form: { name, tool, content: JSON.stringify(content) } });
+    check(res, `drawing template "${name}"`);
+    return 'added';
+  }
+
+  /** Adds a color theme unless one has that name. Never overwrites. */
+  async addTheme(name: string, content: unknown): Promise<AddResult> {
+    if (nameTaken(await this.themeNames(), name)) return 'exists';
     const res = await this.http.send({ method: 'POST', url: urls.saveTheme, form: { name, content: JSON.stringify(content) } });
     check(res, `theme "${name}"`);
+    return 'added';
   }
 
   /** TradingView only lists drawing templates one tool at a time, so this asks about every tool: about 90 requests. `onEach` counts tools. */
@@ -261,11 +277,15 @@ export class TvClient {
     return out;
   }
 
-  async themes(onEach?: OnEach): Promise<Record<string, unknown>> {
+  async themeNames(): Promise<string[]> {
     const v = await this.getJson(urls.themes, 'color themes');
     // An account without themes answers {"content": ""}.
-    const empty = z.object({ content: z.literal('') }).safeParse(v).success;
-    const names = empty ? [] : parse(z.array(z.string()), v, 'color themes');
+    if (z.object({ content: z.literal('') }).safeParse(v).success) return [];
+    return parse(z.array(z.string()), v, 'color themes');
+  }
+
+  async themes(onEach?: OnEach): Promise<Record<string, unknown>> {
+    const names = await this.themeNames();
     const out: Record<string, unknown> = {};
     onEach?.(0, names.length);
     for (const [i, name] of names.entries()) {
@@ -295,27 +315,13 @@ export class TvClient {
     return layoutSlots(parseJson(res, 'layout count'), listLength, this.user.plan);
   }
 
-  /** Create (or, with replaceUid, overwrite) a layout. Never retried. */
-  async saveLayout(input: SaveLayoutInput): Promise<{ id: number; uid: string }> {
-    const form = { ...input.fields };
-    if (input.replaceUid) form.image_url = input.replaceUid;
+  /** Creates a new layout. Never retried. */
+  async createLayout(form: LayoutForm): Promise<{ id: number; uid: string }> {
     const res = await this.http.send({ method: 'POST', url: urls.saveLayout, form });
     if (res.status === 403 && /limit|paywall|over_limit|savedCharts/i.test(res.body))
       throw new TvError('limit-reached', 'Your TradingView plan has no free layout slot.', res.body.slice(0, 300));
     check(res, 'the restored layout');
     const v = parse(SaveResponseSchema, parseJson(res, 'save result'), 'save result');
     return { id: v.id, uid: v.image_url };
-  }
-
-  /** Write drawings to the drawing storage. `null` removes a drawing. */
-  async putDrawings(uid: string, chartId: string, token: string, sources: Record<string, Record<string, unknown> | null>, buildTime: string | null): Promise<void> {
-    const res = await this.http.send({
-      method: 'PUT',
-      url: urls.putLayoutSources(uid, chartId, token),
-      json: { sources, drawing_groups: {}, clientId: `/${chartId}/chartkeeper` },
-      headers: buildTime ? { 'X-BUILD-TIME': buildTime } : {},
-    });
-    check(res, `drawings of chart ${chartId}`);
-    parse(z.object({ success: z.literal(true) }).passthrough(), parseJson(res, 'drawing save result'), 'drawing save result');
   }
 }

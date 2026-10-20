@@ -13,8 +13,17 @@ export interface FakeLayout {
 }
 
 /**
+ * TradingView saves templates and themes by name, over one it has. Whether it
+ * matches names regardless of case and spaces is not known, so the fake
+ * assumes the worse case for the existing one: it does.
+ */
+const sameName = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const keyFor = (o: Record<string, unknown>, name: string) => Object.keys(o).find((k) => sameName(k, name)) ?? name;
+
+/**
  * An in-memory stand-in for the parts of tradingview.com ChartKeeper uses,
- * following the request and response formats in docs/INVESTIGATION.md.
+ * following the request and response formats in docs/INVESTIGATION.md,
+ * including how a save overwrites what it names.
  */
 export class FakeTradingView implements PageTransport {
   layouts = new Map<string, FakeLayout>();
@@ -32,9 +41,6 @@ export class FakeTradingView implements PageTransport {
 
   user(): Promise<PageUser | null> {
     return Promise.resolve(this.account);
-  }
-  buildTime(): Promise<string | null> {
-    return Promise.resolve('2026-10-16T17:55:37');
   }
 
   add(l: FakeLayout) {
@@ -67,7 +73,8 @@ export class FakeTradingView implements PageTransport {
       }
       if (p === '/api/v1/charts/save/' && req.method === 'POST') {
         const f = req.form!;
-        const target = f.image_url;
+        // A save that names a layout, by its uid (image_url) or its number (id), overwrites it.
+        const target = f.image_url ?? (f.id === undefined ? undefined : [...this.layouts.values()].find((l) => String(l.id) === f.id)?.uid);
         if (!target && this.layoutLimit !== null && this.layouts.size >= this.layoutLimit) return json(403, { detail: 'savedChartsLimit', code: 'limit' });
         const uid = target ?? `New${this.nextId}`;
         const existing = target ? this.layouts.get(target) : undefined;
@@ -81,8 +88,10 @@ export class FakeTradingView implements PageTransport {
       if (p === '/api/v1/study-templates' && req.method === 'GET') return json(200, { custom: this.studyTemplates.map(({ content: _c, ...t }) => t), standard: [{ id: 1, name: 'Bill Williams' }] });
       if (p === '/api/v1/study-templates' && req.method === 'POST') {
         const t = req.json as { name: string; content: unknown; meta_info: unknown };
-        this.studyTemplates.push({ id: this.nextId++, name: t.name, content: t.content as { panes: [] }, meta_info: t.meta_info as never });
-        return json(200, { id: 1 });
+        const existing = this.studyTemplates.find((e) => sameName(e.name, t.name));
+        if (existing) Object.assign(existing, { content: t.content, meta_info: t.meta_info });
+        else this.studyTemplates.push({ id: this.nextId++, name: t.name, content: t.content as { panes: [] }, meta_info: t.meta_info as never });
+        return json(200, { id: existing?.id ?? this.nextId - 1 });
       }
       const st = /^\/api\/v1\/study-templates\/(\d+)$/.exec(p);
       if (st) return json(200, this.studyTemplates.find((t) => String(t.id) === st[1]) ?? {});
@@ -92,13 +101,14 @@ export class FakeTradingView implements PageTransport {
       if (dtt) return json(200, { content: JSON.stringify(this.drawingTemplates[dtt[1]!]?.[u.searchParams.get('templateName')!]) });
       if (p === '/save-drawing-template/') {
         const f = req.form!;
-        (this.drawingTemplates[f.tool!] ??= {})[f.name!] = JSON.parse(f.content!);
+        const templates = (this.drawingTemplates[f.tool!] ??= {});
+        templates[keyFor(templates, f.name!)] = JSON.parse(f.content!);
         return json(200, {});
       }
       if (p === '/themes/') return json(200, Object.keys(this.themes));
       if (p === '/theme/') return json(200, { content: JSON.stringify(this.themes[u.searchParams.get('themeName')!]) });
       if (p === '/save-theme/') {
-        this.themes[req.form!.name!] = JSON.parse(req.form!.content!);
+        this.themes[keyFor(this.themes, req.form!.name!)] = JSON.parse(req.form!.content!);
         return json(200, {});
       }
     }
@@ -113,12 +123,6 @@ export class FakeTradingView implements PageTransport {
       if (p.startsWith('/charts-storage/get/layout/')) {
         if (this.storageIgnoresCookies) return json(200, { success: true, payload: { sources: {} } });
         return json(200, { success: true, payload: { sources: l.storage[chartId] ?? {}, drawing_groups: {}, clientId: 'x' } });
-      }
-      if (req.method === 'PUT') {
-        const body = req.json as { sources: Record<string, Record<string, unknown> | null> };
-        const bucket = (l.storage[chartId] ??= {});
-        for (const [id, v] of Object.entries(body.sources)) v === null ? delete bucket[id] : (bucket[id] = v);
-        return json(200, { success: true, payload: { serverUpdateTime: 1 } });
       }
     }
 

@@ -147,6 +147,7 @@ separate service:
 - Write: `PUT <base>/layout/<layout id>/sources?...` with JSON
   `{sources: {<id>: dto | null}, drawing_groups: {...}, clientId}` and header
   `X-BUILD-TIME` (the page global `BUILD_TIME`). `null` removes a drawing.
+  ChartKeeper never sends this request, and its session cancels it.
 - Counts: `GET <base>/layout/<layout id>/sizes?layout_id=...&jwt=...` returns
   `{charts: {<chartId>: {symbols: {<symbol>: {countSources, sizeBytes, ids}}}}, countSourcesTotal}`.
 - Responses are `{success: true, payload: {sources, drawing_groups, clientId, symbol?}}`.
@@ -172,6 +173,11 @@ restore relies on this path (see "Restore design").
 | Drawing templates | `GET /drawing-templates/<LineToolName>/` → `["name", ...]` | `GET /drawing-template/<LineToolName>/?templateName=<name>` → `{content: "<json>"}` | `POST /save-drawing-template/` form `name, tool, content` |
 | Color themes | `GET /themes/` → names | `GET /theme/?themeName=<name>` | `POST /save-theme/` form `name, content` |
 | Pine scripts | `GET https://pine-facade.tradingview.com/pine-facade/list?filter=saved` → `[{scriptIdPart, scriptName, version, ...}]` | `GET .../pine-facade/get/<scriptIdPart>/<version>` → `{source, scriptName, ...}` | Not automated. The README explains how to paste a script into the Pine editor. |
+
+Each write saves by name. ChartKeeper treats a save under a name the account
+already has as an overwrite. So right before each add it reads the names the
+account has, compares them ignoring case and spacing, and skips a name that
+is taken.
 
 The list of drawing tool names (`LineToolTrendLine`, `LineToolFibRetracement`,
 ...) is in bundle `3233.*.js`, module `899801` (`supportedLineTools`).
@@ -342,26 +348,54 @@ Two options:
    creates a new layout from exactly the stored JSON. Drawings from the storage
    service are put back into `content` as pane sources, the same format
    `ChartSaver` writes when the storage service is down, so one request
-   restores the whole layout. The app's loader shows them and moves them to
-   storage itself.
+   restores the whole layout. The app's loader shows them, and moves them to
+   storage itself when the user opens the layout in a browser.
 2. **Drive the web UI.** Open the chart page, load the state into the app with
    `loadLayoutState`, then call the app's own "Save as". This reuses all of
    TradingView's save logic. It depends on private JavaScript objects, and it
    runs inside a page whose autosave can overwrite the layout that is open.
 
 We chose option 1. It is a single request whose effect we fully control, it
-never touches an existing layout unless the user confirms "Replace", and the
-server stores exactly the backed-up JSON. We did not build option 2 as a
-fallback, because an autosave mistake there could overwrite the user's open
-layout, which is the one failure ChartKeeper must never cause.
+never touches an existing layout, and the server stores exactly the
+backed-up JSON. We did not build option 2 as a fallback, because an autosave
+mistake there could overwrite the user's open layout, which is the one
+failure ChartKeeper must never cause.
 
-**Replace an existing layout** sends the same request with `image_url` set,
-only after an explicit confirmation, and only after ChartKeeper makes a fresh
-backup of the layout it is about to replace. The saved content then holds
-every backed-up drawing, so ChartKeeper removes all of that layout's drawings
-from the drawing storage; otherwise old drawings would reappear on top of the
-restored ones. A second confirmed "Replace" overwrites again with a new safety
-copy.
+A restore only ever creates a new layout. Earlier versions could also
+replace a layout (the same request with `image_url`, after saving a safety
+copy). That was removed: ChartKeeper must never change or delete anything
+that already exists on TradingView.
+
+**Write policy.** `src/core/tv/writePolicy.ts` lists the only writes
+ChartKeeper may send, and each one creates something new:
+
+| Write | Request | Fields it may carry |
+| --- | --- | --- |
+| Create a layout | `POST /api/v1/charts/save/`, multipart | the fields `saveForm` sends; never `image_url` or `id` |
+| Add an indicator template | `POST /api/v1/study-templates`, JSON | `name`, `content`, `meta_info` |
+| Add a drawing template | `POST /save-drawing-template/`, multipart | `name`, `tool`, `content` |
+| Add a theme | `POST /save-theme/`, multipart | `name`, `content` |
+
+The address must match exactly, so a query string is refused too. Any other
+method than `GET`, `HEAD` and `OPTIONS` is refused. The policy is checked
+twice. `PoliteHttp` checks each request ChartKeeper builds before it reaches
+the page. The private session's `webRequest.onBeforeRequest` filter reads
+each request's method, address and raw body (Chromium hands a `FormData` of
+strings over as plain bytes) and cancels any write the policy refuses. A body
+that is not plain bytes, such as the gzipped `blob.gz` part the web app
+sends, is refused because it cannot be read.
+
+The policy alone would let TradingView's own code send one of the four
+writes, for example a template under a name the account already has, which
+overwrites it. So the session also needs ChartKeeper to have registered the
+write: `ElectronPageTransport.send` registers `METHOD url` for its own page's
+webContents right before it runs the request, and withdraws it afterwards.
+The filter lets a write through only when the policy allows it and a matching
+registration for the same webContents exists, and uses that registration up.
+Every other write is cancelled: from TradingView's code in ChartKeeper's own
+page, from the chart page the restore check opens (its autosave cannot save
+over the new layout or move its drawings), and from requests with no page,
+such as a service worker's.
 
 **Verification** reloads the new layout with `GET /chart/<id>/json/` plus its
 storage buckets, and compares the drawing ids and indicator count with the
@@ -374,9 +408,9 @@ can't be checked, the result says so.
 
 Free: 1 layout. Essential: 5. Plus: 10. Premium and Ultimate: unlimited.
 Before a restore, ChartKeeper reads `/api/v1/charts/count/` and the plan from
-`window.user`. If no slot is free, it stops and explains that the user must delete or
-"Replace" a layout, or upgrade. If the server still refuses the save with the
-limit error, the same message appears.
+`window.user`. If no slot is free, it stops and explains that the user must delete a
+layout on TradingView or upgrade. If the server still refuses the save with
+the limit error, the same message appears.
 
 ## Open risks
 

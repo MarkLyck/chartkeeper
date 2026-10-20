@@ -3,8 +3,8 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { ElectronApplication, Page } from 'playwright-core';
 import type { Manifest } from '../../src/core/model';
-import { isTradingViewHost } from '../../src/core/tv/endpoints';
-import type { FakeControl, FakeSeed, Scenario } from '../fakes/fakeTradingViewApp';
+import { isTradingViewHost, ORIGIN, urls } from '../../src/core/tv/endpoints';
+import { PAGE_WRITE_MARK, PAGE_WRITES_REPORT, type FakeControl, type FakeSeed, type Scenario } from '../fakes/fakeTradingViewApp';
 import type { FakeLayout } from '../fakes/fakeTradingView';
 import { referenceInAccount } from '../fakes/fixtures';
 import { launchApp, ROOT } from './launch';
@@ -22,7 +22,7 @@ const shot = async (window: Page, name: string) => {
 /** Min AAPL: the reference layout as a real account stores it (11 drawings, 2 indicators). */
 const minAapl = () => referenceInAccount('AbCd1234', 'Min AAPL');
 
-/** A second layout with the same chart and no drawings, to be replaced. */
+/** A second layout with the same chart and no drawings. */
 function scratchPad(): FakeLayout {
   const l = referenceInAccount('Scr4tch01', 'Scratch pad');
   for (const pane of l.content.charts[0]!.panes) pane.sources = pane.sources.filter((s) => !String(s.type).startsWith('LineTool'));
@@ -61,6 +61,9 @@ describe('every flow against a fake TradingView', () => {
   let app: ElectronApplication;
   let window: Page;
   let backups: string;
+  /** The layouts, templates and themes on TradingView before ChartKeeper did anything, as the user left them. */
+  let existing: FakeLayout[];
+  let existingTemplates: Awaited<ReturnType<typeof fake.templates>>;
   const errors: string[] = [];
   const seed: FakeSeed = { layouts: [minAapl(), scratchPad()], plan: 'pro_premium', signedIn: false, scheduleEveryMs: 15 * 60_000 };
 
@@ -71,6 +74,11 @@ describe('every flow against a fake TradingView', () => {
     requests: () => app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.tv.requests.map((r) => ({ method: r.method, url: r.url, form: r.form ?? null }))),
     clearRequests: () => app.evaluate(() => void ((globalThis as unknown as G).__chartkeeperFake.tv.requests = [])),
     setPlan: (plan: string) => app.evaluate((_e, plan) => void ((globalThis as unknown as G).__chartkeeperFake.tv.account!.plan = plan), plan),
+    templates: () =>
+      app.evaluate(() => {
+        const tv = (globalThis as unknown as G).__chartkeeperFake.tv;
+        return { studies: tv.studyTemplates, drawing: tv.drawingTemplates, themes: tv.themes };
+      }),
   };
 
   const goHome = async () => {
@@ -96,7 +104,7 @@ describe('every flow against a fake TradingView', () => {
     await toRestoreNewestBackup();
     await window.locator('label.choice', { hasText: layout }).click();
     await window.locator('#restore-next').click();
-    await window.locator('#mode-new').waitFor({ timeout: 30_000 });
+    await window.locator('#restore-start').waitFor({ timeout: 30_000 });
   };
 
   /** Waits for the restore to end and returns the result's class: result-success, result-warning or result-error. */
@@ -114,6 +122,8 @@ describe('every flow against a fake TradingView', () => {
     window.on('pageerror', (e) => errors.push(String(e)));
     window.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     await window.locator('#go-backup').waitFor();
+    existing = await fake.layouts();
+    existingTemplates = await fake.templates();
   });
   afterAll(async () => app?.close());
 
@@ -196,6 +206,9 @@ describe('every flow against a fake TradingView', () => {
       for (const p of copy.state.points) p.price = 123.456;
       l.storage['1']!.e2eAdded1 = copy;
     });
+    // The user drew on TradingView: that is now how the layout should stay.
+    existing = await fake.layouts();
+    existingTemplates = await fake.templates();
     await backUp();
     await expect(window.locator('.result-success .result-lead').textContent()).resolves.toBe('2 layouts and 12 drawings are saved on this computer.');
     const [older] = await snapshotsOnDisk(backups);
@@ -213,12 +226,13 @@ describe('every flow against a fake TradingView', () => {
   it('restores a layout as a new layout, and TradingView shows all of it', async () => {
     await fake.clearRequests();
     await toHowStep('Min AAPL');
-    await expect(window.locator('#mode-new').isChecked()).resolves.toBe(true);
+    await expect(window.locator('#mode-replace, #target-pick, input[name=mode], main select, main input[type=text]').count(), 'the restore screen offers a way to overwrite a layout').resolves.toBe(0);
+    await expect(window.locator('main').textContent()).resolves.toContain('Nothing on TradingView is changed or deleted.');
     await expect(window.locator('#restore-start').isEnabled()).resolves.toBe(true);
     await window.locator('#restore-start').click();
     await expect(restoreResult()).resolves.toBe('result result-success');
     const created = (await fake.layouts()).filter((l) => l.name.startsWith('Min AAPL (restored '));
-    expect(created.map((l) => l.name)).toEqual([expect.stringMatching(/^Min AAPL \(restored \d{4}-\d\d-\d\d\)$/)]);
+    expect(created.map((l) => l.name)).toEqual([expect.stringMatching(/^Min AAPL \(restored \d{4}-\d\d-\d\d \d\d:\d\d\)$/)]);
     await expect(window.locator('.result-title').textContent()).resolves.toBe(`Your layout “${created[0]!.name}” is back on TradingView`);
     const rows = await verifyTable();
     expect(rows.map((r) => r.map((c) => c.text))).toEqual([
@@ -252,41 +266,6 @@ describe('every flow against a fake TradingView', () => {
     }
   });
 
-  it('replaces a layout only after its name is typed and confirmed, keeping a safety copy', async () => {
-    const before = await fake.layout('Scr4tch01');
-    await toHowStep('Min AAPL');
-    await window.locator('#mode-replace').check();
-    await window.locator('#target-pick').selectOption({ label: 'Scratch pad' });
-    const start = window.locator('#restore-start');
-    await window.locator('#confirm-name').fill('Scratch');
-    await expect(start.isDisabled()).resolves.toBe(true);
-    await expect(window.locator('#confirm-name-hint').textContent()).resolves.toBe('The name does not match yet.');
-    await window.locator('#confirm-name').fill('scratch  PAD');
-    await expect(start.isEnabled()).resolves.toBe(true);
-    await expect(window.locator('#confirm-name-hint').textContent()).resolves.toBe('The name matches.');
-    await start.click();
-    await window.locator('dialog #dialog-yes').waitFor();
-    await expect(window.locator('dialog .dialog-title').textContent()).resolves.toContain('Scratch pad');
-    await window.locator('#dialog-yes').click();
-    await expect(restoreResult()).resolves.toBe('result result-success');
-    await expect(window.locator('.result-title').textContent()).resolves.toBe('Your layout “Scratch pad” is back on TradingView');
-    expect((await verifyTable()).flat().filter((c) => c.cls === 'cell-warn')).toEqual([]);
-    await shot(window, '07-restore-replace');
-
-    const [safety, ...more] = await snapshotsOnDisk(backups, 'safety-copies/snapshots');
-    expect(more).toEqual([]);
-    await expect(window.locator('.card-quiet .path').textContent()).resolves.toBe(safety!.dir);
-    expect(safety!.manifest).toMatchObject({ status: 'complete', layouts: [{ uid: 'Scr4tch01', name: 'Scratch pad', drawings: 0 }] });
-    const savedCopy = JSON.parse(await fs.readFile(path.join(safety!.dir, 'layouts/Scr4tch01/layout.json'), 'utf8'));
-    expect(savedCopy.content).toEqual(before.content);
-
-    const after = await fake.layout('Scr4tch01');
-    expect(after.name).toBe('Scratch pad');
-    expect(drawingIdsInContent(before)).toEqual([]);
-    expect(drawingIdsInContent(after)).toHaveLength(12);
-    expect(storedIds(after)).toEqual([]);
-  });
-
   it('adds the templates and themes the account is missing and leaves the others alone', async () => {
     await app.evaluate(() => {
       const tv = (globalThis as unknown as G).__chartkeeperFake.tv;
@@ -308,6 +287,40 @@ describe('every flow against a fake TradingView', () => {
       return { drawing: tv.drawingTemplates, themes: Object.keys(tv.themes), studies: tv.studyTemplates.map((t) => t.name) };
     });
     expect(tv).toEqual({ drawing: { LineToolTrendLine: { 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } } }, themes: ['My dark'], studies: ['My RSI setup'] });
+  });
+
+  it('cancels an overwrite, a template and a theme under taken names, a delete and a drawing change sent from inside a tradingview.com page of its session', async () => {
+    const before = await fake.layout('AbCd1234');
+    const from = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls.length);
+    const results = await app.evaluate(async ({ BrowserWindow }) => {
+      const w = new BrowserWindow({ show: false, webPreferences: { partition: 'persist:tradingview', sandbox: true, contextIsolation: true } });
+      try {
+        await w.loadURL('https://www.tradingview.com/');
+        return await w.webContents.executeJavaScript(`(async () => {
+          const send = (url, init) => fetch(url, { credentials: 'include', ...init }).then((r) => r.status, (e) => e.name);
+          const overwrite = new FormData();
+          for (const [k, v] of Object.entries({ name: 'Overwritten', description: '', is_realtime: '1', content: '{"charts":[]}', image_url: 'AbCd1234' })) overwrite.append(k, v);
+          const json = { 'Content-Type': 'application/json' };
+          const theme = new FormData();
+          theme.append('name', 'My dark');
+          theme.append('content', '{}');
+          return {
+            overwrite: await send('/api/v1/charts/save/', { method: 'POST', body: overwrite }),
+            studyTemplate: await send('/api/v1/study-templates', { method: 'POST', headers: json, body: '{"name":"My RSI setup","content":{},"meta_info":{}}' }),
+            theme: await send('/save-theme/', { method: 'POST', body: theme }),
+            deleteLayout: await send('/api/v1/charts/delete/', { method: 'POST', headers: json, body: '{"uid":["AbCd1234"]}' }),
+            clearDrawings: await send('https://charts-storage.tradingview.com/charts-storage/layout/AbCd1234/sources?chart_id=1&layout_id=AbCd1234&jwt=jwt.AbCd1234.signature', { method: 'PUT', headers: json, body: '{"sources":{}}' }),
+            read: await send('/my-charts/', {}),
+          };
+        })()`, true);
+      } finally {
+        w.destroy();
+      }
+    });
+    expect(results).toEqual({ overwrite: 'TypeError', studyTemplate: 'TypeError', theme: 'TypeError', deleteLayout: 'TypeError', clearDrawings: 'TypeError', read: 200 });
+    const reached = await app.evaluate((_e, from) => (globalThis as unknown as G).__chartkeeperFake.urls.slice(from), from);
+    expect(reached.filter((u) => !/^(GET|OPTIONS) /.test(u)), 'writes that reached TradingView').toEqual([]);
+    expect(await fake.layout('AbCd1234')).toEqual(before);
   });
 
   it('stops the backup and marks it INCOMPLETE in red when TradingView changes its format', async () => {
@@ -387,6 +400,20 @@ describe('every flow against a fake TradingView', () => {
     expect(urls.length).toBeGreaterThan(100);
     expect(urls.filter((u) => !isTradingViewHost(new URL(u.split(' ')[1]!).hostname))).toEqual([]);
     expect(errors).toEqual([]);
+  });
+
+  it('never changed or deleted anything that was already on TradingView, and only ever sent the four creates', async () => {
+    for (const l of existing) expect(await fake.layout(l.uid), `layout "${l.name}"`).toEqual(l);
+    expect(await fake.templates(), 'templates and themes').toEqual(existingTemplates);
+    const creates = [urls.saveLayout, urls.studyTemplates, urls.saveDrawingTemplate, urls.saveTheme].map((u) => `POST ${u}`);
+    const writes = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.writes.map((w) => ({ write: `${w.method} ${w.url}`, body: JSON.stringify(w.form ?? w.json ?? null) })));
+    expect(writes.filter((w) => !creates.includes(w.write))).toEqual([]);
+    expect(writes.filter((w) => w.body.includes(PAGE_WRITE_MARK)), "writes from TradingView's own chart page").toEqual([]);
+
+    const urlsSeen = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls);
+    const reports = urlsSeen.filter((u) => u.startsWith(`GET ${ORIGIN}${PAGE_WRITES_REPORT}`)).map((u) => Object.fromEntries(new URL(u.split(' ')[1]!).searchParams));
+    expect(reports.length, 'times the chart page was opened and tried its writes').toBeGreaterThan(0);
+    for (const r of reports) expect(r).toEqual({ saveLayout: 'TypeError', createLayout: 'TypeError', putDrawings: 'TypeError', studyTemplate: 'TypeError', theme: 'TypeError' });
   });
 });
 

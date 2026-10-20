@@ -34,7 +34,6 @@ export const urls = {
   saveLayout: `${ORIGIN}/api/v1/charts/save/`,
   chartToken: (uid: string, userId: number) => `${ORIGIN}/chart-token/?${q({ image_url: uid, user_id: String(userId) })}`,
   layoutSources: (uid: string, chartId: string, jwt: string) => `${CHART_STORAGE}/get/layout/${encodeURIComponent(uid)}/sources?${q({ chart_id: chartId, layout_id: uid, jwt })}`,
-  putLayoutSources: (uid: string, chartId: string, jwt: string) => `${CHART_STORAGE}/layout/${encodeURIComponent(uid)}/sources?${q({ chart_id: chartId, layout_id: uid, jwt })}`,
   layoutSizes: (uid: string, jwt: string) => `${CHART_STORAGE}/layout/${encodeURIComponent(uid)}/sizes?${q({ layout_id: uid, jwt })}`,
   userSources: (uid: string, jwt: string) => `${CHART_STORAGE}/get/user/sources?${q({ layout_id: uid, jwt })}`,
   studyTemplates: `${ORIGIN}/api/v1/study-templates`,

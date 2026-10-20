@@ -1,9 +1,9 @@
-import { sameLayoutName, type Tally } from '../../core/restorePolicy';
+import { restoredName, type Tally } from '../../core/restorePolicy';
 import type { ManifestLayout } from '../../core/model';
-import type { AppError, RestoreOutcome, RestoreRequest, RestoreTargets, SnapshotSummary, TemplatesOutcome } from '../../shared/api';
+import type { AppError, LayoutSlots, RestoreOutcome, SnapshotSummary, TemplatesOutcome } from '../../shared/api';
 import { formatDateTime, restoreStepText, t, tn } from '../i18n';
 import { templateItemText, templateMissingText } from './changes';
-import { button, confirmDialog, details, errorBox, icons, notice, pageTitle, progressBar, spinner, topBar } from './components';
+import { button, details, errorBox, icons, notice, pageTitle, progressBar, spinner, topBar } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines } from './snapshots';
@@ -13,18 +13,16 @@ interface Source {
   layout: ManifestLayout;
 }
 
-type Mode = 'new' | 'replace';
-
 type Step =
   | { k: 'choose'; snapshotDir: string | null; uid: string | null }
-  | { k: 'how'; source: Source; targets: Loadable<RestoreTargets>; mode: Mode; targetUid: string | null }
+  | { k: 'check'; source: Source; slots: Loadable<LayoutSlots> }
   | { k: 'running'; source: Source; label: string }
   | { k: 'done'; source: Source; outcome: RestoreOutcome }
-  | { k: 'failed'; source: Source; error: AppError; mode: Mode };
+  | { k: 'failed'; source: Source; error: AppError };
 
 type Templates = null | Loadable<TemplatesOutcome>;
 
-const STEP_NUMBER: Record<Step['k'], 1 | 2 | 3> = { choose: 1, how: 2, running: 3, done: 3, failed: 3 };
+const STEP_NUMBER: Record<Step['k'], 1 | 2 | 3> = { choose: 1, check: 2, running: 3, done: 3, failed: 3 };
 
 export function restoreScreen(ctx: Ctx): Screen {
   const el = h('main', { class: 'screen narrow' });
@@ -80,7 +78,7 @@ export function restoreScreen(ctx: Ctx): Screen {
           layouts.map((l, i) => radio('layout', `pick-layout-${i}`, l === layout, () => set({ ...c, uid: l.uid }),
             h('span', { class: 'choice-title' }, layoutTitle(l)), h('span', { class: 'choice-note' }, layoutFacts(l)))))),
       h('div', { class: 'actions actions-end' },
-        button(`${t('common.next')} →`, () => snap && layout && void toHow({ snapshot: snap, layout }), { kind: 'primary', id: 'restore-next', disabled: !layout })),
+        button(`${t('common.next')} →`, () => snap && layout && void toCheck({ snapshot: snap, layout }), { kind: 'primary', id: 'restore-next', disabled: !layout })),
       snap ? templatesSection(snap) : h('div'),
     ];
   }
@@ -114,108 +112,48 @@ export function restoreScreen(ctx: Ctx): Screen {
     return notice('success', t('restore.templatesTitle'), list(t('restore.templatesAdded'), added), list(t('restore.templatesSkipped'), skipped));
   }
 
-  async function toHow(source: Source, mode: Mode = 'new') {
-    const how: Extract<Step, { k: 'how' }> = { k: 'how', source, targets: { k: 'loading' }, mode, targetUid: null };
-    set(how);
-    const r = await ctx.api.restoreTargets();
-    if (step !== how) return;
-    set({ ...how, targets: loaded(r) });
+  async function toCheck(source: Source) {
+    const check: Extract<Step, { k: 'check' }> = { k: 'check', source, slots: { k: 'loading' } };
+    set(check);
+    const r = await ctx.api.layoutSlots();
+    if (step !== check) return;
+    set({ ...check, slots: loaded(r) });
   }
 
-  function slotsLine(tg: RestoreTargets): HTMLElement {
-    return h('p', { class: 'choice-note' }, tg.limit === null ? t('restore.slotsUnlimited', { used: tg.used }) : t('restore.slots', { used: tg.used, limit: tg.limit }));
+  function slotsLine(s: LayoutSlots): HTMLElement {
+    return h('p', { class: 'note' }, s.limit === null ? t('restore.slotsUnlimited', { used: s.used }) : t('restore.slots', { used: s.used, limit: s.limit }));
   }
 
-  function fullNotice(tg: RestoreTargets): HTMLElement {
-    const limit = tg.limit ?? tg.used;
+  function fullNotice(s: LayoutSlots): HTMLElement {
+    const limit = s.limit ?? s.used;
     return notice('warning', t('restore.fullTitle'),
-      h('p', {}, tg.plan ? t('restore.fullBody', { plan: tg.plan, limit }) : t('restore.fullBodyNoPlan', { limit })),
+      h('p', {}, s.plan ? t('restore.fullBody', { plan: s.plan, limit }) : t('restore.fullBodyNoPlan', { limit })),
       h('p', {}, t('restore.fullWhat')),
-      h('ul', { class: 'plain-list' }, h('li', {}, t('restore.fullDelete')), h('li', {}, t('restore.fullUpgrade')), h('li', {}, t('restore.fullReplace'))));
+      h('ul', { class: 'plain-list' }, h('li', {}, t('restore.fullDelete')), h('li', {}, t('restore.fullUpgrade'))));
   }
 
-  function howStep(c: Extract<Step, { k: 'how' }>): (HTMLElement | null)[] {
+  function checkStep(c: Extract<Step, { k: 'check' }>): (HTMLElement | null)[] {
     const intro = h('p', { class: 'lead' }, t('restore.restoring', { name: layoutTitle(c.source.layout), when: backupWhen(c.source.snapshot) }));
     const back = button(`← ${t('common.back')}`, () => set({ k: 'choose', snapshotDir: c.source.snapshot.dir, uid: c.source.layout.uid }), { id: 'restore-back' });
-    const title = h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.howTitle'));
-    if (c.targets.k === 'loading') return [title, intro, spinner(t('restore.checking'))];
-    if (c.targets.k === 'error') return [title, intro, errorBox(ctx, c.targets.error, { actions: [button(t('common.tryAgain'), () => void toHow(c.source), { kind: 'primary', id: 'targets-retry' })] }), h('div', { class: 'actions' }, back)];
-
-    const tg = c.targets.value;
-    const target = tg.layouts.find((l) => l.uid === c.targetUid) ?? null;
-    let typedName = '';
-    const start = button(t('restore.start'), () => void begin(c, target, typedName), { kind: 'primary', big: true, id: 'restore-start' });
-    const hint = h('p', { class: 'match-hint', id: 'confirm-name-hint', attrs: { 'aria-live': 'polite' } });
-    const nameInput = h('input', {
-      type: 'text', id: 'confirm-name', class: 'text-input', autocomplete: 'off', spellcheck: false,
-      attrs: { 'aria-describedby': 'confirm-name-hint' },
-      on: { input: () => sync() },
-    });
-    const sync = () => {
-      const typed = nameInput.value;
-      typedName = typed;
-      const matches = target !== null && sameLayoutName(typed, target.name);
-      start.disabled = c.mode === 'new' ? !tg.free : !matches;
-      hint.textContent = target && typed.trim() ? (matches ? t('restore.nameMatches') : t('restore.nameMismatch')) : '';
-      hint.className = `match-hint${matches ? ' match-ok' : ''}`;
-    };
-
-    const targetSelect = h('select', { id: 'target-pick', class: 'select select-wide', on: { change: () => set({ ...c, targetUid: targetSelect.value || null }) } },
-      h('option', { value: '' }, t('restore.targetPick')),
-      tg.layouts.map((l) => h('option', { value: l.uid, selected: l.uid === c.targetUid }, l.name)));
-
-    const replaceFields =
-      c.mode !== 'replace' ? null
-      : tg.layouts.length === 0 ? h('p', { class: 'note' }, t('restore.noTargets'))
-      : h('div', { class: 'replace-fields' },
-          notice('warning', t('restore.closeTabNote')),
-          h('label', { htmlFor: 'target-pick', class: 'field-label' }, t('restore.target')), targetSelect,
-          target
-            ? h('div', { class: 'confirm-name' },
-                h('label', { htmlFor: 'confirm-name', class: 'field-label' }, t('restore.typeName')),
-                h('p', { class: 'name-to-type', attrs: { 'aria-label': t('restore.typeNameLabel') } }, target.name),
-                nameInput, hint)
-            : null);
-
-    const els = [
+    const title = h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.newTitle'));
+    if (c.slots.k === 'loading') return [title, intro, spinner(t('restore.checking'))];
+    if (c.slots.k === 'error') return [title, intro, errorBox(ctx, c.slots.error, { actions: [button(t('common.tryAgain'), () => void toCheck(c.source), { kind: 'primary', id: 'slots-retry' })] }), h('div', { class: 'actions' }, back)];
+    const slots = c.slots.value;
+    return [
       title, intro,
-      h('fieldset', { class: 'choices' },
-        h('legend', { class: 'sr-only' }, t('restore.howTitle')),
-        radio('mode', 'mode-new', c.mode === 'new', () => set({ ...c, mode: 'new' }),
-          h('span', { class: 'choice-title' }, t('restore.modeNew'), h('span', { class: 'badge badge-ok' }, t('restore.recommended'))),
-          h('span', { class: 'choice-note' }, t('restore.modeNewNote')),
-          slotsLine(tg)),
-        c.mode === 'new' && !tg.free ? fullNotice(tg) : null,
-        radio('mode', 'mode-replace', c.mode === 'replace', () => set({ ...c, mode: 'replace' }),
-          h('span', { class: 'choice-title' }, t('restore.modeReplace')),
-          h('span', { class: 'choice-note' }, t('restore.modeReplaceNote'))),
-        replaceFields),
-      h('div', { class: 'actions actions-split' }, back, start),
+      h('section', { class: 'card' },
+        h('p', { class: 'choice-title' }, t('restore.newName', { name: restoredName(c.source.layout.name, new Date()) })),
+        h('p', {}, t('restore.newNote')),
+        slotsLine(slots)),
+      slots.free ? null : fullNotice(slots),
+      h('div', { class: 'actions actions-split' }, back, button(t('restore.start'), () => void begin(c.source), { kind: 'primary', big: true, id: 'restore-start', disabled: !slots.free })),
     ];
-    sync();
-    return els;
   }
 
-  /** `typedName` is what the user typed to confirm a replace; the app process checks it against the layout's name again. */
-  async function begin(c: Extract<Step, { k: 'how' }>, target: { uid: string; name: string } | null, typedName: string) {
-    const base = { snapshotDir: c.source.snapshot.dir, uid: c.source.layout.uid };
-    let req: RestoreRequest;
-    if (c.mode === 'replace') {
-      if (!target) return;
-      const ok = await confirmDialog({
-        title: t('restore.confirmTitle', { name: target.name }),
-        body: t('restore.confirmBody', { name: target.name }),
-        yes: t('restore.confirmYes'),
-        no: t('common.cancel'),
-        danger: true,
-      });
-      if (!ok) return;
-      req = { ...base, mode: 'replace', targetUid: target.uid, confirmedName: typedName };
-    } else req = { ...base, mode: 'new' };
-
-    set({ k: 'running', source: c.source, label: t('restoreStep.check') });
-    const r = await ctx.api.restore(req);
-    set(r.ok ? { k: 'done', source: c.source, outcome: r.value } : { k: 'failed', source: c.source, error: r.error, mode: c.mode });
+  async function begin(source: Source) {
+    set({ k: 'running', source, label: t('restoreStep.check') });
+    const r = await ctx.api.restore({ snapshotDir: source.snapshot.dir, uid: source.layout.uid });
+    set(r.ok ? { k: 'done', source, outcome: r.value } : { k: 'failed', source, error: r.error });
   }
 
   function verifyTable(o: RestoreOutcome): HTMLElement {
@@ -252,9 +190,7 @@ export function restoreScreen(ctx: Ctx): Screen {
           h('div', { class: 'actions' }, button(t('restore.open'), () => ctx.api.openOnTradingView(o.url), { kind: 'primary', big: true, id: 'restore-open' })))),
       o.check.verdict === 'mismatch' ? notice('warning', t('restore.missingTitle'), missing ? h('p', {}, tn('restore.missing', missing)) : null, h('p', {}, t('restore.mismatchNote'))) : null,
       o.check.verdict === 'shown-unchecked' ? notice('warning', t('restore.uncheckedTitle'), h('p', {}, t('restore.uncheckedNote'))) : null,
-      o.safetyBackup ? h('p', { class: 'note' }, t('restore.reloadNote')) : null,
       verifyTable(o),
-      o.safetyBackup ? h('div', { class: 'card card-quiet' }, h('p', {}, t('restore.safety')), h('p', { class: 'path' }, o.safetyBackup), button(t('common.openFolder'), () => ctx.api.openFolder(o.safetyBackup!), { id: 'safety-open' })) : null,
       o.resumed ? h('p', { class: 'note' }, t('restore.resumed')) : null,
       o.check.missingDrawings.length || o.check.extraDrawings.length
         ? details(t('error.details'), h('pre', { class: 'tech' }, [
@@ -269,14 +205,14 @@ export function restoreScreen(ctx: Ctx): Screen {
   }
 
   function failedStep(c: Extract<Step, { k: 'failed' }>): (HTMLElement | null)[] {
-    return [errorBox(ctx, c.error, { title: t('restore.failed'), actions: [button(`← ${t('common.back')}`, () => void toHow(c.source, c.mode), { kind: 'primary', id: 'restore-failed-back' })] })];
+    return [errorBox(ctx, c.error, { title: t('restore.failed'), actions: [button(`← ${t('common.back')}`, () => void toCheck(c.source), { kind: 'primary', id: 'restore-failed-back' })] })];
   }
 
   function render() {
     const n = STEP_NUMBER[step.k];
     const body =
       step.k === 'choose' ? chooseStep(step)
-      : step.k === 'how' ? howStep(step)
+      : step.k === 'check' ? checkStep(step)
       : step.k === 'running' ? [
           h('h2', { class: 'step-title', tabIndex: -1 }, t('restore.running', { name: layoutTitle(step.source.layout) })),
           h('section', { class: 'card' }, progressBar(null, step.label), h('p', { class: 'note' }, t('restore.runningNote'))),

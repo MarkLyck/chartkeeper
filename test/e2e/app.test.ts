@@ -42,7 +42,7 @@ describe('the installed app', () => {
   });
 
   it('asks to sign in before a restore instead of failing silently', async () => {
-    const r = await window.evaluate(() => (window as any).chartkeeper.restoreTargets());
+    const r = await window.evaluate(() => (window as any).chartkeeper.layoutSlots());
     expect(r).toMatchObject({ ok: false, error: { kind: 'not-signed-in' } });
   });
 

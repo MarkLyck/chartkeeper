@@ -11,7 +11,7 @@ const keys = Object.keys(TEXT) as Key[];
 // Written out so a new kind or step in core fails `tsc` here until it has words.
 const ERROR_KINDS = ['not-signed-in', 'rate-limited', 'format-changed', 'limit-reached', 'too-large', 'not-found', 'network', 'server', 'cancelled', 'unexpected', 'busy', 'browser', 'safari-access'] as const satisfies readonly AppError['kind'][];
 const BACKUP_STEPS = ['list', 'layout', 'userDrawings', 'studyTemplates', 'drawingTemplates', 'themes', 'scripts', 'prices', 'finish'] as const satisfies readonly BackupStep[];
-const RESTORE_STEPS = ['check', 'create', 'safetyCopy', 'replace', 'clearDrawings', 'verify'] as const satisfies readonly RestoreStep[];
+const RESTORE_STEPS = ['check', 'create', 'verify'] as const satisfies readonly RestoreStep[];
 const exhaustive: [Exclude<AppError['kind'], (typeof ERROR_KINDS)[number]>, Exclude<BackupStep, (typeof BACKUP_STEPS)[number]>, Exclude<RestoreStep, (typeof RESTORE_STEPS)[number]>] extends [never, never, never] ? true : false = true;
 
 afterEach(() => {

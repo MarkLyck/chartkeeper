@@ -7,7 +7,7 @@ import type { BackupProgress } from '../../src/core/backupProgress';
 import { countLayout, parseLayout } from '../../src/core/layout';
 import { LayoutRecordSchema } from '../../src/core/model';
 import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
-import { checkRestore } from '../../src/core/restorePolicy';
+import { checkRestore, restoredName } from '../../src/core/restorePolicy';
 import { listSnapshots, SNAPSHOT_FILES, SnapshotReader } from '../../src/core/snapshot';
 import { parseLayoutJson, parseListEntry, TvClient } from '../../src/core/tv/client';
 import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
@@ -81,7 +81,7 @@ describe('numeric chartIds', () => {
     expect((await snap.chartData('Num00001', '2'))!.symbol).toBe('NASDAQ:AAPL');
     expect((await snap.chartData('Num00001', '1'))!.symbol).toBe('NASDAQ:MSFT');
 
-    const restored = await restoreLayout(client(), snap, 'Num00001', { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'j.json')), buildTime: null, countOnPage: shownBy(tv) });
+    const restored = await restoreLayout(client(), snap, 'Num00001', { journal: new RestoreJournal(path.join(root, 'j.json')), countOnPage: shownBy(tv) });
     expect(restored.check).toMatchObject({ verdict: 'verified', missingDrawings: [], extraDrawings: [] });
     const saved = tv.layouts.get(restored.uid)!.content;
     expect(saved.charts.map((c) => c.chartId)).toEqual([2, 1]);
@@ -309,9 +309,9 @@ describe('restore', () => {
     const snap = await snapshot();
     const before = new Map([...tv.layouts].map(([k, v]) => [k, JSON.stringify(v)]));
     const steps: RestoreStep[] = [];
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, now: new Date('2026-10-17T12:00:00Z'), countOnPage: shownBy(tv), onProgress: (s) => steps.push(s) });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now: new Date(2026, 9, 17, 9, 5), countOnPage: shownBy(tv), onProgress: (s) => steps.push(s) });
     expect(r.uid).not.toBe('AbCd1234');
-    expect(r.name).toBe('Min AAPL (restored 2026-10-17)');
+    expect(r.name, 'the local date and time to the minute').toBe('Min AAPL (restored 2026-10-17 09:05)');
     expect(r.check).toMatchObject({
       verdict: 'verified',
       charts: { expected: 1, saved: { count: 1, ok: true } },
@@ -329,84 +329,45 @@ describe('restore', () => {
     const snap = await snapshot();
     tv.layoutLimit = 1;
     tv.account = { ...tv.account!, plan: 'free' };
-    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null })).rejects.toThrow(/allows 1 saved layout, and all are in use/);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { journal: journal() })).rejects.toThrow(/allows 1 saved layout, and all are in use/);
     expect(tv.requests.filter((r) => r.method === 'POST')).toEqual([]);
   });
 
   it('restoring the same backup twice on purpose makes two copies', async () => {
     const snap = await snapshot();
-    const opts = { root, journal: journal(), buildTime: null };
-    const a = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
-    const b = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    const opts = { journal: journal() };
+    const a = await restoreLayout(client(), snap, 'AbCd1234', opts);
+    const b = await restoreLayout(client(), snap, 'AbCd1234', opts);
     expect(b.resumed).toBe(false);
     expect(b.uid).not.toBe(a.uid);
     expect(tv.layouts.size).toBe(3);
   });
 
-  it('a second confirmed replace overwrites again, with a new safety copy', async () => {
-    const snap = await snapshot();
-    tv.add(referenceInAccount('Target01', 'Old layout'));
-    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
-    const mode = { kind: 'replace' as const, targetUid: 'Target01', confirmedName: 'Old layout' };
-    await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
-    const edited = tv.layouts.get('Target01')!.content;
-    edited.charts[0]!.panes[0]!.sources.push({ type: 'LineToolHorzLine', id: 'edit1', state: {}, points: [{ time_t: 1780000000, offset: 0, price: 1 }] });
-    const posts = tv.requests.filter((r) => r.method === 'POST').length;
-    const r = await restoreLayout(client(), snap, 'AbCd1234', mode, opts);
-    expect(r).toMatchObject({ resumed: false, check: { verdict: 'verified' } });
-    expect(r.safetyBackup).not.toBeNull();
-    expect(tv.requests.filter((q) => q.method === 'POST').length).toBe(posts + 1);
-    expect(JSON.stringify(tv.layouts.get('Target01')!.content)).not.toContain('edit1');
-  });
-
   it('adopts the layout when the answer to the save was lost', async () => {
     const snap = await snapshot();
-    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    const opts = { journal: journal(), countOnPage: shownBy(tv) };
     tv.failOn = (req) => {
       if (req.method !== 'POST') return null;
       tv.failOn = null;
       void tv.send(req);
       return { status: 502, contentType: 'text/html', body: 'gateway timeout' };
     };
-    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toThrow();
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', opts)).rejects.toThrow();
+    const r = await restoreLayout(client(), snap, 'AbCd1234', opts);
     expect(r).toMatchObject({ resumed: true, check: { verdict: 'verified' } });
     expect(tv.layouts.size).toBe(2);
-  });
-
-  it('replace: saves a safety copy first, overwrites only the chosen layout, and clears old stored drawings', async () => {
-    const snap = await snapshot();
-    tv.add({ ...referenceInAccount('Target01', 'Old layout'), storage: { '1': { stale: { id: 'stale', ownerSource: '_seriesId', state: { type: 'LineToolHorzLine', id: 'stale', state: {}, points: [{ time_t: 1, offset: 0, price: 1 }] } } } } });
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedName: 'Old layout' }, { root, journal: journal(), buildTime: 'bt', countOnPage: shownBy(tv) });
-    expect(r.uid).toBe('Target01');
-    expect(r.check.verdict).toBe('verified');
-    expect(tv.layouts.get('Target01')!.storage['1']).toEqual({});
-    const safety = await listSnapshots(path.join(root, 'safety-copies'));
-    expect(safety[0]!.manifest!.layouts[0]).toMatchObject({ uid: 'Target01', name: 'Old layout' });
-    expect(tv.requests.find((q) => q.method === 'PUT')!.headers).toEqual({ 'X-BUILD-TIME': 'bt' });
-  });
-
-  it('replace: refuses a confirmed name that does not match the target, before writing anything', async () => {
-    const snap = await snapshot();
-    tv.add(referenceInAccount('Target01', 'Old layout'));
-    tv.requests.length = 0;
-    const replace = (confirmedName: string) => restoreLayout(client(), snap, 'AbCd1234', { kind: 'replace', targetUid: 'Target01', confirmedName }, { root, journal: journal(), buildTime: null });
-    await expect(replace('Min AAPL')).rejects.toMatchObject({ kind: 'not-found', message: expect.stringMatching(/does not match/) });
-    expect(tv.requests.filter((q) => q.method !== 'GET')).toEqual([]);
-    expect(await listSnapshots(path.join(root, 'safety-copies'))).toEqual([]);
-    await expect(replace('  OLD   layout ')).resolves.toMatchObject({ uid: 'Target01' });
   });
 
   it('a layout TradingView shows with a drawing missing is a mismatch, even when the read-back matched', async () => {
     const snap = await snapshot();
     const countOnPage = async (uid: string) => ({ ...(await shownBy(tv)(uid)), drawings: 10 });
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, countOnPage });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), countOnPage });
     expect(r.check).toMatchObject({ verdict: 'mismatch', drawings: { saved: { ok: true }, shown: { count: 10, ok: false } }, missingDrawings: [] });
   });
 
   it('says the chart page was not checked when TradingView could not be counted', async () => {
     const snap = await snapshot();
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null, countOnPage: async () => null });
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), countOnPage: async () => null });
     expect(r.check).toMatchObject({ verdict: 'shown-unchecked', drawings: { saved: { ok: true }, shown: 'unchecked' }, indicators: { shown: 'unchecked' } });
   });
 
@@ -464,44 +425,84 @@ describe('restore', () => {
 
   it('finishes the layout an interrupted restore already created, even after it was renamed', async () => {
     const snap = await snapshot();
-    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    const opts = { journal: journal(), countOnPage: shownBy(tv) };
     tv.failOn = (req) => (/^\/chart\/New\d+\/json\/$/.test(new URL(req.url).pathname) ? { status: 500, contentType: 'text/plain', body: 'down' } : null);
-    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toMatchObject({ kind: 'server' });
+    await expect(restoreLayout(client(), snap, 'AbCd1234', opts)).rejects.toMatchObject({ kind: 'server' });
     tv.failOn = null;
     const created = [...tv.layouts.values()].find((l) => l.uid !== 'AbCd1234')!;
     created.name = 'Renamed on TradingView';
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    const r = await restoreLayout(client(), snap, 'AbCd1234', opts);
     expect(r).toMatchObject({ uid: created.uid, name: 'Renamed on TradingView', resumed: true, check: { verdict: 'verified' } });
     expect(tv.layouts.size).toBe(2);
     expect(tv.requests.filter((q) => q.method === 'POST')).toHaveLength(1);
   });
 
+  it('stops at a save answer without a real layout id, and sends nothing with it', async () => {
+    const snap = await snapshot();
+    tv.failOn = (req) => (req.method === 'POST' ? { status: 200, contentType: 'application/json', body: '{"id":5,"image_url":""}' } : null);
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), countOnPage: shownBy(tv) })).rejects.toMatchObject({ kind: 'format-changed' });
+    expect(tv.requests.at(-1)?.method, 'the save is the last request').toBe('POST');
+  });
+
+  it('gives two restores on the same day different names', async () => {
+    const snap = await snapshot();
+    const a = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now: new Date(2026, 9, 17, 9, 5) });
+    const b = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now: new Date(2026, 9, 17, 16, 40) });
+    expect([a.name, b.name]).toEqual(['Min AAPL (restored 2026-10-17 09:05)', 'Min AAPL (restored 2026-10-17 16:40)']);
+  });
+
+  /** The save goes nowhere and its answer is lost, so the next run has only the planned name to go by. */
+  const loseTheSave = () => {
+    tv.failOn = (req) => {
+      if (req.method !== 'POST') return null;
+      tv.failOn = null;
+      return { status: 502, contentType: 'text/html', body: 'gateway timeout' };
+    };
+  };
+
+  it('never picks up a layout that was there before the interrupted restore, even one with the planned name', async () => {
+    const snap = await snapshot();
+    const now = new Date(2026, 9, 17, 9, 5);
+    const first = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now });
+    const firstCopy = JSON.stringify(tv.layouts.get(first.uid));
+    loseTheSave();
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now })).rejects.toThrow();
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now, countOnPage: shownBy(tv) });
+    expect(r).toMatchObject({ resumed: false, name: first.name, check: { verdict: 'verified' } });
+    expect(r.uid).not.toBe(first.uid);
+    expect(tv.layouts.size).toBe(3);
+    expect(JSON.stringify(tv.layouts.get(first.uid))).toBe(firstCopy);
+  });
+
+  it('still picks up an interrupted restore by name from a journal an older version wrote', async () => {
+    const snap = await snapshot();
+    const now = new Date(2026, 9, 17, 9, 5);
+    tv.add({ ...referenceInAccount('Lost0001', restoredName('Min AAPL', now)), id: 900 });
+    const old = { key: RestoreJournal.key(snap.dir, 'AbCd1234'), createdUid: '', name: restoredName('Min AAPL', now), at: now.toISOString(), finished: false };
+    await fs.writeFile(path.join(root, 'restore-journal.json'), JSON.stringify([old]));
+    const r = await restoreLayout(client(), snap, 'AbCd1234', { journal: journal(), now });
+    expect(r).toMatchObject({ resumed: true, uid: 'Lost0001' });
+    expect(tv.requests.filter((q) => q.method === 'POST')).toEqual([]);
+  });
+
   it('creates the layout afresh when the interrupted save never reached TradingView', async () => {
     const snap = await snapshot();
-    const opts = { root, journal: journal(), buildTime: null, countOnPage: shownBy(tv) };
+    const opts = { journal: journal(), countOnPage: shownBy(tv) };
     tv.failOn = (req) => (req.method === 'POST' ? { status: 500, contentType: 'text/html', body: 'down' } : null);
-    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts)).rejects.toMatchObject({ kind: 'server' });
+    await expect(restoreLayout(client(), snap, 'AbCd1234', opts)).rejects.toMatchObject({ kind: 'server' });
     expect(tv.layouts.size).toBe(1);
     tv.failOn = null;
-    const r = await restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, opts);
+    const r = await restoreLayout(client(), snap, 'AbCd1234', opts);
     expect(r).toMatchObject({ resumed: false, check: { verdict: 'verified' } });
     expect(r.uid).not.toBe('AbCd1234');
     expect(tv.layouts.size).toBe(2);
-  });
-
-  it('replace: stops when the chosen layout was deleted on TradingView meanwhile', async () => {
-    const snap = await snapshot();
-    tv.requests.length = 0;
-    const mode = { kind: 'replace' as const, targetUid: 'Gone0001', confirmedName: 'Gone' };
-    await expect(restoreLayout(client(), snap, 'AbCd1234', mode, { root, journal: journal(), buildTime: null })).rejects.toMatchObject({ kind: 'not-found', message: expect.stringMatching(/no longer exists/) });
-    expect(tv.requests.filter((q) => q.method !== 'GET')).toEqual([]);
   });
 
   it('names the plan and its limit when no layout slot is free', async () => {
     const snap = await snapshot();
     for (let i = 0; i < 4; i++) tv.add(referenceInAccount(`Extra00${i}`, `Extra ${i}`));
     tv.account = { ...tv.account!, plan: 'essential' };
-    await expect(restoreLayout(client(), snap, 'AbCd1234', { kind: 'new' }, { root, journal: journal(), buildTime: null })).rejects.toMatchObject({
+    await expect(restoreLayout(client(), snap, 'AbCd1234', { journal: journal() })).rejects.toMatchObject({
       kind: 'limit-reached',
       params: { limit: 5, plan: 'essential' },
       message: expect.stringContaining('Your TradingView plan (essential) allows 5 saved layouts, and all are in use.'),

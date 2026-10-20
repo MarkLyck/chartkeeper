@@ -162,7 +162,7 @@ async function simulated() {
   await say('Restore: pick a backup and a layout.', 1500);
   await click(page, '#pick-layout-0', 400);
   await click(page, '#restore-next', 800);
-  await say('Default: restore as a NEW layout. Nothing on TradingView is changed or deleted.', 3000);
+  await say('A restore always adds a NEW layout. Nothing on TradingView is changed or deleted.', 3000);
   await click(page, '#restore-start', 300);
   await page.waitForSelector('.result-success', { timeout: 30000 });
   await say('Afterwards ChartKeeper opens the layout and checks that every drawing and indicator came back.', 4000);
@@ -171,16 +171,7 @@ async function simulated() {
   await click(page, '#restore-another', 800);
   await click(page, '#pick-layout-1', 400);
   await click(page, '#restore-next', 800);
-  await say('If the plan has no free layout slot, ChartKeeper explains the options instead of failing.', 4000);
-  await click(page, '#mode-replace', 500);
-  await page.selectOption('#target-pick', 'tvMSFT');
-  await say('Replacing a layout requires typing its name…', 1200);
-  await type(page, '#confirm-name', 'Microsoft - daily');
-  await click(page, '#restore-start', 800);
-  await say('…and a final confirmation. A safety copy of the old layout is saved first.', 2500);
-  await click(page, '#dialog-yes', 300);
-  await page.waitForSelector('.result-success, .result-warning', { timeout: 30000 });
-  await say('Replaced, verified, and the safety copy location is shown.', 4000);
+  await say('If the plan has no free layout slot, ChartKeeper explains what to do. It never overwrites a layout.', 4500);
   const video = page.video();
   await ctx.close();
   await browser.close();

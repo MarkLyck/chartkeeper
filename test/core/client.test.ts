@@ -3,7 +3,8 @@ import { layoutSlots, parseBucket, parseLayoutJson, parseLayoutList, parseListEn
 import type { HttpRequest, HttpResponse } from '../../src/core/tv/http';
 import { PoliteHttp } from '../../src/core/tv/http';
 import { FakeTradingView } from '../fakes/fakeTradingView';
-import { referenceInAccount } from '../fakes/fixtures';
+import { saveForm } from '../../src/core/restore';
+import { referenceInAccount, referenceRecord } from '../fakes/fixtures';
 
 const fast = { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} };
 let tv: FakeTradingView;
@@ -11,6 +12,7 @@ const client = () => new TvClient(new PoliteHttp(tv, fast), tv.account!);
 const answer = (status: number, body: string, contentType = 'application/json'): HttpResponse => ({ status, contentType, body });
 const failWhen = (match: (req: HttpRequest) => boolean, res: HttpResponse) => (tv.failOn = (req) => (match(req) ? res : null));
 const entry = parseListEntry({ image_url: 'Ab12', name: 'My layout' });
+const form = saveForm(referenceRecord(), { buckets: {}, reportedTotal: null }, 'x');
 
 beforeEach(() => {
   tv = new FakeTradingView().add(referenceInAccount('Ab12', 'My layout'));
@@ -31,18 +33,28 @@ describe('turning TradingView error answers into something the user can act on',
 
   it('says a layout is too large when the save is refused with 413', async () => {
     failWhen((r) => r.method === 'POST', answer(413, ''));
-    await expect(client().saveLayout({ fields: { name: 'x', content: '{}' } })).rejects.toMatchObject({ kind: 'too-large' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'too-large' });
   });
 
   it('says the plan is full when the save is refused for the layout limit', async () => {
     tv.layoutLimit = 1;
-    await expect(client().saveLayout({ fields: { name: 'x', content: '{"charts":[]}' } })).rejects.toMatchObject({ kind: 'limit-reached' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });
     expect(tv.layouts.size).toBe(1);
   });
 
   it('treats a plain 403 on save as an expired sign-in, not a full plan', async () => {
     failWhen((r) => r.method === 'POST', answer(403, '{"code":"login_required"}'));
-    await expect(client().saveLayout({ fields: { name: 'x', content: '{}' } })).rejects.toMatchObject({ kind: 'not-signed-in' });
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'not-signed-in' });
+  });
+
+  it.each([
+    ['an empty layout id', { id: 5, image_url: '' }],
+    ['a short layout id', { id: 5, image_url: 'Ab1' }],
+    ['a layout id with path characters', { id: 5, image_url: '../Ab12' }],
+    ['no layout id', { id: 5 }],
+  ])('reports a save answer with %s as a TradingView change', async (_what, body) => {
+    failWhen((r) => r.method === 'POST', answer(200, JSON.stringify(body)));
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'format-changed' });
   });
 
   it('reports a web page where JSON was expected as a TradingView change', async () => {
@@ -54,11 +66,6 @@ describe('turning TradingView error answers into something the user can act on',
     const c = new TvClient(new PoliteHttp(tv, fast), { ...tv.account!, id: null });
     await expect(c.chartToken('Ab12')).rejects.toMatchObject({ kind: 'not-signed-in' });
     expect(tv.requests).toEqual([]);
-  });
-
-  it('refuses a drawing save TradingView did not confirm', async () => {
-    failWhen((r) => r.method === 'PUT', answer(200, '{"success":false}'));
-    await expect(client().putDrawings('Ab12', '1', 'jwt.Ab12.signature', { a: null }, null)).rejects.toMatchObject({ kind: 'format-changed' });
   });
 });
 
@@ -156,5 +163,40 @@ describe('templates and themes', () => {
     failWhen((r) => r.url.endsWith('/themes/'), answer(200, '{"content":""}'));
     expect(await client().themes()).toEqual({});
     expect(tv.requests.filter((r) => r.url.includes('/theme/'))).toEqual([]);
+  });
+});
+
+describe('adding templates and themes, which TradingView saves by name', () => {
+  const writes = () => tv.requests.filter((r) => r.method !== 'GET');
+
+  it('leaves a drawing template alone when the tool has one by that name, whatever its case and spacing', async () => {
+    const before = structuredClone(tv.drawingTemplates);
+    expect(await client().addDrawingTemplate('LineToolTrendLine', ' thick  ORANGE ', { linecolor: '#000' })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.drawingTemplates).toEqual(before);
+    expect(await client().addDrawingTemplate('LineToolRay', 'Thick orange', { linecolor: '#000' })).toBe('added');
+    expect(tv.drawingTemplates.LineToolRay).toEqual({ 'Thick orange': { linecolor: '#000' } });
+  });
+
+  it('leaves an indicator template alone when one has that name', async () => {
+    const before = structuredClone(tv.studyTemplates);
+    expect(await client().addStudyTemplate({ name: 'my rsi setup', content: { panes: [1] }, meta_info: {} })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.studyTemplates).toEqual(before);
+    expect(await client().addStudyTemplate({ name: 'My MACD', content: { panes: [] }, meta_info: {} })).toBe('added');
+    expect(tv.studyTemplates.map((t) => t.name)).toEqual(['My RSI setup', 'My MACD']);
+  });
+
+  it('leaves a theme alone when one has that name, and adds one to an account without themes', async () => {
+    expect(await client().addTheme('MY DARK', { 'paneProperties.background': '#fff' })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.themes).toEqual({ 'My dark': { content: { 'paneProperties.background': '#000' } } });
+    failWhen((r) => r.method === 'GET' && r.url.endsWith('/themes/'), answer(200, '{"content":""}'));
+    expect(await client().addTheme('My dark', { a: 1 })).toBe('added');
+  });
+
+  it('reads only the list of indicator template names before adding one, not every template', async () => {
+    await client().addStudyTemplate({ name: 'My MACD', content: {}, meta_info: {} });
+    expect(tv.requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(['GET /api/v1/study-templates', 'POST /api/v1/study-templates']);
   });
 });

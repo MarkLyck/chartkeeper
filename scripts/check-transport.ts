@@ -24,7 +24,6 @@ app.whenReady().then(async () => {
   const out: Record<string, unknown> = {};
   out.user = await t.user();
   say('user');
-  out.buildTime = await t.buildTime();
   const st = await t.send({ method: 'GET', url: urls.studyTemplates });
   out.studyTemplates = { status: st.status, standard: (JSON.parse(st.body).standard ?? []).length };
   const mc = await t.send({ method: 'GET', url: urls.chartCount });

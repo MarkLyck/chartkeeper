@@ -173,16 +173,16 @@ describe('the account', () => {
     expect(status.busy).toBeNull();
   });
 
-  it('lists the layouts a restore can replace, with the free slots', async () => {
+  it('tells how many saved layouts the plan allows and how many are in use', async () => {
     tv.account = { ...tv.account!, plan: 'essential' };
-    expect(await call('restoreTargets')).toEqual({ ok: true, value: { layouts: [{ uid: 'AbCd1234', name: 'Min AAPL' }], used: 1, limit: 5, plan: 'essential', free: true } });
+    expect(await call('layoutSlots')).toEqual({ ok: true, value: { used: 1, limit: 5, plan: 'essential', free: true } });
   });
 });
 
 describe('backups on disk', () => {
   const body = { app: { name: 'ChartKeeper', version: 't' }, createdAt: '2026-10-17T10:00:00Z', account: { username: 'u', plan: null }, layouts: [], extras: { studyTemplates: 0, drawingTemplates: 0, themes: 0, scripts: 0, userDrawings: 0 }, warnings: [] };
 
-  it('lists normal backups and the safety copies taken before a replace, marked as such', async () => {
+  it('lists normal backups and the safety copies older versions took before a replace, marked as such', async () => {
     await (await SnapshotWriter.begin(backups, new Date(2026, 9, 17, 18))).finish(body);
     await (await SnapshotWriter.begin(path.join(backups, 'safety-copies'), new Date(2026, 9, 18, 9))).finish(body);
     const list: SnapshotSummary[] = await call('listSnapshots');
