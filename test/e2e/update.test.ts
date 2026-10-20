@@ -28,8 +28,10 @@ describe('a new version on the update feed', () => {
 
   beforeAll(async () => {
     server = http.createServer((req, res) => {
-      requested.push(req.url ?? '');
-      if (!/^\/latest(-mac|-linux)?\.yml$/.test(req.url ?? '')) return void res.writeHead(404).end();
+      // electron-updater adds ?noCache=... to the update file's address.
+      const { pathname } = new URL(req.url ?? '/', 'http://feed');
+      requested.push(pathname);
+      if (!/^\/latest[\w-]*\.yml$/.test(pathname)) return void res.writeHead(404).end();
       res.writeHead(200, { 'content-type': 'text/yaml' }).end(FEED);
     });
     await new Promise<void>((r) => server.listen(0, '127.0.0.1', r));
@@ -48,8 +50,9 @@ describe('a new version on the update feed', () => {
     expect(await window.textContent('#update-version')).toContain('99.0.0');
     expect(await window.textContent('#update-notes')).toBe('Faster backups & a popup for new versions');
     expect(await update()).toMatchObject({ k: 'available', version: '99.0.0', how: process.platform === 'darwin' ? 'installer' : 'restart' });
-    const file = process.platform === 'darwin' ? '/latest-mac.yml' : process.platform === 'linux' ? '/latest-linux.yml' : '/latest.yml';
-    expect(requested).toContain(file);
+    // Linux on arm64 asks for latest-linux-arm64.yml.
+    const file = process.platform === 'darwin' ? /^\/latest-mac\.yml$/ : process.platform === 'linux' ? /^\/latest-linux(-\w+)?\.yml$/ : /^\/latest\.yml$/;
+    expect(requested.filter((p) => file.test(p))).not.toEqual([]);
   });
 
   it('hides it with Later and offers it again in the top bar', async () => {
