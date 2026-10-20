@@ -2,7 +2,9 @@ import { BrowserWindow, session, type Cookie, type Session } from 'electron';
 import { countSavedDrawings } from '../core/tv/content';
 import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import { pageFetch, pageUser, type HttpRequest, type HttpResponse, type PageTransport, type PageUser } from '../core/tv/http';
+import { rawWriteRefusal, type UploadPart } from '../core/tv/writePolicy';
 import type { CdpCookie } from './browserSignIn';
+import { log } from './log';
 
 export const PARTITION = 'persist:tradingview';
 
@@ -22,17 +24,32 @@ export function isRequestAllowed(url: string): boolean {
   return isTradingViewHost(u.hostname);
 }
 
+/**
+ * Why the TradingView session must not send a request, or null when it may.
+ * The write check covers ChartKeeper's own requests a second time, and also
+ * what TradingView's own page tries, such as saving the layout it shows.
+ */
+function sessionRefusal(req: { method: string; url: string; uploadData?: readonly UploadPart[] }): string | null {
+  if (!isRequestAllowed(req.url)) return 'not a TradingView address';
+  return rawWriteRefusal(req.method, req.url, req.uploadData);
+}
+
 let configured: Session | null = null;
 
 /**
  * The private browser session that holds the TradingView sign-in. Anything it
  * tries to load outside tradingview.com (ads, analytics, other sites) is
- * blocked, so ChartKeeper only ever talks to TradingView.
+ * blocked, so ChartKeeper only ever talks to TradingView, and any request
+ * that could change or delete something there is cancelled.
  */
 export function tvSession(): Session {
   if (configured) return configured;
   const s = session.fromPartition(PARTITION);
-  s.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, cb) => cb({ cancel: !isRequestAllowed(details.url) }));
+  s.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, cb) => {
+    const refused = sessionRefusal(details);
+    if (refused && details.method !== 'GET') log(`refused ${details.method} ${details.url}: ${refused}`);
+    cb({ cancel: refused !== null });
+  });
   s.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
   s.setUserAgent(s.getUserAgent().replace(/ (Electron|chartkeeper)\/\S+/gi, ''));
   configured = s;
@@ -175,9 +192,8 @@ export class ElectronPageTransport implements PageTransport {
 
 /**
  * Opens a layout the way the user would and counts what TradingView itself shows.
- * This is the final check after a restore. ChartKeeper changes nothing here;
- * TradingView may move the drawings from the layout content into its drawing
- * storage while the layout is open, exactly as when the user opens it.
+ * This is the final check after a restore. The session cancels every save the
+ * page tries, so opening it here changes nothing on TradingView.
  */
 export async function countOnChartPage(uid: string, timeoutMs = 60_000): Promise<{ drawings: number; studies: number } | null> {
   tvSession();
