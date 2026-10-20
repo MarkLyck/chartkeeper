@@ -3,7 +3,7 @@ import type { Change, LayoutDiff } from '../../core/diff';
 import { t } from '../i18n';
 import { renderLayout } from '../viewer';
 import { changeText } from './changes';
-import { button, errorBox, notice, screenHeader, spinner } from './components';
+import { button, errorBox, notice, spinner, topBar } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { incompleteReason, isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines, snapshotTitle } from './snapshots';
@@ -14,9 +14,12 @@ type Main =
   | { k: 'compare'; olderDir: string; returnTo: string | null; load: Loadable<CompareOutcome> };
 
 export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Screen {
-  const sidebar = h('nav', { class: 'sidebar', attrs: { 'aria-label': t('view.backups') } });
+  const sidebar = h('div');
   const main = h('section', { class: 'view-main', attrs: { 'aria-live': 'polite' } });
-  const el = h('main', { class: 'screen wide' }, screenHeader(ctx, t('view.title')), h('div', { class: 'view-cols' }, sidebar, main));
+  const el = h('main', { class: 'screen wide' }, topBar(ctx, 'view'),
+    h('div', { class: 'view-cols' },
+      h('nav', { class: 'sidebar', attrs: { 'aria-label': t('view.backups') } }, h('h1', { tabIndex: -1, class: 'sidebar-title' }, t('view.title')), sidebar),
+      main));
 
   let snapshots: SnapshotSummary[] = [];
   let selected: SnapshotSummary | null = null;
@@ -63,7 +66,6 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
 
   function renderSidebar() {
     replace(sidebar,
-      h('h2', { class: 'sidebar-title' }, t('view.backups')),
       snapshots.length === 0
         ? h('p', { class: 'note' }, t('view.empty'))
         : h('ul', { class: 'snap-list' }, snapshots.map((s, i) =>

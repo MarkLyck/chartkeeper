@@ -78,11 +78,21 @@ talks to tradingview.com.
 
 ## 3. Take a backup
 
-![Backup finished](docs/screenshots/backup-done.png)
+![Home screen with the last backup](docs/screenshots/home.png)
 
 Click **Back up now**. A backup takes a few minutes, because ChartKeeper asks
-TradingView for one thing at a time so your account isn't flagged. When it is
-done you see a green check and how many layouts were saved.
+TradingView for one thing at a time so your account isn't flagged. The window
+shows how far it is and about how long is left. The longest step is the drawing
+templates: TradingView has to be asked about each of its 89 drawing tools
+separately.
+
+![Backup in progress](docs/screenshots/backup-progress.png)
+
+When it is done you see a green check and how many layouts were saved. The
+home screen then shows when the last backup was taken, and once you have a
+week of backups, a line of how many drawings each one holds.
+
+![Backup finished](docs/screenshots/backup-done.png)
 
 The backups go into the folder shown under **Settings**. Click **Change...**
 to pick another folder, for example on an external disk or in Dropbox. Each
@@ -99,7 +109,9 @@ was off, it catches up the next time it's on.
 ![Viewer](docs/screenshots/view.png)
 
 Click **View my backups**, pick a backup on the left, then pick a layout. You
-can zoom with the mouse wheel and drag the chart to move it.
+can zoom with the mouse wheel and drag the chart to move it. A layout you never
+gave a name in TradingView (TradingView calls it "Unnamed") is shown by its
+symbols.
 
 The box **Not shown** lists anything the viewer can't draw, for example labels
 that a Pine script draws, and says why. These things are still in the backup.

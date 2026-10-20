@@ -1,7 +1,7 @@
 import { secondsLeft, type BackupProgress } from '../../core/backupProgress';
 import type { AppError, BackupOutcome } from '../../shared/api';
 import { backupPartText, backupStepText, formatTimeLeft, t, tn } from '../i18n';
-import { button, details, errorBox, icons, progressBar, screenHeader } from './components';
+import { button, details, errorBox, icons, pageTitle, progressBar, topBar } from './components';
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
 
@@ -29,10 +29,13 @@ export function backupScreen(ctx: Ctx): Screen {
     const label = p ? backupStepText(p.step, p.name) : t('backup.starting');
     const part = p && backupPartText(p);
     const left = p && secondsLeft(p, Date.now() - startedAt);
-    return h('section', { class: 'card' },
-      progressBar(p && p.total > 0 ? p.done / p.total : null, label),
+    const fraction = p && p.total > 0 ? p.done / p.total : null;
+    return h('section', { class: 'progress-panel' },
+      h('div', { class: 'figure-row' },
+        h('p', { class: 'figure', attrs: { 'aria-hidden': 'true' } }, fraction === null ? '–' : `${Math.floor(fraction * 100)}%`),
+        left === null ? null : h('p', { class: 'progress-left', id: 'backup-left' }, formatTimeLeft(left))),
+      progressBar(fraction, label),
       part ? h('p', { class: 'progress-part', id: 'backup-part' }, part) : null,
-      left === null ? null : h('p', { class: 'progress-left', id: 'backup-left' }, formatTimeLeft(left)),
       h('p', { class: 'note' }, t('backup.runningNote')));
   }
 
@@ -40,7 +43,7 @@ export function backupScreen(ctx: Ctx): Screen {
     return h('section', { class: 'result result-success' },
       icons.check(),
       h('div', { class: 'result-body' },
-        h('h2', { class: 'result-title', tabIndex: -1 }, t('backup.done')),
+        h('h1', { class: 'result-title', tabIndex: -1 }, t('backup.done')),
         h('p', { class: 'result-lead' }, t('backup.doneSummary', { layouts: tn('count.layouts', o.layouts), drawings: tn('count.drawings', o.drawings) })),
         h('div', { class: 'actions' },
           button(t('backup.viewIt'), () => ctx.go({ name: 'view', snapshotDir: o.dir }), { kind: 'primary', id: 'backup-view' }),
@@ -63,8 +66,7 @@ export function backupScreen(ctx: Ctx): Screen {
 
   function render() {
     const body = phase.k === 'running' ? running(phase.progress) : phase.k === 'done' ? done(phase.outcome) : failed(phase.error, phase.outcome);
-    const title = phase.k === 'running' ? t('backup.running') : t('backup.title');
-    replace(el, screenHeader(ctx, title, { canLeave: phase.k !== 'running' }), body);
+    replace(el, topBar(ctx, 'backup', { canLeave: phase.k !== 'running' }), phase.k === 'running' ? pageTitle(t('backup.running')) : null, body);
   }
 
   async function start() {

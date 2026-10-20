@@ -1,7 +1,7 @@
 import type { AppError } from '../../shared/api';
 import { explainError, t } from '../i18n';
 import { h, type Child } from './dom';
-import type { Ctx } from './screen';
+import type { Ctx, Route } from './screen';
 
 type ButtonKind = 'primary' | 'secondary' | 'link' | 'danger';
 
@@ -16,11 +16,71 @@ export function button(label: string, onClick: () => void, opts: { kind?: Button
   }, label);
 }
 
-/** The heading row of every screen except home. Focus lands on the title so screen readers announce the new screen. */
-export function screenHeader(ctx: Ctx, title: string, opts: { canLeave?: boolean } = {}): HTMLElement {
-  return h('header', { class: 'screen-header' },
-    opts.canLeave === false ? null : button(`← ${t('nav.home')}`, () => ctx.go({ name: 'home' }), { kind: 'link', id: 'nav-home' }),
-    h('h1', { tabIndex: -1, class: 'screen-title' }, title));
+/**
+ * The bar across the top of every screen: the name, the three places to go,
+ * and who is signed in. While a backup or restore runs the places are left
+ * out, so it can't be walked away from by accident.
+ */
+export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boolean } = {}): HTMLElement {
+  const s = ctx.state();
+  const locked = !s.signedIn || s.busy !== null;
+  const link = (name: 'home' | 'view' | 'restore', label: string, disabled = false) =>
+    h('button', {
+      type: 'button',
+      id: `nav-${name}`,
+      class: `nav-link${name === active ? ' nav-active' : ''}`,
+      disabled,
+      attrs: { 'aria-current': name === active ? 'page' : undefined },
+      on: { click: () => ctx.go({ name }) },
+    }, label);
+  return h('header', { class: 'topbar' },
+    h('div', { class: 'topbar-inner' },
+      h('span', { class: 'brand' }, brandMark(), 'ChartKeeper'),
+      opts.canLeave === false
+        ? h('span', { class: 'nav' })
+        : h('nav', { class: 'nav', attrs: { 'aria-label': t('nav.label') } },
+            link('home', t('nav.home')),
+            link('view', t('nav.backups')),
+            link('restore', t('nav.restore'), locked && active !== 'restore')),
+      h('span', { class: 'account' },
+        h('span', { class: `dot ${s.signedIn ? 'dot-ok' : 'dot-off'}`, attrs: { 'aria-hidden': 'true' } }),
+        s.signedIn ? (s.username ?? t('signin.signedIn')) : t('nav.signedOut'))));
+}
+
+/** The page's own heading. Focus lands on it so screen readers announce the new screen. */
+export function pageTitle(title: string): HTMLElement {
+  return h('div', { class: 'page-head' }, h('h1', { tabIndex: -1, class: 'screen-title' }, title));
+}
+
+/**
+ * A line of `values` across the full width, the way a balance's history is
+ * drawn under it. Points are spread evenly; null for fewer than two.
+ */
+export function sparkline(values: number[], label: string): HTMLElement | null {
+  if (values.length < 2) return null;
+  const [w, hgt, pad] = [1000, 120, 10];
+  const lo = Math.min(...values);
+  const span = Math.max(...values) - lo;
+  const xy = values.map((v, i) => [(i / (values.length - 1)) * w, span === 0 ? hgt / 2 : hgt - pad - ((v - lo) / span) * (hgt - 2 * pad)] as const);
+  const line = xy.map(([x, y], i) => `${i ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join('');
+  const el = document.createElementNS(SVG, 'svg');
+  el.setAttribute('viewBox', `0 0 ${w} ${hgt}`);
+  el.setAttribute('preserveAspectRatio', 'none');
+  el.setAttribute('class', 'spark');
+  el.setAttribute('role', 'img');
+  el.setAttribute('aria-label', label);
+  el.innerHTML = `<defs><linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#09090b" stop-opacity="0.12"/><stop offset="1" stop-color="#09090b" stop-opacity="0"/></linearGradient></defs>`
+    + `<path class="spark-area" d="${line}L${w} ${hgt}L0 ${hgt}Z"/><path class="spark-line" d="${line}"/>`;
+  return h('figure', { class: 'spark-wrap' }, el, h('figcaption', { class: 'note' }, label));
+}
+
+function brandMark(): SVGSVGElement {
+  const el = document.createElementNS(SVG, 'svg');
+  el.setAttribute('viewBox', '0 0 24 24');
+  el.setAttribute('aria-hidden', 'true');
+  el.setAttribute('class', 'brand-mark');
+  el.innerHTML = '<rect width="24" height="24" rx="7"/><path d="M5.5 15.5l4-4 3 3 6-6.5"/>';
+  return el;
 }
 
 const SVG = 'http://www.w3.org/2000/svg';
