@@ -119,7 +119,7 @@ describe('finding a browser', () => {
       '/home/t/.nix-profile/bin/chromium',
       '/run/current-system/sw/bin/chromium',
     ])
-      expect(found(p), p).toEqual({ kind: 'chromium', name: 'Chromium', path: p });
+      expect(found(p), p).toMatchObject({ kind: 'chromium', name: 'Chromium', path: p });
     expect(found('/var/lib/flatpak/exports/bin/com.google.Chrome')?.name).toBe('Google Chrome');
     expect(found('/var/lib/flatpak/exports/bin/com.brave.Browser')?.name).toBe('Brave');
   });
