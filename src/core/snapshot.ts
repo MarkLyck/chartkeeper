@@ -25,6 +25,7 @@ import {
   type StudyTemplatesFile,
   type ThemesFile,
 } from './model';
+import { BACKUP_FOLDER_README, README_FILE, snapshotReadme } from './readme';
 
 export const SNAPSHOTS_DIR = 'snapshots';
 const IN_PROGRESS = '.in-progress-';
@@ -114,6 +115,8 @@ export class SnapshotWriter {
     const stamp = snapshotStamp(now);
     const base = path.join(root, SNAPSHOTS_DIR);
     await fs.mkdir(base, { recursive: true, mode: 0o700 });
+    // The READMEs only explain the folder; a backup never fails over one.
+    await writeFolderReadme(root).catch(() => undefined);
     const workDir = path.join(base, IN_PROGRESS + stamp);
     await fs.rm(workDir, { recursive: true, force: true });
     await fs.mkdir(workDir, { recursive: true, mode: 0o700 });
@@ -164,11 +167,19 @@ export class SnapshotWriter {
   private async close(manifest: Manifest, name: string): Promise<string> {
     ManifestSchema.parse(manifest);
     await writePrivate(path.join(this.workDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+    await writePrivate(path.join(this.workDir, README_FILE), snapshotReadme(manifest)).catch(() => undefined);
     const final = path.join(this.root, SNAPSHOTS_DIR, name);
     await fs.rm(final, { recursive: true, force: true });
     await renameWithRetry(this.workDir, final);
     return final;
   }
+}
+
+async function writeFolderReadme(root: string): Promise<void> {
+  const file = path.join(root, README_FILE);
+  const existing = await fs.readFile(file, 'utf8').catch((e: NodeJS.ErrnoException) => (e.code === 'ENOENT' ? null : undefined));
+  // The user picks this folder, and it may already hold a README.txt of their own.
+  if (existing === null || existing?.split(/\r?\n/)[0] === BACKUP_FOLDER_README.split('\n')[0]) await writePrivate(file, BACKUP_FOLDER_README);
 }
 
 export interface SnapshotInfo {

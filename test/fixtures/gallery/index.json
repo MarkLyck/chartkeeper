@@ -2242,6 +2242,141 @@
           "image": "isolated/c1d19.png"
         }
       ]
+    },
+    {
+      "name": "replica-silj-daily-drawings-on-5m",
+      "dir": "replica-silj-daily-drawings-on-5m",
+      "uid": "replica-silj-daily-drawings-on-5m",
+      "description": "Replica of a user's chart: SILJ Elliott waves, arcs, projections into 2027 and a note drawn on the daily chart, layout saved on 5 minutes, some points saved as a bar plus a daily offset.",
+      "theme": "dark",
+      "arrangement": "s",
+      "capturedAt": "2026-10-20T21:47:23.692Z",
+      "charts": [
+        {
+          "chartId": "1",
+          "symbol": "AMEX:SILJ",
+          "interval": "5",
+          "style": 1,
+          "barsSource": "datafeed",
+          "studies": []
+        }
+      ],
+      "drawings": [
+        {
+          "id": "c1d01",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d01.png"
+        },
+        {
+          "id": "c1d02",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d02.png"
+        },
+        {
+          "id": "c1d03",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d03.png"
+        },
+        {
+          "id": "c1d04",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d04.png"
+        },
+        {
+          "id": "c1d05",
+          "type": "LineToolTrendLine",
+          "requestedType": "LineToolTrendLine",
+          "image": "isolated/c1d05.png"
+        },
+        {
+          "id": "c1d06",
+          "type": "LineToolArc",
+          "requestedType": "LineToolArc",
+          "image": "isolated/c1d06.png"
+        },
+        {
+          "id": "c1d07",
+          "type": "LineToolArc",
+          "requestedType": "LineToolArc",
+          "image": "isolated/c1d07.png"
+        },
+        {
+          "id": "c1d08",
+          "type": "LineToolArc",
+          "requestedType": "LineToolArc",
+          "image": "isolated/c1d08.png"
+        },
+        {
+          "id": "c1d09",
+          "type": "LineToolArc",
+          "requestedType": "LineToolArc",
+          "image": "isolated/c1d09.png"
+        },
+        {
+          "id": "c1d10",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d10.png"
+        },
+        {
+          "id": "c1d11",
+          "type": "LineToolVertLine",
+          "requestedType": "LineToolVertLine",
+          "image": "isolated/c1d11.png"
+        },
+        {
+          "id": "c1d12",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d12.png"
+        },
+        {
+          "id": "c1d13",
+          "type": "LineToolElliottTripleCombo",
+          "requestedType": "LineToolElliottTripleCombo",
+          "image": "isolated/c1d13.png"
+        },
+        {
+          "id": "c1d14",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d14.png"
+        },
+        {
+          "id": "c1d15",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d15.png"
+        },
+        {
+          "id": "c1d16",
+          "type": "LineToolElliottCorrection",
+          "requestedType": "LineToolElliottCorrection",
+          "image": "isolated/c1d16.png"
+        },
+        {
+          "id": "c1d17",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d17.png"
+        },
+        {
+          "id": "c1d18",
+          "type": "LineToolElliottImpulse",
+          "requestedType": "LineToolElliottImpulse",
+          "image": "isolated/c1d18.png"
+        },
+        {
+          "id": "c1d19",
+          "type": "LineToolText",
+          "requestedType": "LineToolText",
+          "image": "isolated/c1d19.png"
+        }
+      ]
     }
   ],
   "coverage": {
@@ -2271,7 +2406,8 @@
         "scenes": [
           "advanced",
           "drawings-text",
-          "replica-tsxv-weekly-log"
+          "replica-tsxv-weekly-log",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2454,7 +2590,8 @@
         "scenes": [
           "advanced",
           "drawings-lines",
-          "replica-tsxv-weekly-log"
+          "replica-tsxv-weekly-log",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2532,7 +2669,8 @@
           "style-step-line",
           "style-hlc-area",
           "style-hlc-bars",
-          "replica-tsxv-weekly-log"
+          "replica-tsxv-weekly-log",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2850,7 +2988,8 @@
           "advanced-dark",
           "drawings-elliott",
           "replica-tsxv-weekly-log",
-          "log-scale-tools"
+          "log-scale-tools",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2872,7 +3011,8 @@
         "scenes": [
           "drawings-elliott",
           "replica-tsxv-weekly-log",
-          "log-scale-tools"
+          "log-scale-tools",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -2883,7 +3023,8 @@
         "scenes": [
           "drawings-elliott",
           "replica-tsxv-weekly-log",
-          "log-scale-tools"
+          "log-scale-tools",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -3109,7 +3250,8 @@
         "type": "LineToolArc",
         "ui": "arc",
         "scenes": [
-          "drawings-shapes"
+          "drawings-shapes",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "savedAs": null,
         "notCapturable": null
@@ -3201,7 +3343,8 @@
           "indicators-4",
           "indicators-5",
           "replica-tsxv-weekly-log",
-          "log-scale-tools"
+          "log-scale-tools",
+          "replica-silj-daily-drawings-on-5m"
         ],
         "notCapturable": null
       },

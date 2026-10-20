@@ -25,7 +25,7 @@ describe('parsing a layout exactly as TradingView saved it', () => {
       ['LineToolArrowMarkUp', 'LineToolEllipse', 'LineToolFibRetracement', 'LineToolHorzLine', 'LineToolHorzRay', 'LineToolParallelChannel', 'LineToolRay', 'LineToolRectangle', 'LineToolText', 'LineToolTrendLine', 'LineToolVertLine'].sort(),
     );
     const trend = drawings.find((d) => d.type === 'LineToolTrendLine')!;
-    expect(trend.points).toEqual([{ time: 1775606400, offset: 0, price: 255 }, { time: 1785196800, offset: 0, price: 315 }]);
+    expect(trend.points).toEqual([{ time: 1775606400, offset: 0, price: 255, interval: '1D' }, { time: 1785196800, offset: 0, price: 315, interval: '1D' }]);
     expect(trend.props).toMatchObject({ linecolor: '#ff9800', linewidth: 3 });
     expect(drawings.find((d) => d.type === 'LineToolText')!.props.text).toBe('Buy here');
   });

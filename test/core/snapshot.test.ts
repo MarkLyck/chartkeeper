@@ -159,4 +159,37 @@ describe('snapshot folders', () => {
     expect(await r.userDrawings()).toBeNull();
     expect(await r.scriptsIndex()).toEqual({ scripts: [] });
   });
+
+  it('puts a README in each finished backup that the file checks and the backup list ignore', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const w = await SnapshotWriter.begin(root, new Date(2026, 0, 6));
+    await w.writeJson('layouts/AbCd1234/layout.json', { a: 1 });
+    const gold = { uid: 'AbCd1234', name: 'Gold', dir: 'layouts/AbCd1234', symbols: ['TVC:GOLD'], charts: 1, drawings: 2, studies: 0, lastModified: null, priceData: false };
+    const dir = await w.finish({ ...body, layouts: [gold] });
+    expect(await fs.readFile(path.join(dir, 'README.txt'), 'utf8')).toContain('“Gold”');
+    const r = await SnapshotReader.open(dir);
+    expect(Object.keys(r.manifest.files)).toEqual(['layouts/AbCd1234/layout.json']);
+    expect(await r.verify()).toEqual([]);
+    expect((await listSnapshots(root)).map((s) => s.dir)).toEqual([dir]);
+  });
+
+  it('puts a README in an incomplete backup too, saying it did not finish', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    const dir = await (await SnapshotWriter.begin(root, new Date(2026, 0, 7))).fail(body, 'boom');
+    expect(await fs.readFile(path.join(dir, 'README.txt'), 'utf8')).toMatch(/did not finish[\s\S]*boom/i);
+  });
+
+  it('explains the snapshots folder in a README next to it, and keeps a README.txt the user wrote there', async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    await (await SnapshotWriter.begin(root, new Date(2026, 0, 8))).finish(body);
+    const ours = await fs.readFile(path.join(root, 'README.txt'), 'utf8');
+    expect(ours).toContain('snapshots');
+    expect((await fs.readdir(root)).sort()).toEqual(['README.txt', 'snapshots']);
+    expect(await listSnapshots(root)).toHaveLength(1);
+
+    const theirs = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-'));
+    await fs.writeFile(path.join(theirs, 'README.txt'), 'My trading notes');
+    await (await SnapshotWriter.begin(theirs, new Date(2026, 0, 8))).finish(body);
+    expect(await fs.readFile(path.join(theirs, 'README.txt'), 'utf8')).toBe('My trading notes');
+  });
 });

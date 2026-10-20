@@ -156,7 +156,7 @@ function timeFormatter(plan: ChartPlan): (p: DrawingPoint) => string {
   const intraday = isIntraday(plan.timeIndex.interval);
   const fmt = new Intl.DateTimeFormat(LOCALE, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' });
   return (p) => {
-    const t = plan.timeIndex.times[plan.timeIndex.logical(p)] ?? p.time;
+    const t = plan.timeIndex.timeAt(plan.timeIndex.logical(p)) ?? p.time;
     const d = new Date((t + (intraday ? timeZoneOffset(t, plan.chart.timezone) : 0)) * 1000);
     const parts = Object.fromEntries(fmt.formatToParts(d).map((x) => [x.type, x.value]));
     const text = `${parts.weekday} ${parts.day} ${parts.month} '${String(d.getUTCFullYear()).slice(2)}`;

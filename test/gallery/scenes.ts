@@ -9,7 +9,8 @@
  * range of the visible bars (0 = lowest low, 1 = highest high) or a field of
  * that bar. A `swing` anchor picks the highest high or lowest low in a bar range.
  * A `year` anchor is a fixed decimal year (2020.5 is early July 2020) and price,
- * for scenes that copy a real chart; years past the last bar land on future bars.
+ * for scenes that copy a real chart; years past the last bar land on future bars. Its `offset`
+ * counts bars past that time, the way TradingView saves a point placed beyond the last bar.
  */
 import { CHART_STYLES, LINE_TOOLS, type FreeChartStyleId, type LineToolType, type SignedOutStudy } from './catalog';
 
@@ -18,7 +19,7 @@ export type PriceRef = number | 'open' | 'high' | 'low' | 'close';
 export type Anchor =
   | readonly [bar: number, price: PriceRef]
   | { readonly swing: 'high' | 'low'; readonly from: number; readonly to: number }
-  | { readonly year: number; readonly price: number };
+  | { readonly year: number; readonly price: number; readonly offset?: number };
 
 export interface DrawingSpec {
   readonly type: LineToolType;
@@ -50,6 +51,8 @@ export interface ChartSpec {
   readonly priceScale?: Props;
   /** Bars to load, when the scene shows more than the usual 600. */
   readonly dataBars?: number;
+  /** The interval the drawings were drawn on, when the layout was saved on another one. Anchors then refer to bars of this interval. */
+  readonly drawnOn?: string;
   readonly studies: readonly StudySpec[];
   readonly drawings: readonly DrawingSpec[];
 }
@@ -670,4 +673,55 @@ const logScaleTools = scene({
   ],
 });
 
-export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes, replicaTsxv, logScaleTools];
+/** Decimal year of a calendar day, late enough in the day to fall in that day's bar. */
+const day = (iso: string, price: number, offset = 0): Anchor => {
+  const t = Date.parse(`${iso}T20:00:00Z`);
+  const year = new Date(t).getUTCFullYear();
+  return { year: year + (t - Date.UTC(year, 0, 1)) / (Date.UTC(year + 1, 0, 1) - Date.UTC(year, 0, 1)), price, offset };
+};
+/**
+ * A copy of a user's real chart (AMEX:SILJ, read off their screenshot): Elliott waves in several
+ * degrees, arcs under the lows, long projections into 2027 and a note, all drawn on the daily
+ * chart, with the layout last saved on 5 minutes. Some points are a bar plus an offset in daily
+ * bars, as TradingView saves points placed beyond the last bar: the note (9 Oct + 5 = 16 Oct), the
+ * top of the big wave (21 Sep - 16 = 28 Aug) and the projected small waves (20 Oct + 3, 5, 8).
+ */
+const replicaSilj = scene({
+  name: 'replica-silj-daily-drawings-on-5m',
+  description: "Replica of a user's chart: SILJ Elliott waves, arcs, projections into 2027 and a note drawn on the daily chart, layout saved on 5 minutes, some points saved as a bar plus a daily offset.",
+  theme: 'dark',
+  viewport: { width: 2900, height: 761 },
+  charts: [
+    chart({
+      symbol: 'AMEX:SILJ',
+      interval: '5',
+      drawnOn: 'D',
+      dataBars: 5000,
+      visibleBars: 5000,
+      rightMarginBars: 500,
+      drawings: [
+        d('LineToolTrendLine', [day('2026-02-02', 37.4), day('2026-11-02', 50)], line('#4CAF50', 2)),
+        d('LineToolTrendLine', [day('2026-02-02', 41.3), day('2026-07-21', 23.2)], line('#8C8A21', 1)),
+        d('LineToolTrendLine', [day('2026-07-29', 23.2), day('2027-04-28', 49.3)], line('#B8A21C', 1)),
+        d('LineToolTrendLine', [day('2026-10-14', 24.36), day('2027-04-30', 49.8)], line('#089981', 1)),
+        d('LineToolTrendLine', [day('2026-02-02', 19.9), day('2027-04-30', 22.1)], line('#8C8A21', 1, { linestyle: 1 })),
+        d('LineToolArc', [day('2026-03-02', 25.6), day('2026-04-28', 25.6), day('2026-03-20', 24.3)], { color: '#D4B91C', linewidth: 1 }),
+        d('LineToolArc', [day('2026-06-26', 23.8), day('2026-08-04', 23.8), day('2026-07-29', 22.2)], { color: '#D4B91C', linewidth: 1 }),
+        d('LineToolArc', [day('2026-09-29', 26.2), day('2026-10-30', 26.2), day('2026-10-14', 24.5)], { color: '#D4B91C', linewidth: 1 }),
+        d('LineToolArc', [day('2026-04-01', 14.6), day('2026-10-02', 14.6), day('2026-06-24', 20.1)], { color: '#2A4B7C', linewidth: 1 }),
+        d('LineToolVertLine', [day('2026-06-23', 30)], line('#434651', 1, { showTime: false })),
+        d('LineToolVertLine', [day('2026-09-29', 30)], line('#8C8A21', 1, { showTime: false })),
+        d('LineToolElliottCorrection', [day('2026-02-27', 40.3), day('2026-03-20', 25.8), day('2026-04-17', 34.08), day('2026-06-10', 24.49)], wave('#F23645', 9)),
+        d('LineToolElliottTripleCombo', [day('2026-05-13', 34.73), day('2026-06-10', 24.49), day('2026-06-17', 30.68), day('2026-06-24', 24.48), day('2026-07-02', 27.5), day('2026-07-29', 23.21)], wave('#E0E3EB', 8)),
+        d('LineToolElliottImpulse', [day('2026-07-29', 23.21), day('2026-08-10', 29.99), day('2026-08-13', 29.16), day('2026-08-21', 32.68), day('2026-08-26', 31.5), day('2026-08-28', 33.58)], wave('#FFB74D', 6)),
+        d('LineToolElliottImpulse', [day('2026-07-29', 23.21), day('2026-09-21', 33.58, -16), day('2026-10-14', 24.36), day('2027-01-15', 42), day('2027-02-16', 37), day('2027-04-30', 49.8)], wave('#26A69A', 10)),
+        d('LineToolElliottCorrection', [day('2026-08-28', 33.58), day('2026-09-15', 28.66), day('2026-09-22', 31.28), day('2026-10-14', 24.36)], wave('#B2B5BE', 4)),
+        d('LineToolElliottImpulse', [day('2026-09-22', 31.28), day('2026-09-29', 27.14), day('2026-09-30', 27.98), day('2026-10-05', 26.52), day('2026-10-09', 27.69), day('2026-10-14', 24.36)], wave('#00BCD4', 5)),
+        d('LineToolElliottImpulse', [day('2026-10-14', 24.36), day('2026-10-16', 26.37), day('2026-10-19', 25.2), day('2026-10-20', 28.6, 3), day('2026-10-20', 27.1, 5), day('2026-10-20', 29.6, 8)], wave('#D4B91C', 3)),
+        d('LineToolText', [day('2026-10-09', 24.0, 5)], text('BUY HERE!!! AG, CDE, PAAS, ABRA, AEM, HSTR?, DSV?', '#F23645')),
+      ],
+    }),
+  ],
+});
+
+export const SCENES: readonly Scene[] = [advanced, advancedDark, ...drawingScenes, ...styleScenes, ...indicatorScenes, replicaTsxv, logScaleTools, replicaSilj];

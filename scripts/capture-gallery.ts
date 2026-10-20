@@ -198,15 +198,16 @@ function yearTime(year: number): number {
   return Math.round((start + (year - whole) * (Date.UTC(whole + 1, 0, 1) - start)) / 1000);
 }
 
-function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: number } {
+function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; offset: number; price: number } {
   const back = (bars: number) => Math.round(bars * w.scale);
   if ('year' in a) {
     // The bar the time falls in, or the future bar the same number of steps past the last one.
     const t = yearTime(a.year);
     const last = w.bars[w.last]![0];
-    if (t > last) return { time: last + Math.round((t - last) / w.step) * w.step, price: a.price };
+    const offset = a.offset ?? 0;
+    if (t > last) return { time: last + Math.round((t - last) / w.step) * w.step, offset, price: a.price };
     const bar = [...w.bars].reverse().find((b) => b[0] <= t) ?? w.bars[0]!;
-    return { time: bar[0], price: a.price };
+    return { time: bar[0], offset, price: a.price };
   }
   if (!Array.isArray(a)) {
     const { swing, from, to } = a as Extract<Anchor, { swing: unknown }>;
@@ -217,7 +218,7 @@ function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: numbe
       if (best < 0 || (swing === 'high' ? bar[2] > w.bars[best]![2] : bar[3] < w.bars[best]![3])) best = i;
     }
     if (best < 0) throw new Error(`No bars for swing anchor ${JSON.stringify(a)}`);
-    return { time: w.bars[best]![0], price: swing === 'high' ? w.bars[best]![2] : w.bars[best]![3] };
+    return { time: w.bars[best]![0], offset: 0, price: swing === 'high' ? w.bars[best]![2] : w.bars[best]![3] };
   }
   const [barsFromRight, price] = a as Extract<Anchor, readonly unknown[]>;
   const i = w.last - back(barsFromRight);
@@ -225,12 +226,12 @@ function resolveAnchor(w: SeriesWindow, a: Anchor): { time: number; price: numbe
   const bar = w.bars[Math.min(i, w.last)]!;
   const time = i > w.last ? bar[0] + (i - w.last) * w.step : bar[0];
   const field = { open: 1, high: 2, low: 3, close: 4 } as const;
-  return { time, price: typeof price === 'number' ? +(w.lo + price * (w.hi - w.lo)).toFixed(4) : bar[field[price]] };
+  return { time, offset: 0, price: typeof price === 'number' ? +(w.lo + price * (w.hi - w.lo)).toFixed(4) : bar[field[price]] };
 }
 
 const drawingId = (chartIndex: number, i: number) => `c${chartIndex + 1}d${String(i + 1).padStart(2, '0')}`;
 
-function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], withDrawings = true): TvContent {
+function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], anchors: SeriesWindow[], withDrawings = true): TvContent {
   const content = structuredClone(base) as TvContent & Json;
   const baseChart = content.charts[0]!;
   content.name = scene.name;
@@ -251,16 +252,17 @@ function buildContent(base: TvContent, scene: Scene, windows: SeriesWindow[], wi
       main.state = deepMerge(main.state as Json, { priceAxisProperties: { log: axis.state.m_isLog === true, percentage: axis.state.m_isPercentage === true, indexedTo100: axis.state.m_isIndexedTo100 === true } });
     }
     const w = windows[ci]!;
+    const drawnOn = spec.drawnOn ?? spec.interval;
     const plotWidth = chartAreaWidth(scene) / scene.charts.length - PRICE_AXIS_WIDTH;
     const shownBars = w.last - w.first + 1 + spec.rightMarginBars;
     chart.timeScale = deepMerge(chart.timeScale as Json, { m_barSpacing: +(plotWidth / shownBars).toFixed(3), m_rightOffset: spec.rightMarginBars, usePercentageRightOffset: false });
     const drawings: TvSource[] = (withDrawings ? spec.drawings : []).map((dr, i) => ({
       type: dr.type,
       id: drawingId(ci, i),
-      state: { symbol: spec.symbol, interval: spec.interval, ...structuredClone(dr.props ?? {}) },
+      state: { symbol: spec.symbol, interval: drawnOn, ...structuredClone(dr.props ?? {}) },
       points: dr.at.map((a) => {
-        const { time, price } = resolveAnchor(w, a);
-        return { time_t: time, offset: 0, price, interval: spec.interval };
+        const { time, offset, price } = resolveAnchor(anchors[ci]!, a);
+        return { time_t: time, offset, price, interval: drawnOn };
       }),
       zorder: -5000 + i,
       ownerSource: main.id,
@@ -413,13 +415,14 @@ async function captureScene(page: Page, log: FrameLog, bases: Record<Scene['them
   const windows: SeriesWindow[] = await Promise.all(scene.charts.map(async (c) => seriesWindow(await plainBars(c), c.visibleBars)));
   if (chartStyle(scene.charts[0].style).computed) {
     // Place the drawings on the bars TradingView computes for this style, which only the page knows: load it once without drawings.
-    await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows, false));
+    await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows, windows, false));
     await applyStyle(page, log, 0, scene.charts[0].style);
     const bars = log.lastSeries ? log.seriesBars(log.lastSeries) : [];
     if (bars.length < 10) throw new Error(`TradingView sent only ${bars.length} bars for style ${scene.charts[0].style}`);
     windows[0] = seriesWindow(bars, scene.charts[0].visibleBars);
   }
-  await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows));
+  const anchors: SeriesWindow[] = await Promise.all(scene.charts.map(async (c, ci) => (c.drawnOn ? seriesWindow(await plainBars({ ...c, interval: c.drawnOn, dataBars: 600 }), 600) : windows[ci]!)));
+  await loadScene(page, log, scene, buildContent(bases[scene.theme], scene, windows, anchors));
 
   const ids = scene.charts.map((c, ci) => c.drawings.map((_, i) => drawingId(ci, i)));
   for (const [ci, spec] of scene.charts.entries()) {

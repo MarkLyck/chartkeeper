@@ -3,7 +3,7 @@ import type { Change } from '../../src/core/diff';
 import { changeText, templateItemText, templateMissingText } from '../../src/renderer/ui/changes';
 
 const day = (iso: string) => Date.parse(`${iso}T00:00:00Z`) / 1000;
-const pts = [{ time: day('2026-07-01'), offset: 0, price: 190 }];
+const pts = [{ time: day('2026-07-01'), offset: 0, price: 190, interval: null }];
 
 // One of each, written out so a new kind of change fails `tsc` here until it has words.
 const EVERY: Record<Change['what'], Change> = {

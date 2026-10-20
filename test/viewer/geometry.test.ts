@@ -158,6 +158,81 @@ describe('time index', () => {
     expect(index.futureTimes(1)).toEqual([times[9]! + 3 * DAY]); // Friday -> Monday
   });
 
+  describe('a 5-minute chart with points drawn on other intervals', () => {
+    // AMEX:SILJ regular session: 5-minute bars 13:30-19:55 UTC on weekdays, 1 September to 20 October 2026, none on Labor Day (7 September).
+    const at = (iso: string) => Date.parse(iso) / 1000;
+    const days: number[] = [];
+    for (let d = at('2026-09-01T00:00Z'); d <= at('2026-10-20T00:00Z'); d += DAY) if (![0, 6].includes(new Date(d * 1000).getUTCDay()) && d !== at('2026-09-07T00:00Z')) days.push(d);
+    const fiveMin = new TimeIndex(days.flatMap((d) => Array.from({ length: 78 }, (_, k) => d + 13.5 * 3600 + k * 300)), '5', { holidays: ['20261126', '20261225'] });
+    const bar = (iso: string) => fiveMin.indexOf(at(iso));
+
+    // Where TradingView's own 5-minute AMEX:SILJ chart put these points (2026-10-20).
+    it('counts the bar offset of a daily point in trading days, as TradingView does', () => {
+      expect(fiveMin.logical({ time: at('2026-10-13T13:30Z'), offset: -10, interval: 'D' })).toBe(bar('2026-09-29T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-10-09T13:30Z'), offset: 5, interval: 'D' })).toBe(bar('2026-10-16T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-09-16T13:30Z'), offset: -5, interval: '1D' })).toBe(bar('2026-09-09T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-09-14T13:30Z'), offset: -5, interval: 'D' }), 'Labor Day has no bars, so it is not counted').toBe(bar('2026-09-04T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-09-21T13:30Z'), offset: -16, interval: 'D' })).toBe(bar('2026-08-27T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-10-20T13:30Z'), offset: 5, interval: 'D' })).toBe(bar('2026-10-27T13:30Z'));
+    });
+
+    it('counts weekly offsets in weeks and hourly offsets in session hours', () => {
+      expect(fiveMin.logical({ time: at('2026-09-14T13:30Z'), offset: 2, interval: 'W' })).toBe(bar('2026-09-28T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-10-19T13:30Z'), offset: 12, interval: '60' })).toBe(bar('2026-10-20T18:30Z'));
+    });
+
+    it("keeps counting in the chart's own bars when the point was drawn on the chart's interval", () => {
+      const t = at('2026-10-13T13:30Z');
+      expect(fiveMin.logical({ time: t, offset: 7, interval: '5' })).toBe(bar('2026-10-13T13:30Z') + 7);
+      expect(fiveMin.logical({ time: t, offset: 7, interval: null })).toBe(bar('2026-10-13T13:30Z') + 7);
+    });
+
+    it('counts only session bars before the first bar', () => {
+      expect(bar('2026-08-31T19:55Z')).toBe(-1);
+      expect(bar('2026-08-31T13:30Z')).toBe(-78);
+      expect(bar('2026-08-29T12:00Z'), 'a Saturday belongs to Friday').toBe(-79);
+    });
+
+    it('steps a point drawn on a finer interval by time, not by chart bars', () => {
+      expect(fiveMin.logical({ time: at('2026-10-19T14:30Z'), offset: 12, interval: '1' })).toBe(bar('2026-10-19T14:42Z'));
+    });
+
+    it('dates a point past the last bar by the bar it lands on', () => {
+      expect(fiveMin.timeAt(fiveMin.logical({ time: at('2026-10-20T13:30Z'), offset: 5, interval: 'D' }))).toBe(at('2026-10-27T13:30Z'));
+    });
+
+    it('places thousands of points from years before the first bar quickly', () => {
+      const started = performance.now();
+      for (let k = 0; k < 4000; k++) fiveMin.logical({ time: at('2015-01-05T13:30Z') + k * 3600 * 17, offset: 0, interval: '5' });
+      expect(performance.now() - started).toBeLessThan(250);
+    });
+
+    it('skips exchange holidays after the last bar', () => {
+      const plain = new TimeIndex(fiveMin.times, '5');
+      const afterThanksgiving = at('2026-11-27T13:30Z');
+      expect(fiveMin.indexOf(afterThanksgiving)).toBe(plain.indexOf(afterThanksgiving) - 78);
+      expect(fiveMin.futureTimes(30 * 78).includes(at('2026-11-26T13:30Z'))).toBe(false);
+    });
+  });
+
+  it('counts daily offsets in trading days on a weekly chart', () => {
+    const at = (iso: string) => Date.parse(iso) / 1000;
+    const weekly = new TimeIndex(Array.from({ length: 20 }, (_, k) => at('2026-06-08T13:30Z') + k * 7 * DAY), 'W');
+    expect(weekly.logical({ time: at('2026-10-13T13:30Z'), offset: -10, interval: 'D' })).toBe(weekly.indexOf(at('2026-09-29T13:30Z')));
+  });
+
+  it("does not count a futures market's Sunday evening open as a trading day", () => {
+    const at = (iso: string) => Date.parse(iso) / 1000;
+    const hours: number[] = [];
+    for (let d = at('2026-09-06T00:00Z'); d <= at('2026-10-16T00:00Z'); d += DAY) {
+      const dow = new Date(d * 1000).getUTCDay();
+      if (dow === 6) continue;
+      for (let h = 0; h < 24; h++) if ((dow === 0 && h >= 22) || (dow >= 1 && dow <= 4 && h !== 21) || (dow === 5 && h < 21)) hours.push(d + h * 3600);
+    }
+    const futures = new TimeIndex(hours, '60');
+    expect(futures.logical({ time: at('2026-10-13T13:00Z'), offset: -10, interval: 'D' })).toBe(futures.indexOf(at('2026-09-29T13:00Z')));
+  });
+
   it('labels intervals like the chart header', () => {
     expect(['D', '1D', '60', '240', '15', '1W', '3M', '30S'].map(intervalLabel)).toEqual(['1D', '1D', '1h', '4h', '15m', '1W', '3M', '30s']);
   });

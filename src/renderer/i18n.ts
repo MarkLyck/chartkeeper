@@ -130,6 +130,8 @@ export const TEXT = {
   'view.resetView': 'Reset view',
   'view.fullScreen': 'Full screen',
   'view.exitFullScreen': 'Exit full screen',
+  'view.expandChart': 'Expand chart',
+  'view.exitExpandedChart': 'Back to normal size',
   'view.prevLayout': 'Previous layout',
   'view.nextLayout': 'Next layout',
   'view.layoutOf': '{n} of {total}',

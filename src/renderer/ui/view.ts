@@ -41,6 +41,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     expanded = on;
     el.classList.toggle('is-full', on);
     // The window itself goes full screen, not the page: on macOS the page's own full screen can end without the page being told.
+    // On Linux the window is left as it is.
     void ctx.api.setFullScreen(on);
     renderBar();
   }
@@ -144,6 +145,10 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     return strip;
   }
 
+  // Kept while the same backup is shown: the main area redraws when a chart finishes loading, and a pick made meanwhile must stay.
+  let compareFor: { dir: string; el: HTMLElement } | null = null;
+  const compareControlOf = (s: SnapshotSummary) => (compareFor?.dir === s.dir ? compareFor.el : (compareFor = { dir: s.dir, el: compareControl(s) }).el);
+
   function compareControl(s: SnapshotSummary): HTMLElement {
     const sTime = snapshotDate(s)?.getTime() ?? 0;
     const older = snapshots.filter((o) => o !== s && o.manifest && (snapshotDate(o)?.getTime() ?? 0) < sTime);
@@ -162,7 +167,8 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     const i = layouts.findIndex((l) => l.uid === uid);
     const tool = (id: string, label: string, key: string, icon: SVGSVGElement, onClick: () => void, disabled: boolean) =>
       h('button', { type: 'button', id, class: 'tool', disabled, title: `${label} (${key})`, attrs: { 'aria-label': label }, on: { click: onClick } }, icon);
-    const full = expanded ? t('view.exitFullScreen') : t('view.fullScreen');
+    const linux = ctx.state().platform === 'linux';
+    const full = expanded ? t(linux ? 'view.exitExpandedChart' : 'view.exitFullScreen') : t(linux ? 'view.expandChart' : 'view.fullScreen');
     // Redrawing the bar drops focus; put it back once the stage is in the page again, so arrows and zoom can be pressed repeatedly from the keyboard.
     const focused = bar.contains(document.activeElement) ? document.activeElement?.id : undefined;
     if (focused) queueMicrotask(() => {
@@ -218,7 +224,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
       : content.k === 'compare' ? comparePanel(ctx, content, s, snapshots, () => (content.k === 'compare' && content.returnTo ? void openLayout(content.returnTo) : setMain({ k: 'none' })))
       : layoutsOf(s).length ? h('p', { class: 'note' }, t('view.pickLayout')) : null;
     replace(main,
-      content.k === 'compare' ? null : h('div', { class: 'view-head' }, h('h2', { class: 'view-title' }, snapshotTitle(s)), compareControl(s)),
+      content.k === 'compare' ? null : h('div', { class: 'view-head' }, h('h2', { class: 'view-title' }, snapshotTitle(s)), compareControlOf(s)),
       isIncomplete(s) ? notice('error', s.manifest ? t('view.incompleteNote') : t('view.unreadable'), reason ? h('p', { class: 'tech' }, reason) : null) : null,
       content.k === 'compare' ? null : layoutStrip(s),
       body);
