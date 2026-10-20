@@ -265,6 +265,18 @@ function studyLegend(studies: PlannedStudy[], theme: ChartTheme, top: number): L
 
 export interface RenderedChart {
   destroy(): void;
+  /** Shows `factor` times as many bars, keeping the right edge where it is; below 1 zooms in. */
+  zoom(factor: number): void;
+  /** Back to the view the chart opened with. */
+  reset(): void;
+}
+
+/** The fewest bars a zoom in leaves on screen. */
+export const MIN_ZOOM_BARS = 10;
+
+/** A logical range `factor` times as wide, anchored at its right edge so the latest bars stay in view. */
+export function zoomRange(range: { from: number; to: number }, factor: number): { from: number; to: number } {
+  return { from: range.to - Math.max(MIN_ZOOM_BARS, (range.to - range.from) * factor), to: range.to };
 }
 
 export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleRange?: { from: number; to: number }; priceRange?: { from: number; to: number }; priceAxisWidth?: number }): RenderedChart {
@@ -280,7 +292,7 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
     msg.textContent = STRINGS.noPriceDataBanner;
     msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;opacity:0.75;';
     cell.append(box, msg);
-    return { destroy: () => cell.replaceChildren() };
+    return { destroy: () => cell.replaceChildren(), zoom: () => {}, reset: () => {} };
   }
 
   const holder = document.createElement('div');
@@ -427,5 +439,10 @@ export function renderChart(cell: HTMLElement, plan: ChartPlan, view: { visibleR
       chart.remove();
       cell.replaceChildren();
     },
+    zoom(factor) {
+      const range = chart.timeScale().getVisibleLogicalRange();
+      if (range) chart.timeScale().setVisibleLogicalRange(zoomRange(range, factor));
+    },
+    reset: applyRange,
   };
 }

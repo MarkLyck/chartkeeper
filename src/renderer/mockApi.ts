@@ -320,6 +320,9 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     async openOnTradingView(url) {
       record('openOnTradingView', url);
     },
+    async setFullScreen(on) {
+      record('setFullScreen', on);
+    },
     onProgress(cb) {
       progressListeners.add(cb);
       return () => progressListeners.delete(cb);

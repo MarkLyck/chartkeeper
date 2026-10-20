@@ -91,6 +91,8 @@ export interface ChartKeeperApi {
   restoreTemplates(snapshotDir: string): Promise<Result<TemplatesOutcome>>;
   openFolder(dir: string): Promise<void>;
   openOnTradingView(url: string): Promise<void>;
+  /** Puts the window in full screen, or back as it was before; for the chart viewer. */
+  setFullScreen(on: boolean): Promise<void>;
   onProgress(cb: (e: Events['progress']) => void): () => void;
   onStateChanged(cb: (s: Events['state']) => void): () => void;
 }
@@ -120,6 +122,7 @@ export const INVOKE_CHANNELS = {
   restoreTemplates: 'ck:restoreTemplates',
   openFolder: 'ck:openFolder',
   openOnTradingView: 'ck:openOnTradingView',
+  setFullScreen: 'ck:setFullScreen',
 } as const satisfies { [K in keyof Invoke]: `ck:${K}` };
 
 export const EVENT_CHANNELS = { progress: 'ck:progress', state: 'ck:state' } as const satisfies { [K in keyof Events]: `ck:${K}` };

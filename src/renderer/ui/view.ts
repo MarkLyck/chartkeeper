@@ -1,9 +1,9 @@
 import type { CompareOutcome, LoadedLayout, SnapshotSummary } from '../../shared/api';
 import type { Change, LayoutDiff } from '../../core/diff';
 import { t } from '../i18n';
-import { renderLayout } from '../viewer';
+import { renderLayout, type RenderedLayout } from '../viewer';
 import { changeText } from './changes';
-import { button, errorBox, notice, spinner, topBar } from './components';
+import { button, errorBox, icons, notice, spinner, topBar } from './components';
 import { h, replace } from './dom';
 import { loaded, type Ctx, type Loadable, type Screen } from './screen';
 import { incompleteReason, isIncomplete, layoutFacts, layoutsOf, layoutTitle, newestFirst, snapshotDate, snapshotLines, snapshotTitle } from './snapshots';
@@ -24,15 +24,61 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
   let snapshots: SnapshotSummary[] = [];
   let selected: SnapshotSummary | null = null;
   let content: Main = { k: 'none' };
-  let chart: { destroy(): void } | null = null;
+  let chart: RenderedLayout | null = null;
+  /** The chart stage fills the window. Only while a layout is open. */
+  let expanded = false;
   let token = 0;
+  // Kept across renders, so the toolbar can follow the chart and full screen without redrawing the chart.
+  const bar = h('div', { class: 'stage-bar' });
 
   const dropChart = () => {
     chart?.destroy();
     chart = null;
   };
 
+  function setExpanded(on: boolean) {
+    if (on === expanded) return;
+    expanded = on;
+    el.classList.toggle('is-full', on);
+    // The window itself goes full screen, not the page: on macOS the page's own full screen can end without the page being told.
+    void ctx.api.setFullScreen(on);
+    renderBar();
+  }
+
+  function toggleFull() {
+    setExpanded(!expanded);
+    document.getElementById('chart-full')?.focus();
+  }
+
+  function stepLayout(by: -1 | 1) {
+    if (!selected || content.k !== 'chart') return;
+    const { uid } = content;
+    const layouts = layoutsOf(selected);
+    const next = layouts[layouts.findIndex((l) => l.uid === uid) + by];
+    if (next) void openLayout(next.uid);
+  }
+
+  const onKey = (e: KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey || e.altKey || (e.target instanceof Element && e.target.closest('input, select, textarea'))) return;
+    if (content.k !== 'chart') return;
+    const c = chart;
+    const act =
+      e.key === 'f' || e.key === 'F' ? (e.repeat ? null : toggleFull)
+      : e.key === 'Escape' ? (expanded ? () => setExpanded(false) : null)
+      : e.key === 'ArrowLeft' ? (expanded ? () => stepLayout(-1) : null)
+      : e.key === 'ArrowRight' ? (expanded ? () => stepLayout(1) : null)
+      : e.key === '+' || e.key === '=' ? (c ? () => c.zoom(ZOOM_IN) : null)
+      : e.key === '-' ? (c ? () => c.zoom(1 / ZOOM_IN) : null)
+      : e.key === '0' ? (c ? () => c.reset() : null)
+      : null;
+    if (!act) return;
+    e.preventDefault();
+    act();
+  };
+  document.addEventListener('keydown', onKey);
+
   function selectSnapshot(s: SnapshotSummary) {
+    setExpanded(false);
     selected = s;
     renderSidebar();
     const first = layoutsOf(s)[0];
@@ -42,6 +88,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
 
   function setMain(next: Main) {
     content = next;
+    if (next.k !== 'chart') setExpanded(false);
     renderMain();
   }
 
@@ -83,7 +130,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     const layouts = layoutsOf(s);
     if (layouts.length === 0) return h('p', { class: 'note' }, t('view.noLayouts'));
     const current = content.k === 'chart' ? content.uid : null;
-    return h('div', { class: 'layout-strip', attrs: { role: 'group', 'aria-label': t('view.layouts') } }, layouts.map((l, i) =>
+    const strip = h('div', { class: 'layout-strip', attrs: { role: 'group', 'aria-label': t('view.layouts') }, on: { wheel: (e) => scrollSideways(strip, e) } }, layouts.map((l, i) =>
       h('button', {
         type: 'button',
         id: `layout-${i}`,
@@ -94,6 +141,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
       h('span', { class: 'layout-name' }, layoutTitle(l)),
       h('span', { class: 'layout-facts' }, layoutFacts(l)),
       l.priceData ? null : h('span', { class: 'badge badge-muted' }, t('view.noPrices')))));
+    return strip;
   }
 
   function compareControl(s: SnapshotSummary): HTMLElement {
@@ -107,16 +155,57 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     return h('div', { class: 'compare-control' }, h('label', { htmlFor: 'compare-pick', class: 'sr-only' }, t('view.compareLabel')), select, go);
   }
 
-  function chartArea(c: Extract<Main, { k: 'chart' }>): HTMLElement {
-    if (c.load.k === 'loading') return h('div', { class: 'chart-box chart-empty' }, spinner(t('common.loading')));
-    if (c.load.k === 'error') return errorBox(ctx, c.load.error);
+  function renderBar() {
+    if (!selected || content.k !== 'chart') return;
+    const layouts = layoutsOf(selected);
+    const uid = content.uid;
+    const i = layouts.findIndex((l) => l.uid === uid);
+    const tool = (id: string, label: string, key: string, icon: SVGSVGElement, onClick: () => void, disabled: boolean) =>
+      h('button', { type: 'button', id, class: 'tool', disabled, title: `${label} (${key})`, attrs: { 'aria-label': label }, on: { click: onClick } }, icon);
+    const full = expanded ? t('view.exitFullScreen') : t('view.fullScreen');
+    // Redrawing the bar drops focus; put it back once the stage is in the page again, so arrows and zoom can be pressed repeatedly from the keyboard.
+    const focused = bar.contains(document.activeElement) ? document.activeElement?.id : undefined;
+    if (focused) queueMicrotask(() => {
+      const again = document.getElementById(focused);
+      (again instanceof HTMLButtonElement && !again.disabled ? again : document.getElementById('chart-full'))?.focus();
+    });
+    replace(bar,
+      // The arrows come first so they stay put under the mouse while the names change.
+      h('div', { class: 'stage-nav' },
+        tool('stage-prev', t('view.prevLayout'), '←', icons.prev(), () => stepLayout(-1), i <= 0),
+        tool('stage-next', t('view.nextLayout'), '→', icons.next(), () => stepLayout(1), i < 0 || i >= layouts.length - 1),
+        h('p', { class: 'stage-title' },
+          h('span', { class: 'stage-name' }, layouts[i] ? layoutTitle(layouts[i]) : ''),
+          h('span', { class: 'stage-count' }, t('view.layoutOf', { n: i + 1, total: layouts.length })))),
+      h('p', { class: 'stage-hint' }, t('view.chartHint')),
+      h('div', { class: 'stage-tools' },
+        tool('chart-zoom-out', t('view.zoomOut'), '−', icons.zoomOut(), () => chart?.zoom(1 / ZOOM_IN), !chart),
+        tool('chart-zoom-in', t('view.zoomIn'), '+', icons.zoomIn(), () => chart?.zoom(ZOOM_IN), !chart),
+        tool('chart-reset', t('view.resetView'), '0', icons.reset(), () => chart?.reset(), !chart),
+        h('button', {
+          type: 'button',
+          id: 'chart-full',
+          class: 'tool tool-full',
+          title: `${full} (${expanded ? 'Esc' : 'F'})`,
+          attrs: { 'aria-pressed': String(expanded) },
+          on: { click: toggleFull },
+        }, expanded ? icons.collapse() : icons.expand(), full)));
+  }
+
+  function chartStage(c: Extract<Main, { k: 'chart' }>): HTMLElement {
+    renderBar();
+    const stage = (box: HTMLElement) => h('section', { class: 'chart-stage', attrs: { 'aria-label': t('view.chart') } }, bar, box);
+    if (c.load.k === 'loading') return stage(h('div', { class: 'chart-box chart-empty' }, spinner(t('common.loading'))));
+    if (c.load.k === 'error') return stage(h('div', { class: 'chart-box chart-empty' }, errorBox(ctx, c.load.error)));
     const known = selected && layoutsOf(selected).find((l) => l.uid === c.uid);
     const box = h('div', { class: 'chart-box', attrs: { role: 'img', 'aria-label': known ? layoutTitle(known) : c.load.value.layout.name } });
     const loaded = c.load.value;
     queueMicrotask(() => {
-      if (box.isConnected) chart = renderLayout(box, loaded.layout, loaded.data);
+      if (!box.isConnected) return;
+      chart = renderLayout(box, loaded.layout, loaded.data);
+      renderBar();
     });
-    return box;
+    return stage(box);
   }
 
   function renderMain() {
@@ -125,7 +214,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     if (!s) return replace(main, h('p', { class: 'note' }, snapshots.length ? '' : t('view.empty')));
     const reason = incompleteReason(s);
     const body =
-      content.k === 'chart' ? chartArea(content)
+      content.k === 'chart' ? chartStage(content)
       : content.k === 'compare' ? comparePanel(ctx, content, s, snapshots, () => (content.k === 'compare' && content.returnTo ? void openLayout(content.returnTo) : setMain({ k: 'none' })))
       : layoutsOf(s).length ? h('p', { class: 'note' }, t('view.pickLayout')) : null;
     replace(main,
@@ -133,6 +222,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
       isIncomplete(s) ? notice('error', s.manifest ? t('view.incompleteNote') : t('view.unreadable'), reason ? h('p', { class: 'tech' }, reason) : null) : null,
       content.k === 'compare' ? null : layoutStrip(s),
       body);
+    main.querySelector('.layout-selected')?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
 
   void ctx.api.listSnapshots().then((list) => {
@@ -144,8 +234,26 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
   });
   replace(main, spinner(t('common.loading')));
 
-  return { el, destroy: dropChart };
+  return {
+    el,
+    destroy() {
+      dropChart();
+      document.removeEventListener('keydown', onKey);
+      if (expanded) void ctx.api.setFullScreen(false);
+    },
+  };
 }
+
+/** Lets a mouse wheel scroll the layout row, which has no visible scrollbar on a Mac; at either end the page scrolls as usual. */
+function scrollSideways(row: HTMLElement, e: WheelEvent) {
+  if (Math.abs(e.deltaX) >= Math.abs(e.deltaY)) return;
+  const before = row.scrollLeft;
+  row.scrollLeft += e.deltaY;
+  if (row.scrollLeft !== before) e.preventDefault();
+}
+
+/** How much one zoom in narrows the chart: a quarter fewer bars. */
+const ZOOM_IN = 0.75;
 
 const MARKS: Record<Change['kind'], { cls: string; key: 'change.added' | 'change.removed' | 'change.changed' }> = {
   added: { cls: 'mark-added', key: 'change.added' },

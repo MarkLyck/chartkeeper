@@ -170,6 +170,23 @@ describe('every flow against a fake TradingView', () => {
     await shot(window, '03-view');
   });
 
+  it('shows the chart full screen and leaves it with Escape', async () => {
+    const covers = () => window.evaluate(() => {
+      const r = document.querySelector('.chart-stage')?.getBoundingClientRect();
+      return r !== undefined && r.x === 0 && r.y === 0 && r.width === innerWidth && r.height === innerHeight;
+    });
+    const windowFull = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().some((w) => w.isFullScreen()));
+    // Without a window manager (xvfb), Linux never reports the window full screen.
+    const wm = process.platform !== 'linux';
+    await window.locator('#chart-full').click();
+    await expect.poll(covers).toBe(true);
+    if (wm) await expect.poll(windowFull, { timeout: 10_000 }).toBe(true);
+    await window.keyboard.press('Escape');
+    const state = async () => `stage full: ${await window.evaluate(() => document.querySelector('.is-full') !== null)}, window full: ${await windowFull()}`;
+    await expect.poll(state, { timeout: 10_000 }).toBe('stage full: false, window full: false');
+    await expect(covers()).resolves.toBe(false);
+  });
+
   it('compares two backups and shows the drawing added between them', async () => {
     await app.evaluate((_e) => {
       const l = (globalThis as unknown as G).__chartkeeperFake.tv.layouts.get('AbCd1234')!;

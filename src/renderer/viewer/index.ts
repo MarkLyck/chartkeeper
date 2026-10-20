@@ -22,6 +22,10 @@ export interface RenderOptions {
 
 export interface RenderedLayout {
   destroy(): void;
+  /** Zooms every chart in the layout; see RenderedChart. */
+  zoom(factor: number): void;
+  /** Puts every chart back to the view it opened with. */
+  reset(): void;
   /** Everything in the layout the viewer did not draw, with a plain-language reason. */
   notShown: NotShownItem[];
 }
@@ -53,6 +57,8 @@ export function renderLayout(container: HTMLElement, layout: ParsedLayout, data:
   const charts: RenderedChart[] = plan.charts.map((c, i) => renderChart(cells[i]!, c, options));
   return {
     notShown: plan.notShown,
+    zoom: (factor) => charts.forEach((c) => c.zoom(factor)),
+    reset: () => charts.forEach((c) => c.reset()),
     destroy() {
       for (const c of charts) c.destroy();
       root.remove();
