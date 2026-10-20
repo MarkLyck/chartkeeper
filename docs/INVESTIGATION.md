@@ -381,11 +381,21 @@ method than `GET`, `HEAD` and `OPTIONS` is refused. The policy is checked
 twice. `PoliteHttp` checks each request ChartKeeper builds before it reaches
 the page. The private session's `webRequest.onBeforeRequest` filter reads
 each request's method, address and raw body (Chromium hands a `FormData` of
-strings over as plain bytes) and cancels any write the policy refuses. That
-includes TradingView's own page: when the restore check opens the new layout,
-the page's autosave cannot save over it or move its drawings. A body that
-is not plain bytes, such as the gzipped `blob.gz` part the web app sends, is
-refused because it cannot be read.
+strings over as plain bytes) and cancels any write the policy refuses. A body
+that is not plain bytes, such as the gzipped `blob.gz` part the web app
+sends, is refused because it cannot be read.
+
+The policy alone would let TradingView's own code send one of the four
+writes, for example a template under a name the account already has, which
+overwrites it. So the session also needs ChartKeeper to have registered the
+write: `ElectronPageTransport.send` registers `METHOD url` for its own page's
+webContents right before it runs the request, and withdraws it afterwards.
+The filter lets a write through only when the policy allows it and a matching
+registration for the same webContents exists, and uses that registration up.
+Every other write is cancelled: from TradingView's code in ChartKeeper's own
+page, from the chart page the restore check opens (its autosave cannot save
+over the new layout or move its drawings), and from requests with no page,
+such as a service worker's.
 
 **Verification** reloads the new layout with `GET /chart/<id>/json/` plus its
 storage buckets, and compares the drawing ids and indicator count with the

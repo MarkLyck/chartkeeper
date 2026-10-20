@@ -2,7 +2,7 @@ import { BrowserWindow, session, type Cookie, type Session } from 'electron';
 import { countSavedDrawings } from '../core/tv/content';
 import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import { pageFetch, pageUser, type HttpRequest, type HttpResponse, type PageTransport, type PageUser } from '../core/tv/http';
-import { rawWriteRefusal, type UploadPart } from '../core/tv/writePolicy';
+import { isRead, rawWriteRefusal, type UploadPart } from '../core/tv/writePolicy';
 import type { CdpCookie } from './browserSignIn';
 import { log } from './log';
 
@@ -25,13 +25,41 @@ export function isRequestAllowed(url: string): boolean {
 }
 
 /**
- * Why the TradingView session must not send a request, or null when it may.
- * The write check covers ChartKeeper's own requests a second time, and also
- * what TradingView's own page tries, such as saving the layout it shows.
+ * The writes ChartKeeper's own hidden page is sending right now, by the id of
+ * that page's webContents, as "METHOD url". TradingView's own code runs in the
+ * same pages and could send an allowed write too, such as a template under a
+ * name the account already has, which overwrites it. So a write leaves the
+ * session only when ChartKeeper registered it, and each registration lets one
+ * request through.
  */
-function sessionRefusal(req: { method: string; url: string; uploadData?: readonly UploadPart[] }): string | null {
+const expectedWrites = new Map<number, { key: string }[]>();
+
+/** Lets one `method url` write from this webContents through; the returned function withdraws it if it was not used. */
+export function expectWrite(webContentsId: number, method: string, url: string): () => void {
+  const entry = { key: `${method} ${url}` };
+  const pending = expectedWrites.get(webContentsId) ?? [];
+  pending.push(entry);
+  expectedWrites.set(webContentsId, pending);
+  return () => takeExpectedWrite(webContentsId, (e) => e === entry);
+}
+
+function takeExpectedWrite(webContentsId: number, match: (e: { key: string }) => boolean): boolean {
+  const pending = expectedWrites.get(webContentsId) ?? [];
+  const i = pending.findIndex(match);
+  if (i < 0) return false;
+  pending.splice(i, 1);
+  if (!pending.length) expectedWrites.delete(webContentsId);
+  return true;
+}
+
+/** Why the TradingView session must not send a request, or null when it may. */
+function sessionRefusal(req: { method: string; url: string; uploadData?: readonly UploadPart[]; webContentsId?: number }): string | null {
   if (!isRequestAllowed(req.url)) return 'not a TradingView address';
-  return rawWriteRefusal(req.method, req.url, req.uploadData);
+  const refused = rawWriteRefusal(req.method, req.url, req.uploadData);
+  if (refused || isRead(req.method)) return refused;
+  const key = `${req.method} ${req.url}`;
+  if (req.webContentsId === undefined || !takeExpectedWrite(req.webContentsId, (e) => e.key === key)) return 'ChartKeeper is not sending this write itself';
+  return null;
 }
 
 let configured: Session | null = null;
@@ -39,15 +67,15 @@ let configured: Session | null = null;
 /**
  * The private browser session that holds the TradingView sign-in. Anything it
  * tries to load outside tradingview.com (ads, analytics, other sites) is
- * blocked, so ChartKeeper only ever talks to TradingView, and any request
- * that could change or delete something there is cancelled.
+ * blocked, so ChartKeeper only ever talks to TradingView. The only writes
+ * that leave it are ChartKeeper's own creates (see `expectWrite`).
  */
 export function tvSession(): Session {
   if (configured) return configured;
   const s = session.fromPartition(PARTITION);
   s.webRequest.onBeforeRequest({ urls: ['<all_urls>'] }, (details, cb) => {
     const refused = sessionRefusal(details);
-    if (refused && details.method !== 'GET') log(`refused ${details.method} ${details.url}: ${refused}`);
+    if (refused && !isRead(details.method)) log(`refused ${details.method} ${details.url}: ${refused}`);
     cb({ cancel: refused !== null });
   });
   s.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
@@ -109,7 +137,7 @@ function hiddenWindow(): BrowserWindow {
     show: false,
     width: 1400,
     height: 900,
-    webPreferences: { partition: PARTITION, contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false },
+    webPreferences: { session: tvSession(), contextIsolation: true, sandbox: true, nodeIntegration: false, backgroundThrottling: false },
   });
   w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   w.webContents.on('will-navigate', (e, url) => {
@@ -132,7 +160,6 @@ export class ElectronPageTransport implements PageTransport {
 
   private page(): Promise<BrowserWindow> {
     if (!this.ready || !this.win || this.win.isDestroyed()) {
-      tvSession();
       this.win = hiddenWindow();
       const w = this.win;
       let reject!: (e: Error) => void;
@@ -168,8 +195,13 @@ export class ElectronPageTransport implements PageTransport {
     }
   }
 
-  send(req: HttpRequest): Promise<HttpResponse> {
-    return this.run(`(${pageFetch.toString()})(${JSON.stringify(req)})`);
+  async send(req: HttpRequest): Promise<HttpResponse> {
+    const withdraw = isRead(req.method) ? null : expectWrite((await this.page()).webContents.id, req.method, req.url);
+    try {
+      return await this.run(`(${pageFetch.toString()})(${JSON.stringify(req)})`);
+    } finally {
+      withdraw?.();
+    }
   }
 
   user(): Promise<PageUser | null> {
@@ -196,7 +228,6 @@ export class ElectronPageTransport implements PageTransport {
  * page tries, so opening it here changes nothing on TradingView.
  */
 export async function countOnChartPage(uid: string, timeoutMs = 60_000): Promise<{ drawings: number; studies: number } | null> {
-  tvSession();
   const w = hiddenWindow();
   try {
     await w.loadURL(urls.layoutPage(uid));

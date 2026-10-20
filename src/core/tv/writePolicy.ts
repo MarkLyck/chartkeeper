@@ -30,9 +30,10 @@ const ALLOWED_WRITES: readonly AllowedWrite[] = [
 ];
 
 const READS = new Set(['GET', 'HEAD', 'OPTIONS']);
+export const isRead = (method: string): boolean => READS.has(method);
 
 function refusal(method: string, url: string, fieldsOf: (kind: BodyKind) => string[] | null): string | null {
-  if (READS.has(method)) return null;
+  if (isRead(method)) return null;
   if (method !== 'POST') return `${method} requests change or delete things, and ChartKeeper only reads and creates.`;
   const write = ALLOWED_WRITES.find((w) => w.url === url);
   if (!write) return `${url} is not one of the addresses ChartKeeper may send to.`;

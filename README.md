@@ -150,9 +150,10 @@ anything on TradingView:
 - Templates and themes are only added under names you don't have yet.
 - ChartKeeper checks every request before it goes to TradingView. Only four
   kinds of request may change anything there, and each one only adds
-  something new. Any other request is stopped on your computer. This also
-  covers the TradingView page that ChartKeeper opens to check a restored
-  chart.
+  something new. ChartKeeper lets one through only while it is sending that
+  request itself. Any other request that would change something is stopped
+  on your computer, including any that TradingView's own pages try, such as
+  the page ChartKeeper opens to check a restored chart.
 
 Earlier versions of ChartKeeper could replace a layout, and kept a copy of
 the old layout in the folder `safety-copies`. You can still look at those
@@ -203,8 +204,11 @@ save prices so charts can be viewed offline** in the settings.
   TradingView URLs and response shapes.
 - `src/core/tv/writePolicy.ts` lists the only writes ChartKeeper may send, and
   each one creates something new. `PoliteHttp` refuses every other write
-  before it reaches the page, and the private session cancels any other
-  write from a page, TradingView's own included.
+  before it reaches the page. The private session lets a write out only when
+  it is one of those four and ChartKeeper's hidden page registered it right
+  before sending it (`expectWrite` in `src/main/tvSession.ts`), once. Every
+  other write is cancelled, so TradingView's own code in any page can't send
+  one.
   `test/core/neverChangesTradingView.test.ts` backs up and restores a fake
   account and checks that nothing that existed changed.
 - `src/main/` is the Electron app process (sign-in, private session, tray,
