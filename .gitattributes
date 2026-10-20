@@ -1,3 +1,5 @@
 docs/demos/*.mp4 -diff
 # Fixtures carry sha256 checksums of their exact bytes; never convert line endings.
 test/fixtures/** -text
+# Each PR appends a row; keep every side's rows when branches meet.
+docs/decisions.tsv merge=union

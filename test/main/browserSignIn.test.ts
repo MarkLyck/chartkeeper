@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
-import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser, SAFARI } from '../../src/main/browsers';
-import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
+import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser, SAFARI, signInProfileDir } from '../../src/main/browsers';
+import { BrowserUnusable, signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
 import { isGoogleRefusal, isSignInPopup } from '../../src/main/signIn';
 
 const exe = chromium.executablePath();
@@ -60,7 +60,63 @@ describe.skipIf(!haveBrowser)('signing in through a real browser window', () => 
   }, 60000);
 });
 
+describe.skipIf(process.platform === 'win32')('a browser that cannot be driven', () => {
+  it('gives up at once when the browser closes its DevTools pipe, so the next browser can be tried', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-deadpipe-'));
+    const fake = path.join(dir, 'browser');
+    await fs.writeFile(fake, '#!/bin/sh\nexec 3>&- 4>&-\nexec sleep 30\n', { mode: 0o755 });
+    let pid = 0;
+    const started = Date.now();
+    const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 200, onSpawn: (c) => (pid = c.pid ?? 0) });
+    await expect(run).rejects.toBeInstanceOf(BrowserUnusable);
+    expect(Date.now() - started).toBeLessThan(8000);
+    expect(() => process.kill(pid, 0), 'the browser was left running').toThrow();
+  }, 20000);
+
+  it('reports a window the user closed as cancelled, even when the browser is slow to exit after closing the pipe', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-slowexit-'));
+    const fake = path.join(dir, 'browser.js');
+    // Answers one DevTools call, closes the pipe like a closing browser, and exits two seconds later.
+    await fs.writeFile(fake, `#!${process.execPath}\nconst fs = require('node:fs');\nconst out = fs.createWriteStream(null, { fd: 4 });\nnew (require('node:net').Socket)({ fd: 3, readable: true }).once('data', (d) => {\n  const id = JSON.parse(String(d).split('\\0')[0]).id;\n  out.end(JSON.stringify({ id, result: { cookies: [] } }) + '\\0', () => setTimeout(() => process.exit(0), 2000));\n});\n`, { mode: 0o755 });
+    const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 100 });
+    await expect(run).rejects.toBeInstanceOf(SignInCancelled);
+  }, 20000);
+});
+
 describe('finding a browser', () => {
+  it('looks in Chromium library folders for Chromium only', () => {
+    const lib = '/usr/lib64/chromium-browser/chrome';
+    expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === lib, null)).toBeNull();
+  });
+
+  it('keeps every install of a browser, so a broken one does not hide a working one of the same name', () => {
+    const lin = new Set(['/snap/bin/chromium', '/var/lib/flatpak/exports/bin/org.chromium.Chromium']);
+    expect(findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => lin.has(p), null).map((b) => b.path)).toEqual(['/snap/bin/chromium', '/var/lib/flatpak/exports/bin/org.chromium.Chromium']);
+  });
+
+  it('finds Chromium in per-user Nix profiles and Opera as a Flatpak', () => {
+    const env = { PATH: '/usr/bin', USER: 't' };
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/etc/profiles/per-user/t/bin/chromium', null)?.name).toBe('Chromium');
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/home/t/.local/state/nix/profiles/profile/bin/chromium', null)?.name).toBe('Chromium');
+    expect(findBrowser('linux', env, '/home/t', (p) => p === '/var/lib/flatpak/exports/bin/com.opera.Opera', null)?.name).toBe('Opera');
+  });
+
+  it('gives a browser chosen by path its sandbox profile too', () => {
+    const chosen = findBrowser('linux', { CHARTKEEPER_BROWSER: '/var/lib/flatpak/exports/bin/org.chromium.Chromium/' }, '/home/t', () => true);
+    expect(signInProfileDir(chosen!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.var/app/org.chromium.Chromium/chartkeeper-signin');
+    const snap = findBrowser('linux', { CHARTKEEPER_BROWSER: '/snap/bin/chromium' }, '/home/t', () => true);
+    expect(signInProfileDir(snap!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/snap/chromium/common/chartkeeper-signin');
+  });
+
+  it('keeps the sign-in profile where a Snap or Flatpak browser can write', () => {
+    const [snap] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/snap/bin/chromium', null);
+    const [flat] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/var/lib/flatpak/exports/bin/org.chromium.Chromium', null);
+    const [plain] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null);
+    expect(signInProfileDir(snap!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/snap/chromium/common/chartkeeper-signin');
+    expect(signInProfileDir(flat!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.var/app/org.chromium.Chromium/chartkeeper-signin');
+    expect(signInProfileDir(plain!, '/home/t/.config/ChartKeeper', '/home/t')).toBe(path.join('/home/t/.config/ChartKeeper', 'signin-profile'));
+  });
+
   it('looks for Chrome first, then Edge, in the standard Windows folders', () => {
     const c = browserCandidates('win32', { PROGRAMFILES: 'C:\\Program Files', 'PROGRAMFILES(X86)': 'C:\\Program Files (x86)', LOCALAPPDATA: 'C:\\Users\\T\\AppData\\Local' }, 'C:\\Users\\T');
     expect(c[0]).toEqual({ kind: 'chromium', name: 'Google Chrome', path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
@@ -81,6 +137,31 @@ describe('finding a browser', () => {
   it('finds chromium on the PATH on Linux and returns null when nothing is installed', () => {
     expect(findBrowser('linux', { PATH: '/home/t/bin:/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null)).toEqual({ kind: 'chromium', name: 'Chromium', path: '/usr/bin/chromium' });
     expect(findBrowser('linux', { PATH: '/usr/bin' }, '/home/t', () => false, null)).toBeNull();
+  });
+
+  it('finds Chromium however a Linux distribution installs it', () => {
+    const found = (p: string, env: NodeJS.ProcessEnv = { PATH: '/usr/bin' }) => findBrowser('linux', env, '/home/t', (x) => x === p, null);
+    for (const p of [
+      '/var/lib/flatpak/exports/bin/org.chromium.Chromium',
+      '/home/t/.local/share/flatpak/exports/bin/org.chromium.Chromium',
+      '/var/lib/snapd/snap/bin/chromium',
+      '/usr/bin/chromium-freeworld',
+      '/usr/bin/ungoogled-chromium',
+      '/usr/lib/chromium/chromium',
+      '/usr/lib64/chromium-browser/chromium-browser',
+      '/home/t/.nix-profile/bin/chromium',
+      '/run/current-system/sw/bin/chromium',
+    ])
+      expect(found(p), p).toMatchObject({ kind: 'chromium', name: 'Chromium', path: p });
+    expect(found('/var/lib/flatpak/exports/bin/com.google.Chrome')?.name).toBe('Google Chrome');
+    expect(found('/var/lib/flatpak/exports/bin/com.brave.Browser')?.name).toBe('Brave');
+  });
+
+  it('knows Flatpak and Snap browsers as the Linux default browser', () => {
+    const lin = new Set(['/usr/bin/google-chrome', '/var/lib/flatpak/exports/bin/org.chromium.Chromium', '/snap/bin/chromium']);
+    const first = (id: string) => findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => lin.has(p), id)[0]?.name;
+    expect(first('org.chromium.Chromium.desktop')).toBe('Chromium');
+    expect(first('chromium_chromium.desktop')).toBe('Chromium');
   });
 
   it('never signs in with Dia or Arc, which open a fresh profile on their own account sign-up', () => {

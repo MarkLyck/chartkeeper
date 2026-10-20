@@ -29,7 +29,7 @@ export const TEXT = {
   'signin.browser': 'The window opens in {browser}.',
   'signin.safari': 'ChartKeeper uses your sign-in from Safari. If you are not signed in to TradingView in Safari, the sign-in page opens there. The first time, macOS asks you to allow ChartKeeper to read it.',
   'signin.cancel': 'Cancel',
-  'signin.noBrowser': 'No Chrome, Edge, Brave or similar browser was found on this computer, so a ChartKeeper window opens instead. Google and Apple sign-in do not work there: sign in with your TradingView email and password, or install Google Chrome and try again.',
+  'signin.noBrowser': 'No Chrome, Chromium, Edge, Brave or similar browser was found on this computer, so a ChartKeeper window opens instead. Google and Apple sign-in do not work there: sign in with your TradingView email and password, or install Google Chrome and try again.',
   'signin.waitingTitle': 'Waiting for you to sign in…',
   'signin.waitingBody': 'Sign in in the browser window that just opened. This window updates by itself when you are done.',
   'signin.waitingSafari': 'Sign in to TradingView in Safari. This window updates by itself a few seconds after you are done.',

@@ -30,6 +30,13 @@ export interface BrowserSignInOptions {
   signal?: AbortSignal;
 }
 
+/** The browser started but closed the DevTools pipe ChartKeeper watches it through, so it can't be used to sign in. */
+export class BrowserUnusable extends Error {
+  constructor() {
+    super('The browser closed the connection ChartKeeper watches the sign-in through.');
+  }
+}
+
 export class SignInCancelled extends Error {
   constructor() {
     super('The browser window was closed before signing in finished.');
@@ -64,6 +71,11 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
     return await new Promise<CdpCookie[]>((resolve, reject) => {
       const timer = setTimeout(() => reject(Object.assign(new Error('Signing in took too long. Please try again.'), { browserLog })), opts.timeoutMs ?? 15 * 60_000);
       child.once('exit', () => reject(new SignInCancelled()));
+      // A browser that ends the pipe is closing, and its exit says so. One that never answered
+      // and is still running a moment later can't be driven.
+      cdp.onClosed(() => {
+        if (!cdp.answered) setTimeout(() => child.exitCode === null && child.signalCode === null && reject(new BrowserUnusable()), 1000);
+      });
       child.once('error', (e) => reject(e));
       const poll = async () => {
         try {
@@ -80,7 +92,8 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
       void poll();
     });
   } finally {
-    await cdp.call('Browser.close').catch(() => undefined);
+    if (!cdp.isClosed) await cdp.call('Browser.close').catch(() => undefined);
+    else if (!cdp.answered) child.kill();
     await waitForExit(child, 5000);
     await fs.rm(opts.profileDir, { recursive: true, force: true }).catch(() => undefined);
   }
@@ -106,11 +119,14 @@ class PipeCdp {
   private buffer = '';
   private readonly pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
   private readonly out: Writable;
+  private closed?: () => void;
 
   constructor(child: ChildProcess) {
     this.out = child.stdio[3] as Writable;
     const input = child.stdio[4] as Readable;
     this.out.on('error', () => undefined);
+    input.on('end', () => this.closed?.());
+    input.on('error', () => this.closed?.());
     input.on('data', (chunk: Buffer) => {
       this.buffer += chunk.toString('utf8');
       let i: number;
@@ -120,6 +136,7 @@ class PipeCdp {
         const msg = JSON.parse(raw) as { id?: number; result?: unknown; error?: { message: string } };
         const p = msg.id !== undefined ? this.pending.get(msg.id) : undefined;
         if (!p) continue;
+        this.answered = true;
         this.pending.delete(msg.id!);
         msg.error ? p.reject(new Error(msg.error.message)) : p.resolve(msg.result);
       }
@@ -128,6 +145,17 @@ class PipeCdp {
       for (const p of this.pending.values()) p.reject(new Error('browser exited'));
       this.pending.clear();
     });
+  }
+
+  isClosed = false;
+  /** True once the browser has answered a call: it can be driven. */
+  answered = false;
+
+  onClosed(cb: () => void): void {
+    this.closed = () => {
+      this.isClosed = true;
+      cb();
+    };
   }
 
   call(method: string, params: Record<string, unknown> = {}): Promise<unknown> {
