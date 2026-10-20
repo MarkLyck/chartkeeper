@@ -42,6 +42,16 @@ describe('turning TradingView error answers into something the user can act on',
     expect(tv.layouts.size).toBe(1);
   });
 
+  it('says the plan is full for the answer a free plan gets when its one layout slot is taken', async () => {
+    failWhen((r) => r.method === 'POST', answer(422, '{"code":"saved_chart_limit_reached","detail":"Layouts limit reached"}'));
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });
+  });
+
+  it('says the plan is full for a 403 limit answer', async () => {
+    failWhen((r) => r.method === 'POST', answer(403, '{"detail":"savedChartsLimit","code":"limit"}'));
+    await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });
+  });
+
   it('treats a plain 403 on save as an expired sign-in, not a full plan', async () => {
     failWhen((r) => r.method === 'POST', answer(403, '{"code":"login_required"}'));
     await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'not-signed-in' });
