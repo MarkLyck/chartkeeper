@@ -74,6 +74,12 @@ describe('the README in each backup folder', () => {
     expect(text).toContain('TradingView sent no drawings for “Gold”.');
   });
 
+  it('says an incomplete backup did not finish when it has no reason, and counts a layout with no symbol', () => {
+    const text = snapshotReadme(manifest({ status: 'incomplete', layouts: [layout({ symbols: [] })] }));
+    expect(text).toMatch(/did not finish[\s\S]*Why it stopped: unknown/i);
+    expect(block(text, '“Gold”')).toMatch(/Symbols: +0$/m);
+  });
+
   it('says so when a backup has no layouts', () => {
     expect(snapshotReadme(manifest({ layouts: [] }))).toMatch(/no layouts/i);
   });
