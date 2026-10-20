@@ -10,6 +10,7 @@ export const TEXT = {
   'nav.backups': 'Backups',
   'nav.restore': 'Restore',
   'nav.label': 'ChartKeeper',
+  'nav.signedIn': 'Signed in',
   'nav.signedOut': 'Not signed in',
   'nav.backToStart': 'Back to start',
   'common.loading': 'One moment…',

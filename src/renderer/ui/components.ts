@@ -44,7 +44,7 @@ export function topBar(ctx: Ctx, active: Route['name'], opts: { canLeave?: boole
             link('restore', t('nav.restore'), locked && active !== 'restore')),
       h('span', { class: 'account' },
         h('span', { class: `dot ${s.signedIn ? 'dot-ok' : 'dot-off'}`, attrs: { 'aria-hidden': 'true' } }),
-        s.signedIn ? (s.username ?? t('signin.signedIn')) : t('nav.signedOut'))));
+        s.signedIn ? (s.username ?? t('nav.signedIn')) : t('nav.signedOut'))));
 }
 
 /** Redraws the top bar inside `root` for a new app state, keeping the screen and the lock it was drawn with. */
