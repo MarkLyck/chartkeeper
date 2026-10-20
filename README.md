@@ -118,6 +118,10 @@ symbols.
 
 The box **Not shown** lists anything the viewer can't draw, for example labels
 that a Pine script draws, and says why. These things are still in the backup.
+Drawings you made on other symbols in the same layout take one line, with the
+symbols that have the most drawings first. TradingView shows them when the
+chart is switched to that symbol. When that line is all there is, the box
+starts closed.
 
 **What changed?** Pick **Compare with an older backup** to see which drawings
 and indicators were added, removed or moved between two backups.

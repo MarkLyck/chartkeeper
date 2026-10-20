@@ -24,8 +24,8 @@ describe('the "Not shown" list', () => {
     expect(s.charts).toEqual([{
       heading: null,
       lines: [
-        { names: 'Ray', title: 'Drawing h', text: 'Hidden in TradingView' },
-        { names: null, title: '', text: '4 drawings on 2 other symbols are saved in this backup. TradingView shows them when the chart is switched to that symbol: TVC:SILVER (3), NYSE:AG (1)' },
+        { k: 'items', names: 'Ray', title: 'Drawing h', text: 'Hidden in TradingView' },
+        { k: 'other-symbols', text: '4 drawings on 2 other symbols are saved in this backup. TradingView shows them when the chart is switched to that symbol: TVC:SILVER (3), NYSE:AG (1)' },
       ],
     }]);
   });

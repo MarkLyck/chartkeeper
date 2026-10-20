@@ -13,6 +13,7 @@ import { chromium, type Page } from 'playwright-core';
 import { SnapshotReader } from '../src/core/snapshot';
 import { openLayout } from '../src/core/snapshotView';
 import type { PreviewFixture } from '../src/renderer/mockApi';
+import type { ChartKeeperApi } from '../src/shared/api';
 
 const ROOT = path.resolve(__dirname, '..');
 const OUT = path.join(ROOT, '.test-output/ui');
@@ -225,6 +226,33 @@ async function main() {
   await shot(page, 'view-full-1000x700');
   await page.keyboard.press('f');
   await page.waitForFunction(() => !document.querySelector('.is-full'));
+  await page.close();
+
+  // A layout that keeps drawings for hundreds of symbols besides the one on the chart, like a user's "Gold" layout.
+  page = await open();
+  await page.evaluate(() => {
+    const api = (window as unknown as { chartkeeper: ChartKeeperApi }).chartkeeper;
+    const load = api.loadLayout.bind(api);
+    api.loadLayout = async (dir, uid) => {
+      const r = await load(dir, uid);
+      if (!r.ok) return r;
+      const { layout } = r.value;
+      const model = layout.charts[0]!.panes.flatMap((p) => p.drawings)[0]!;
+      const counts: [string, number][] = [['NYSE:AG', 15], ['TVC:SILVER', 24], ...Array.from({ length: 310 }, (_, i): [string, number] => [`NYSE:S${i}`, 13])];
+      const elsewhere = counts.flatMap(([symbol, n]) => Array.from({ length: n }, (_, i) => ({ ...model, id: `${symbol}-${i}`, symbol })));
+      return { ok: true, value: { ...r.value, layout: { ...layout, sharedDrawings: [...layout.sharedDrawings, ...elsewhere] } } };
+    };
+  });
+  await page.click('#go-view');
+  await page.waitForSelector('.chart-box canvas', { timeout: 15000 });
+  await page.waitForSelector('.ck-not-shown');
+  expect((await page.textContent('.ck-not-shown summary')) === 'Not shown (4,069)', 'the Not shown list does not count the drawings on other symbols');
+  expect(!(await page.$eval('.ck-not-shown', (d) => (d as HTMLDetailsElement).open)), 'the Not shown list starts open although it only holds drawings on other symbols');
+  await shot(page, 'view-other-symbols');
+  await page.click('.ck-not-shown summary');
+  const lines = await page.$$eval('.ck-not-shown li', (li) => li.map((l) => l.textContent ?? ''));
+  expect(lines.length === 1 && lines[0]!.startsWith('4,069 drawings on 312 other symbols are saved in this backup.'), `drawings on other symbols are not one line: ${lines.length} lines`);
+  await shot(page, 'view-other-symbols-open');
   await page.close();
 
   // Restore: as a new layout
