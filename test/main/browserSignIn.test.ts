@@ -4,8 +4,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
 import { describe, expect, it } from 'vitest';
-import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser, SAFARI } from '../../src/main/browsers';
-import { signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
+import { browserCandidates, browserForDefaultId, findBrowser, findBrowsers, parseMacDefaultBrowser, parseWindowsDefaultBrowser, SAFARI, signInProfileDir } from '../../src/main/browsers';
+import { BrowserUnusable, signInWithBrowser, SignInCancelled } from '../../src/main/browserSignIn';
 import { isGoogleRefusal, isSignInPopup } from '../../src/main/signIn';
 
 const exe = chromium.executablePath();
@@ -60,7 +60,30 @@ describe.skipIf(!haveBrowser)('signing in through a real browser window', () => 
   }, 60000);
 });
 
+describe.skipIf(process.platform === 'win32')('a browser that cannot be driven', () => {
+  it('gives up at once when the browser closes its DevTools pipe, so the next browser can be tried', async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-deadpipe-'));
+    const fake = path.join(dir, 'browser');
+    await fs.writeFile(fake, '#!/bin/sh\nexec 3>&- 4>&-\nsleep 30\n', { mode: 0o755 });
+    let pid = 0;
+    const started = Date.now();
+    const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 200, onSpawn: (c) => (pid = c.pid ?? 0) });
+    await expect(run).rejects.toBeInstanceOf(BrowserUnusable);
+    expect(Date.now() - started).toBeLessThan(8000);
+    expect(() => process.kill(pid, 0), 'the browser was left running').toThrow();
+  }, 20000);
+});
+
 describe('finding a browser', () => {
+  it('keeps the sign-in profile where a Snap or Flatpak browser can write', () => {
+    const [snap] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/snap/bin/chromium', null);
+    const [flat] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/var/lib/flatpak/exports/bin/org.chromium.Chromium', null);
+    const [plain] = findBrowsers('linux', { PATH: '/usr/bin' }, '/home/t', (p) => p === '/usr/bin/chromium', null);
+    expect(signInProfileDir(snap!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/snap/chromium/common/chartkeeper-signin');
+    expect(signInProfileDir(flat!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.var/app/org.chromium.Chromium/chartkeeper-signin');
+    expect(signInProfileDir(plain!, '/home/t/.config/ChartKeeper', '/home/t')).toBe('/home/t/.config/ChartKeeper/signin-profile');
+  });
+
   it('looks for Chrome first, then Edge, in the standard Windows folders', () => {
     const c = browserCandidates('win32', { PROGRAMFILES: 'C:\\Program Files', 'PROGRAMFILES(X86)': 'C:\\Program Files (x86)', LOCALAPPDATA: 'C:\\Users\\T\\AppData\\Local' }, 'C:\\Users\\T');
     expect(c[0]).toEqual({ kind: 'chromium', name: 'Google Chrome', path: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' });
