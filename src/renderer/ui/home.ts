@@ -142,10 +142,11 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
     return h('section', { class: 'section settings', attrs: { 'aria-labelledby': 'settings-title' } },
       h('div', { class: 'section-head' }, h('h2', { id: 'settings-title' }, t('settings.title'))),
       h('div', { class: 'rows' },
-        h('div', { class: 'row setting', attrs: { 'aria-label': s.signedIn ? t('signin.signedIn') : t('signin.notSignedIn') } },
-          h('div', { class: 'row-main' },
-            h('p', { class: 'setting-label signin-status' }, s.signedIn && s.username ? t('signin.signedInAs', { name: s.username }) : s.signedIn ? t('signin.signedIn') : t('signin.notSignedIn'))),
-          s.signedIn ? button(t('signin.signOut'), async () => ctx.update(await ctx.api.signOut()), { id: 'signout', disabled: s.busy !== null }) : null),
+        s.signedIn
+          ? h('div', { class: 'row setting', attrs: { 'aria-label': t('signin.signedIn') } },
+              h('div', { class: 'row-main' }, h('p', { class: 'setting-label signin-status' }, s.username ? t('signin.signedInAs', { name: s.username }) : t('signin.signedIn'))),
+              button(t('signin.signOut'), async () => ctx.update(await ctx.api.signOut()), { id: 'signout', disabled: s.busy !== null }))
+          : null,
         h('div', { class: 'row setting' },
           h('div', { class: 'row-main' },
             h('p', { class: 'setting-label', id: 'folder-label' }, t('settings.folder')),
