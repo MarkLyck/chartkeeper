@@ -95,6 +95,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     browserName: 'Google Chrome',
     lastBackup: { at: snapshots.at(-1)!.manifest!.createdAt, ok: true, dir: snapshots.at(-1)!.dir },
     busy: null,
+    update: { k: 'none' },
   };
 
   const stateListeners = new Set<(s: AppState) => void>();
