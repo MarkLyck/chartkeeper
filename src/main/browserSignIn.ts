@@ -26,6 +26,8 @@ export interface BrowserSignInOptions {
   pollMs?: number;
   extraArgs?: string[];
   onSpawn?: (child: ChildProcess) => void;
+  /** Aborting closes the browser, which ends the sign-in as cancelled. */
+  signal?: AbortSignal;
 }
 
 export class SignInCancelled extends Error {
@@ -52,6 +54,7 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
     { stdio: ['ignore', 'pipe', 'pipe', 'pipe', 'pipe'] },
   );
   opts.onSpawn?.(child);
+  opts.signal?.addEventListener('abort', () => child.kill(), { once: true });
   let browserLog = '';
   const keepTail = (chunk: Buffer) => (browserLog = (browserLog + chunk.toString('utf8')).slice(-2000));
   child.stdout?.on('data', keepTail);

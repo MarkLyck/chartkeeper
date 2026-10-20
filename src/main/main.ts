@@ -35,7 +35,7 @@ async function main() {
   shellReady = shell;
   tvSession();
   await fake?.intercept({ tradingView: tvSession(), signIn: session.fromPartition(SIGNIN_PARTITION) });
-  registerIpc({ status, tasks, shell });
+  registerIpc({ status, tasks, shell, safari: fake?.safari });
   // The AppImage's path changes with each version, so the autostart entry is refreshed on every start.
   if (process.platform === 'linux' && store.settings.dailyBackup) void applyAutostart(true);
   shell.start();

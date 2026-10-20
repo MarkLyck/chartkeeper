@@ -2,14 +2,19 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-export interface Browser {
-  name: string;
-  path: string;
-}
+/**
+ * How ChartKeeper signs in with a browser. A Chromium-based browser runs with
+ * a private profile that ChartKeeper watches; Safari is the user's own, whose
+ * TradingView sign-in ChartKeeper reads from Safari's cookie file.
+ */
+export type Browser = { kind: 'chromium'; name: string; path: string } | { kind: 'safari'; name: 'Safari'; path: string };
+
+export const SAFARI: Browser = { kind: 'safari', name: 'Safari', path: '/Applications/Safari.app' };
 
 /**
  * Chromium-based browsers ChartKeeper can sign in with: they all accept a
  * private profile (--user-data-dir) and the --remote-debugging-pipe channel.
+ * Not Dia or Arc: with a fresh profile they open on their own account sign-up.
  * `ids` are how each OS names the browser when it is the default browser.
  */
 interface BrowserSpec {
@@ -27,8 +32,6 @@ const BROWSERS: BrowserSpec[] = [
   { name: 'Google Chrome', mac: 'Google Chrome.app/Contents/MacOS/Google Chrome', win: ['Google\\Chrome\\Application\\chrome.exe'], linux: ['google-chrome-stable', 'google-chrome', 'chrome'], ids: { mac: ['com.google.chrome'], win: ['ChromeHTML'], linux: ['google-chrome.desktop', 'google-chrome-stable.desktop'] } },
   { name: 'Microsoft Edge', mac: 'Microsoft Edge.app/Contents/MacOS/Microsoft Edge', win: ['Microsoft\\Edge\\Application\\msedge.exe'], linux: ['microsoft-edge-stable', 'microsoft-edge'], ids: { mac: ['com.microsoft.edgemac'], win: ['MSEdgeHTM'], linux: ['microsoft-edge.desktop'] } },
   { name: 'Brave', mac: 'Brave Browser.app/Contents/MacOS/Brave Browser', win: ['BraveSoftware\\Brave-Browser\\Application\\brave.exe'], linux: ['brave-browser', 'brave'], ids: { mac: ['com.brave.browser'], win: ['BraveHTML'], linux: ['brave-browser.desktop'] } },
-  { name: 'Dia', mac: 'Dia.app/Contents/MacOS/Dia', ids: { mac: ['company.thebrowser.dia'] } },
-  { name: 'Arc', mac: 'Arc.app/Contents/MacOS/Arc', ids: { mac: ['company.thebrowser.browser'] } },
   { name: 'Vivaldi', mac: 'Vivaldi.app/Contents/MacOS/Vivaldi', win: ['Vivaldi\\Application\\vivaldi.exe'], linux: ['vivaldi-stable', 'vivaldi'], ids: { mac: ['com.vivaldi.vivaldi'], win: ['VivaldiHTM'], linux: ['vivaldi-stable.desktop'] } },
   { name: 'Opera', mac: 'Opera.app/Contents/MacOS/Opera', win: ['Programs\\Opera\\opera.exe'], linux: ['opera'], ids: { mac: ['com.operasoftware.opera'], win: ['OperaStable'], linux: ['opera.desktop'] } },
   { name: 'Opera GX', mac: 'Opera GX.app/Contents/MacOS/Opera', win: ['Programs\\Opera GX\\opera.exe'], ids: { mac: ['com.operasoftware.operagx'], win: ['Opera GXStable'] } },
@@ -43,16 +46,17 @@ const osKey = (platform: NodeJS.Platform) => (platform === 'win32' ? 'win' : pla
 
 /** Where each browser would be installed, in table order. */
 export function browserCandidates(platform: NodeJS.Platform, env: NodeJS.ProcessEnv, home: string): Browser[] {
+  const at = (name: string, p: string): Browser => ({ kind: 'chromium', name, path: p });
   if (platform === 'win32') {
     const roots = [env.PROGRAMFILES, env['PROGRAMFILES(X86)'], env.LOCALAPPDATA].filter((r): r is string => !!r);
-    return BROWSERS.flatMap((b) => (b.win ?? []).flatMap((rel) => roots.map((r) => ({ name: b.name, path: path.win32.join(r, rel) }))));
+    return BROWSERS.flatMap((b) => (b.win ?? []).flatMap((rel) => roots.map((r) => at(b.name, path.win32.join(r, rel)))));
   }
   if (platform === 'darwin') {
     const apps = ['/Applications', path.posix.join(home, 'Applications')];
-    return BROWSERS.flatMap((b) => (b.mac ? apps.map((a) => ({ name: b.name, path: path.posix.join(a, b.mac!) })) : []));
+    return BROWSERS.flatMap((b) => (b.mac ? apps.map((a) => at(b.name, path.posix.join(a, b.mac!))) : []));
   }
   const dirs = [...new Set((env.PATH ?? '/usr/bin:/usr/local/bin').split(':').concat(['/usr/bin', '/usr/local/bin', '/snap/bin', '/opt/google/chrome']))];
-  return BROWSERS.flatMap((b) => (b.linux ?? []).flatMap((bin) => dirs.map((d) => ({ name: b.name, path: path.posix.join(d, bin) }))));
+  return BROWSERS.flatMap((b) => (b.linux ?? []).flatMap((bin) => dirs.map((d) => at(b.name, path.posix.join(d, bin)))));
 }
 
 /** The browser name behind an OS's default-browser id (bundle id, Windows ProgId, or .desktop file), if it is one we support. */
@@ -100,8 +104,9 @@ function askDefaultBrowser(platform: NodeJS.Platform): string | null {
 /**
  * Installed browsers to sign in with, best first: the user's default browser
  * (that's where they're used to signing in), then the rest in table order.
- * CHARTKEEPER_BROWSER picks one by path, or "none" for ChartKeeper's own
- * sign-in window (support's way around a browser that won't start).
+ * On a Mac, Safari takes the place of the rest: every Mac has it.
+ * CHARTKEEPER_BROWSER picks one by path, "safari", or "none" for ChartKeeper's
+ * own sign-in window (support's way around a browser that won't start).
  */
 export function findBrowsers(
   platform = process.platform,
@@ -112,11 +117,13 @@ export function findBrowsers(
 ): Browser[] {
   const chosen = env.CHARTKEEPER_BROWSER;
   if (chosen === 'none') return [];
-  if (chosen && exists(chosen)) return [{ name: path.basename(chosen).replace(/\.(exe|app)$/i, ''), path: chosen }];
+  if (chosen === 'safari') return [SAFARI];
+  if (chosen && exists(chosen)) return [{ kind: 'chromium', name: path.basename(chosen).replace(/\.(exe|app)$/i, ''), path: chosen }];
   const seen = new Set<string>();
   const installed = browserCandidates(platform, env, home).filter((b) => exists(b.path) && !seen.has(b.name) && seen.add(b.name));
   const preferred = browserForDefaultId(platform, defaultId);
-  return [...installed.filter((b) => b.name === preferred), ...installed.filter((b) => b.name !== preferred)];
+  const others = platform === 'darwin' ? [SAFARI] : installed.filter((b) => b.name !== preferred);
+  return [...installed.filter((b) => b.name === preferred), ...others];
 }
 
 export function findBrowser(...args: Parameters<typeof findBrowsers>): Browser | null {

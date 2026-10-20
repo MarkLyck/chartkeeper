@@ -51,6 +51,27 @@ paid developer certificate. The warnings only appear the first time.
 3. When you are signed in, the window closes by itself and ChartKeeper shows
    "Signed in to TradingView as ...".
 
+ChartKeeper uses your default browser when it is Chrome, Edge, Brave or a
+similar browser. On Windows and Linux it otherwise uses another one of those
+that is installed.
+
+On a Mac whose default browser is Safari, Dia, Arc, Firefox or another browser
+ChartKeeper can't open, it uses **Safari**:
+
+- If you are already signed in to TradingView in Safari, ChartKeeper uses that
+  sign-in, and nothing opens.
+- Otherwise the TradingView sign-in page opens in Safari. Sign in there, and
+  ChartKeeper notices a few seconds later.
+- The first time, macOS has to allow ChartKeeper to read Safari's sign-in.
+  ChartKeeper shows a message with an **Open System Settings** button. In
+  **Privacy & Security > Full Disk Access**, turn on ChartKeeper. If it isn't in
+  the list, click **+** and choose ChartKeeper in Applications. Click **Quit &
+  Reopen** when macOS asks, then click **Sign in to TradingView** again.
+- If you'd rather not allow that, choose **Use a ChartKeeper window instead**
+  and sign in with your TradingView email and password.
+
+Click **Cancel** under "Waiting for you to sign in..." to stop waiting.
+
 ChartKeeper never sees or saves your password. It keeps only the "you are
 signed in" cookie, in a private folder on your computer, and it only ever
 talks to tradingview.com.
@@ -181,8 +202,9 @@ tradingview.com requests of the app's private session, so the hidden
 TradingView page and the restore check run as shipped. A packaged app ignores
 the variable, and the installer never contains `dist-test/`.
 
-Set `CHARTKEEPER_BROWSER` to a browser's path to sign in with that browser, or
-to `none` to use ChartKeeper's own sign-in window.
+Set `CHARTKEEPER_BROWSER` to a browser's path to sign in with that browser, to
+`safari` to sign in with Safari, or to `none` to use ChartKeeper's own sign-in
+window.
 
 `npx tsx scripts/capture-reference.ts` rebuilds the reference backup and the
 TradingView screenshot from a signed-out TradingView chart.

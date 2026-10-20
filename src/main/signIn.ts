@@ -1,10 +1,13 @@
-import { app, BrowserWindow, dialog, session, type Cookie } from 'electron';
+import { app, BrowserWindow, dialog, session, shell, type Cookie, type MessageBoxOptions } from 'electron';
+import os from 'node:os';
 import path from 'node:path';
+import { TvError } from '../core/tv/errors';
 import { isTradingViewHost, SESSION_COOKIE, urls } from '../core/tv/endpoints';
 import type { TvAccount } from './account';
 import { findBrowsers } from './browsers';
 import { SignInCancelled, signInWithBrowser } from './browserSignIn';
 import { log } from './log';
+import { SafariAccessDenied, safariDataDir, signInWithSafari, type SafariCookie } from './safariSignIn';
 import { fromCdp, importCookies, type SessionCookie } from './tvSession';
 
 const isTv = (c: { domain?: string }) => isTradingViewHost(c.domain ?? '');
@@ -15,37 +18,119 @@ export const SIGNIN_PARTITION = 'signin-temporary';
 /** A browser that quits this soon after starting couldn't run (e.g. a sandboxed snap package); try the next one. */
 const QUICK_EXIT_MS = 8000;
 
+/** System Settings, Privacy & Security, Full Disk Access. */
+const FULL_DISK_ACCESS_SETTINGS = 'x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles';
+
+/** Where Safari sign-in looks and how it opens Safari. The end-to-end tests point these at a fake Safari. */
+export interface SafariSeam {
+  dataDir: string;
+  open?: (url: string) => Promise<void>;
+}
+
+let running: AbortController | null = null;
+
+/** Stops a sign-in that is waiting for the user. It then ends as cancelled. */
+export function cancelSignIn(): void {
+  running?.abort();
+}
+
 /**
  * Signs in to TradingView in the user's own browser (their default browser
- * first, then any other Chromium-based browser installed), or in an app window
- * when none can run, and copies the sign-in into ChartKeeper.
+ * first; then any other Chromium-based browser, or Safari on a Mac), or in an
+ * app window when none can be used, and copies the sign-in into ChartKeeper.
  */
-export async function signIn(account: TvAccount, parent: BrowserWindow | null): Promise<void> {
-  let cookies: SessionCookie[] | null = null;
-  for (const browser of findBrowsers()) {
-    const started = Date.now();
-    try {
-      log(`sign-in with ${browser.name}`);
-      const fromBrowser = await signInWithBrowser({
-        browserPath: browser.path,
-        profileDir: path.join(app.getPath('userData'), 'signin-profile'),
-        startUrl: urls.signIn,
-        isSignedIn: (cs) => cs.some((c) => c.name === SESSION_COOKIE && isTv(c)),
-        keep: isTv,
-      });
-      cookies = fromBrowser.map(fromCdp);
-      break;
-    } catch (e) {
-      if (!(e instanceof SignInCancelled && Date.now() - started < QUICK_EXIT_MS)) throw e;
-      log(`${browser.name} could not start (${(e as Error).message}); trying the next browser`);
+export async function signIn(account: TvAccount, parent: BrowserWindow | null, safari: SafariSeam = { dataDir: safariDataDir(os.homedir()) }): Promise<void> {
+  const controller = new AbortController();
+  running = controller;
+  const { signal } = controller;
+  try {
+    let cookies: SessionCookie[] | null = null;
+    for (const browser of findBrowsers()) {
+      if (browser.kind === 'safari') {
+        log('sign-in with Safari');
+        if (await signInWithSafariOrExplain(account, parent, safari, signal)) return;
+        break;
+      }
+      const started = Date.now();
+      try {
+        log(`sign-in with ${browser.name}`);
+        const fromBrowser = await signInWithBrowser({
+          browserPath: browser.path,
+          profileDir: path.join(app.getPath('userData'), 'signin-profile'),
+          startUrl: urls.signIn,
+          isSignedIn: (cs) => cs.some((c) => c.name === SESSION_COOKIE && isTv(c)),
+          keep: isTv,
+          signal,
+        });
+        cookies = fromBrowser.map(fromCdp);
+        break;
+      } catch (e) {
+        if (signal.aborted || !(e instanceof SignInCancelled && Date.now() - started < QUICK_EXIT_MS)) throw e;
+        log(`${browser.name} could not start (${(e as Error).message}); trying the next browser`);
+      }
     }
+    if (!cookies) {
+      log('sign-in with app window');
+      cookies = await signInWithAppWindow(parent, signal);
+    }
+    await importCookies(cookies);
+    await account.client();
+  } finally {
+    if (running === controller) running = null;
   }
-  if (!cookies) {
-    log('sign-in with app window');
-    cookies = await signInWithAppWindow(parent);
+}
+
+const fromSafari = (c: SafariCookie): SessionCookie => ({
+  name: c.name,
+  value: c.value,
+  domain: c.domain,
+  path: c.path,
+  secure: c.secure,
+  httpOnly: c.httpOnly,
+  ...(c.expires > 0 ? { expirationDate: c.expires } : {}),
+  sameSite: 'lax',
+});
+
+/**
+ * Signs in with Safari's TradingView sign-in. Without Full Disk Access macOS
+ * hides it, so this asks the user to allow that, or to use the app window.
+ * False means: use the app window.
+ */
+async function signInWithSafariOrExplain(account: TvAccount, parent: BrowserWindow | null, safari: SafariSeam, signal: AbortSignal): Promise<boolean> {
+  // A sign-in Safari still has can be one TradingView has since ended: then keep waiting for a fresh one.
+  const accept = async (cookies: SafariCookie[]) => {
+    await importCookies(cookies.map(fromSafari));
+    try {
+      await account.client();
+      return true;
+    } catch (e) {
+      if (!(e instanceof TvError && e.kind === 'not-signed-in')) throw e;
+      await account.signOut();
+      return false;
+    }
+  };
+  try {
+    await signInWithSafari({ dataDir: safari.dataDir, open: safari.open, startUrl: urls.signIn, accept, signal });
+    return true;
+  } catch (e) {
+    if (!(e instanceof SafariAccessDenied)) throw e;
+    log('sign-in with Safari: no Full Disk Access');
+    const options: MessageBoxOptions = {
+      type: 'info',
+      buttons: ['Open System Settings', 'Use a ChartKeeper window instead', 'Cancel'],
+      defaultId: 0,
+      cancelId: 2,
+      message: 'Allow ChartKeeper to use your Safari sign-in',
+      detail:
+        'ChartKeeper signs in to TradingView through Safari. macOS only lets it read your TradingView sign-in from Safari once you turn on Full Disk Access for ChartKeeper.\n\n' +
+        'Click "Open System Settings", turn on ChartKeeper in the list (if it is missing, click + and choose ChartKeeper in Applications), then click "Quit & Reopen" and sign in again.\n\n' +
+        'Or sign in with your TradingView email and password in a ChartKeeper window. Google and Apple sign-in do not work there.',
+    };
+    const { response } = await (parent ? dialog.showMessageBox(parent, options) : dialog.showMessageBox(options));
+    if (response === 1) return false;
+    if (response === 0) await shell.openExternal(FULL_DISK_ACCESS_SETTINGS);
+    throw e;
   }
-  await importCookies(cookies);
-  await account.client();
 }
 
 /** Sign-in providers TradingView offers, which open in a popup that reports back to the sign-in page. */
@@ -68,7 +153,7 @@ export function isSignInPopup(url: string): boolean {
  * here. Sign-in buttons like "Continue with Google" open their popup in a child
  * window; Google may still refuse sign-in in an app window, which it decides itself.
  */
-async function signInWithAppWindow(parent: BrowserWindow | null): Promise<SessionCookie[]> {
+async function signInWithAppWindow(parent: BrowserWindow | null, signal: AbortSignal): Promise<SessionCookie[]> {
   const s = session.fromPartition(SIGNIN_PARTITION);
   s.setPermissionRequestHandler((_wc, _permission, cb) => cb(false));
   s.setUserAgent(s.getUserAgent().replace(/ (Electron|chartkeeper)\/\S+/gi, ''));
@@ -94,6 +179,7 @@ async function signInWithAppWindow(parent: BrowserWindow | null): Promise<Sessio
   try {
     return await new Promise<SessionCookie[]>((resolve, reject) => {
       w.on('closed', () => reject(new SignInCancelled()));
+      signal.addEventListener('abort', () => w.isDestroyed() || w.close(), { once: true });
       const poll = async () => {
         if (w.isDestroyed()) return;
         const tv = (await s.cookies.get({})).filter((c): c is Cookie & { domain: string } => isTv(c));

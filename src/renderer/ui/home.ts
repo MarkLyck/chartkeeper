@@ -8,6 +8,7 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
   const el = h('main', { class: 'screen home' });
   let snapshots: SnapshotSummary[] | null = null;
   let signingIn = false;
+  let cancelling = false;
   let signInError: AppError | null = null;
   let progressText: string | null = null;
 
@@ -21,9 +22,11 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
     signingIn = false;
     if (r.ok) ctx.update(r.value);
     else {
-      signInError = r.error;
+      // Cancelling is not a failure worth a red box.
+      signInError = cancelling && r.error.kind === 'cancelled' ? null : r.error;
       render();
     }
+    cancelling = false;
   }
 
   function signInCard(s: AppState): HTMLElement {
@@ -33,10 +36,16 @@ export function homeScreen(ctx: Ctx, opts: { startSignIn?: boolean } = {}): Scre
         h('p', { class: 'signin-status' }, s.username ? t('signin.signedInAs', { name: s.username }) : t('signin.signedIn')),
         button(t('signin.signOut'), async () => ctx.update(await ctx.api.signOut()), { kind: 'link', id: 'signout', disabled: s.busy !== null }));
     if (signingIn || s.busy === 'signin')
-      return h('section', { class: 'card signin' }, spinner(t('signin.waitingTitle')), h('p', {}, t('signin.waitingBody')));
+      return h('section', { class: 'card signin' },
+        spinner(t('signin.waitingTitle')),
+        h('p', {}, s.browserName === 'Safari' ? t('signin.waitingSafari') : t('signin.waitingBody')),
+        button(t('signin.cancel'), () => {
+          cancelling = true;
+          void ctx.api.cancelSignIn();
+        }, { id: 'signin-cancel' }));
     return h('section', { class: 'card signin', attrs: { 'aria-label': t('signin.notSignedIn') } },
       h('p', { class: 'signin-status' }, h('span', { class: 'dot dot-off', attrs: { 'aria-hidden': 'true' } }), t('signin.notSignedIn')),
-      h('p', { class: 'signin-explain' }, t('signin.explain'), ` ${s.browserName ? t('signin.browser', { browser: s.browserName }) : t('signin.noBrowser')}`),
+      h('p', { class: 'signin-explain' }, t('signin.explain'), ` ${s.browserName === 'Safari' ? t('signin.safari') : s.browserName ? t('signin.browser', { browser: s.browserName }) : t('signin.noBrowser')}`),
       button(t('signin.button'), signIn, { kind: 'primary', big: true, id: 'signin', disabled: s.busy !== null }),
       signInError ? errorBox(ctx, signInError) : null);
   }

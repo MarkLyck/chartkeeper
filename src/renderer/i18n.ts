@@ -22,9 +22,12 @@ export const TEXT = {
   'signin.button': 'Sign in to TradingView',
   'signin.explain': 'A browser window opens where you sign in to TradingView yourself, the way you usually do. Google sign-in and two-step codes work there. ChartKeeper never sees or stores your password.',
   'signin.browser': 'The window opens in {browser}.',
+  'signin.safari': 'ChartKeeper uses your sign-in from Safari. If you are not signed in to TradingView in Safari, the sign-in page opens there. The first time, macOS asks you to allow ChartKeeper to read it.',
+  'signin.cancel': 'Cancel',
   'signin.noBrowser': 'No Chrome, Edge, Brave or similar browser was found on this computer, so a ChartKeeper window opens instead. Google and Apple sign-in do not work there: sign in with your TradingView email and password, or install Google Chrome and try again.',
   'signin.waitingTitle': 'Waiting for you to sign in…',
   'signin.waitingBody': 'Sign in in the browser window that just opened. This window updates by itself when you are done.',
+  'signin.waitingSafari': 'Sign in to TradingView in Safari. This window updates by itself a few seconds after you are done.',
 
   'home.backup': 'Back up now',
   'home.view': 'View my backups',
@@ -233,6 +236,8 @@ export const TEXT = {
   'error.busy.body': 'Another task is running. Wait until it has finished, then try again.',
   'error.browser.title': 'The browser could not be opened',
   'error.browser.body': 'ChartKeeper could not open a window for signing in. Try again. If it keeps happening, restart the computer.',
+  'error.safari-access.title': 'ChartKeeper needs your permission to use Safari',
+  'error.safari-access.body': 'Open System Settings, then Privacy & Security, then Full Disk Access. Turn on ChartKeeper (if it is not in the list, click + and choose ChartKeeper in Applications). Click "Quit & Reopen" if macOS asks, then click "Sign in to TradingView" again.',
 } as const;
 
 export type Key = keyof typeof TEXT;
@@ -264,6 +269,7 @@ export const ERROR_KEYS = {
   unexpected: ['error.unexpected.title', 'error.unexpected.body'],
   busy: ['error.busy.title', 'error.busy.body'],
   browser: ['error.browser.title', 'error.browser.body'],
+  'safari-access': ['error.safari-access.title', 'error.safari-access.body'],
 } as const satisfies Record<AppError['kind'], readonly [Key, Key]>;
 
 export const BACKUP_STEP_KEYS = {

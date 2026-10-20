@@ -5,6 +5,7 @@ import type { TvAccount } from './account';
 import { findBrowser } from './browsers';
 import { SignInCancelled } from './browserSignIn';
 import { log } from './log';
+import { SafariAccessDenied } from './safariSignIn';
 import type { Store } from './store';
 import { hasSessionCookie } from './tvSession';
 
@@ -16,6 +17,7 @@ function toAppError(e: unknown): AppError {
     return { kind: e.kind, message: e.message, params: e.params };
   }
   if (e instanceof SignInCancelled) return { kind: 'cancelled', message: e.message, params: {} };
+  if (e instanceof SafariAccessDenied) return { kind: 'safari-access', message: e.message, params: {} };
   const err = e as Error;
   log(`unexpected: ${err?.stack ?? String(e)}`);
   return { kind: 'unexpected', message: err?.message ?? String(e), params: {} };
