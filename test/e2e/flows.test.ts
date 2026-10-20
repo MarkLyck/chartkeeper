@@ -3,8 +3,8 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { ElectronApplication, Page } from 'playwright-core';
 import type { Manifest } from '../../src/core/model';
-import { isTradingViewHost, urls } from '../../src/core/tv/endpoints';
-import type { FakeControl, FakeSeed, Scenario } from '../fakes/fakeTradingViewApp';
+import { isTradingViewHost, ORIGIN, urls } from '../../src/core/tv/endpoints';
+import { PAGE_WRITE_MARK, PAGE_WRITES_REPORT, type FakeControl, type FakeSeed, type Scenario } from '../fakes/fakeTradingViewApp';
 import type { FakeLayout } from '../fakes/fakeTradingView';
 import { referenceInAccount } from '../fakes/fixtures';
 import { launchApp, ROOT } from './launch';
@@ -61,8 +61,9 @@ describe('every flow against a fake TradingView', () => {
   let app: ElectronApplication;
   let window: Page;
   let backups: string;
-  /** The layouts on TradingView before ChartKeeper did anything, as the user left them. */
+  /** The layouts, templates and themes on TradingView before ChartKeeper did anything, as the user left them. */
   let existing: FakeLayout[];
+  let existingTemplates: Awaited<ReturnType<typeof fake.templates>>;
   const errors: string[] = [];
   const seed: FakeSeed = { layouts: [minAapl(), scratchPad()], plan: 'pro_premium', signedIn: false, scheduleEveryMs: 15 * 60_000 };
 
@@ -73,6 +74,11 @@ describe('every flow against a fake TradingView', () => {
     requests: () => app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.tv.requests.map((r) => ({ method: r.method, url: r.url, form: r.form ?? null }))),
     clearRequests: () => app.evaluate(() => void ((globalThis as unknown as G).__chartkeeperFake.tv.requests = [])),
     setPlan: (plan: string) => app.evaluate((_e, plan) => void ((globalThis as unknown as G).__chartkeeperFake.tv.account!.plan = plan), plan),
+    templates: () =>
+      app.evaluate(() => {
+        const tv = (globalThis as unknown as G).__chartkeeperFake.tv;
+        return { studies: tv.studyTemplates, drawing: tv.drawingTemplates, themes: tv.themes };
+      }),
   };
 
   const goHome = async () => {
@@ -117,6 +123,7 @@ describe('every flow against a fake TradingView', () => {
     window.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     await window.locator('#go-backup').waitFor();
     existing = await fake.layouts();
+    existingTemplates = await fake.templates();
   });
   afterAll(async () => app?.close());
 
@@ -201,6 +208,7 @@ describe('every flow against a fake TradingView', () => {
     });
     // The user drew on TradingView: that is now how the layout should stay.
     existing = await fake.layouts();
+    existingTemplates = await fake.templates();
     await backUp();
     await expect(window.locator('.result-success .result-lead').textContent()).resolves.toBe('2 layouts and 12 drawings are saved on this computer.');
     const [older] = await snapshotsOnDisk(backups);
@@ -281,7 +289,7 @@ describe('every flow against a fake TradingView', () => {
     expect(tv).toEqual({ drawing: { LineToolTrendLine: { 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } } }, themes: ['My dark'], studies: ['My RSI setup'] });
   });
 
-  it('cancels an overwrite, a delete and a drawing change sent from inside a tradingview.com page of its session', async () => {
+  it('cancels an overwrite, a template and a theme under taken names, a delete and a drawing change sent from inside a tradingview.com page of its session', async () => {
     const before = await fake.layout('AbCd1234');
     const from = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls.length);
     const results = await app.evaluate(async ({ BrowserWindow }) => {
@@ -293,8 +301,13 @@ describe('every flow against a fake TradingView', () => {
           const overwrite = new FormData();
           for (const [k, v] of Object.entries({ name: 'Overwritten', description: '', is_realtime: '1', content: '{"charts":[]}', image_url: 'AbCd1234' })) overwrite.append(k, v);
           const json = { 'Content-Type': 'application/json' };
+          const theme = new FormData();
+          theme.append('name', 'My dark');
+          theme.append('content', '{}');
           return {
             overwrite: await send('/api/v1/charts/save/', { method: 'POST', body: overwrite }),
+            studyTemplate: await send('/api/v1/study-templates', { method: 'POST', headers: json, body: '{"name":"My RSI setup","content":{},"meta_info":{}}' }),
+            theme: await send('/save-theme/', { method: 'POST', body: theme }),
             deleteLayout: await send('/api/v1/charts/delete/', { method: 'POST', headers: json, body: '{"uid":["AbCd1234"]}' }),
             clearDrawings: await send('https://charts-storage.tradingview.com/charts-storage/layout/AbCd1234/sources?chart_id=1&layout_id=AbCd1234&jwt=jwt.AbCd1234.signature', { method: 'PUT', headers: json, body: '{"sources":{}}' }),
             read: await send('/my-charts/', {}),
@@ -304,7 +317,7 @@ describe('every flow against a fake TradingView', () => {
         w.destroy();
       }
     });
-    expect(results).toEqual({ overwrite: 'TypeError', deleteLayout: 'TypeError', clearDrawings: 'TypeError', read: 200 });
+    expect(results).toEqual({ overwrite: 'TypeError', studyTemplate: 'TypeError', theme: 'TypeError', deleteLayout: 'TypeError', clearDrawings: 'TypeError', read: 200 });
     const reached = await app.evaluate((_e, from) => (globalThis as unknown as G).__chartkeeperFake.urls.slice(from), from);
     expect(reached.filter((u) => !/^(GET|OPTIONS) /.test(u)), 'writes that reached TradingView').toEqual([]);
     expect(await fake.layout('AbCd1234')).toEqual(before);
@@ -389,11 +402,18 @@ describe('every flow against a fake TradingView', () => {
     expect(errors).toEqual([]);
   });
 
-  it('never changed or deleted a layout that was already on TradingView, and only ever sent the four creates', async () => {
+  it('never changed or deleted anything that was already on TradingView, and only ever sent the four creates', async () => {
     for (const l of existing) expect(await fake.layout(l.uid), `layout "${l.name}"`).toEqual(l);
+    expect(await fake.templates(), 'templates and themes').toEqual(existingTemplates);
     const creates = [urls.saveLayout, urls.studyTemplates, urls.saveDrawingTemplate, urls.saveTheme].map((u) => `POST ${u}`);
+    const writes = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.writes.map((w) => ({ write: `${w.method} ${w.url}`, body: JSON.stringify(w.form ?? w.json ?? null) })));
+    expect(writes.filter((w) => !creates.includes(w.write))).toEqual([]);
+    expect(writes.filter((w) => w.body.includes(PAGE_WRITE_MARK)), "writes from TradingView's own chart page").toEqual([]);
+
     const urlsSeen = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls);
-    expect(urlsSeen.filter((u) => !/^(GET|OPTIONS) /.test(u) && !creates.includes(u))).toEqual([]);
+    const reports = urlsSeen.filter((u) => u.startsWith(`GET ${ORIGIN}${PAGE_WRITES_REPORT}`)).map((u) => Object.fromEntries(new URL(u.split(' ')[1]!).searchParams));
+    expect(reports.length, 'times the chart page was opened and tried its writes').toBeGreaterThan(0);
+    for (const r of reports) expect(r).toEqual({ saveLayout: 'TypeError', createLayout: 'TypeError', putDrawings: 'TypeError', studyTemplate: 'TypeError', theme: 'TypeError' });
   });
 });
 

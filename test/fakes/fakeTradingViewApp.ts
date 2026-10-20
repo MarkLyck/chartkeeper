@@ -45,6 +45,8 @@ export interface FakeControl {
   setScenario(s: Scenario): void;
   /** Every request the app's sessions made, pages included: "GET https://...". */
   urls: string[];
+  /** Every write that reached TradingView, with its body. Never cleared. */
+  writes: HttpRequest[];
   /** Pages the app asked the fake Safari to open. */
   safariOpened: string[];
 }
@@ -70,6 +72,38 @@ function shownCounts(l: FakeLayout): PageCount {
   return { drawings: c.drawings, studies: c.studies };
 }
 
+/** Put into everything the fake chart page tries to write, so a write of TradingView's own that got through can be found. */
+export const PAGE_WRITE_MARK = 'written by the TradingView chart page';
+/** The page reports what became of its writes here, with one query parameter per write. */
+export const PAGE_WRITES_REPORT = '/fake-page-writes/';
+
+/**
+ * What TradingView's chart page may do when it opens a layout: save it back
+ * (autosave), write its drawings, create a layout, and save a template and a
+ * theme under names the account has. Each write is either cancelled
+ * ("TypeError") or answered with its HTTP status.
+ */
+function pageWrites(tv: FakeTradingView, uid: string): string {
+  const study = tv.studyTemplates[0]?.name ?? 'My RSI setup';
+  const theme = Object.keys(tv.themes)[0] ?? 'My dark';
+  const storage = `https://charts-storage.tradingview.com/charts-storage/layout/${uid}/sources?chart_id=1&layout_id=${uid}&jwt=jwt.${uid}.signature`;
+  return `(async () => {
+    const mark = ${JSON.stringify(PAGE_WRITE_MARK)};
+    const send = (url, init) => fetch(url, { credentials: 'include', ...init }).then((r) => String(r.status), (e) => e.name);
+    const form = (fields) => { const f = new FormData(); for (const [k, v] of Object.entries(fields)) f.append(k, v); return f; };
+    const json = { 'Content-Type': 'application/json' };
+    const content = JSON.stringify({ charts: [], mark });
+    const tried = {
+      saveLayout: await send('/api/v1/charts/save/', { method: 'POST', body: form({ name: mark, content, image_url: ${JSON.stringify(uid)} }) }),
+      createLayout: await send('/api/v1/charts/save/', { method: 'POST', body: form({ name: mark, content }) }),
+      putDrawings: await send(${JSON.stringify(storage)}, { method: 'PUT', headers: json, body: JSON.stringify({ sources: {}, mark }) }),
+      studyTemplate: await send('/api/v1/study-templates', { method: 'POST', headers: json, body: JSON.stringify({ name: ${JSON.stringify(study)}, content: { mark }, meta_info: { indicators: [] } }) }),
+      theme: await send('/save-theme/', { method: 'POST', body: form({ name: ${JSON.stringify(theme)}, content: JSON.stringify({ mark }) }) }),
+    };
+    await fetch(${JSON.stringify(PAGE_WRITES_REPORT)} + '?' + new URLSearchParams(tried));
+  })();`;
+}
+
 const html = (body: string) => `<!doctype html><html><head><meta charset="utf-8"><title>TradingView (fake)</title></head><body>${body}</body></html>`;
 
 function page(tv: FakeTradingView, url: URL, signedIn: boolean): string | null {
@@ -93,7 +127,7 @@ function page(tv: FakeTradingView, url: URL, signedIn: boolean): string | null {
     // Like TradingView: getAllShapes() leaves out arrow marks, the saved layout has every drawing.
     const saved = JSON.stringify({ content: JSON.stringify({ charts: [{ panes: [{ sources: Array.from({ length: n.drawings }, () => ({ type: 'LineToolTrendLine' })) }] }] }) });
     const api = `window.TradingViewApi = { chartsCount: () => ${charts}, getSaveChartService: () => ({ saveToJSON: () => (${saved}) }), chart: (i) => ({ dataReady: () => true, getAllShapes: () => new Array(i === 0 ? Math.max(0, ${n.drawings} - 1) : 0).fill({}), getAllStudies: () => new Array(i === 0 ? ${n.studies} : 0).fill({}) }) };`;
-    return html(`<script>${api}</script>`);
+    return html(`<script>${api}</script><script>${pageWrites(tv, l.uid)}</script>`);
   }
   return null;
 }
@@ -126,6 +160,7 @@ export function createFakeTradingView(): FakeHooks {
       tv.failOn = SCENARIOS[s].failOn;
     },
     urls: [],
+    writes: [],
     safariOpened: [],
   };
   (globalThis as { __chartkeeperFake?: FakeControl }).__chartkeeperFake = control;
@@ -143,7 +178,9 @@ export function createFakeTradingView(): FakeHooks {
     const signedIn = (await ses.cookies.get({ name: SESSION_COOKIE })).some((c) => c.value !== EXPIRED_SESSION);
     const p = req.method === 'GET' ? page(tv, url, signedIn) : null;
     if (p !== null) return new Response(p, { headers: { 'content-type': 'text/html; charset=utf-8' } });
-    const res = signedIn ? await tv.send(await toHttpRequest(req)) : json(403, { detail: 'Authentication credentials were not provided.', code: 'not_authenticated' });
+    const asked = await toHttpRequest(req);
+    if (!['GET', 'HEAD'].includes(req.method)) control.writes.push(asked);
+    const res = signedIn ? await tv.send(asked) : json(403, { detail: 'Authentication credentials were not provided.', code: 'not_authenticated' });
     return new Response(res.body, { status: res.status, headers: { 'content-type': res.contentType, ...cors } });
   };
 
