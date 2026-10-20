@@ -274,7 +274,7 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
     ws.send(msg('switch_timezone', [cs, chart.timezone || 'Etc/UTC']));
     ws.send(msg('resolve_symbol', [cs, 'sds_sym_1', seriesSymbol(chart)]));
     const resolved = await waitFor('symbol');
-    const description = (resolved as { description?: unknown } | null)?.description;
+    const { description, session_holidays: holidayList } = (resolved ?? {}) as { description?: unknown; session_holidays?: unknown };
     ws.send(msg('create_series', [cs, 'sds_1', 's1', 'sds_sym_1', chart.interval, opts.bars, '']));
     await waitFor('series');
 
@@ -310,6 +310,8 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
     for (const s of studies) studyResults[s.id] = await runStudy(s.metaInfoId, () => studyRequest(s));
 
     const lastBarTime = Math.max(0, ...bars.keys());
+    const lastBarDay = new Date(lastBarTime * 1000).toISOString().slice(0, 10).replace(/-/g, '');
+    const holidays = typeof holidayList === 'string' ? holidayList.split(',').filter((d) => /^\d{8}$/.test(d) && d > lastBarDay) : [];
     const drawingStudies: Record<string, StudyValues> = {};
     for (const d of chart.panes.flatMap((p) => p.drawings)) {
       const tool = STUDY_DRAWINGS[d.type];
@@ -324,6 +326,7 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
       fetchedAt: new Date().toISOString(),
       bars: [...bars.values()].sort((a, b) => a[0] - b[0]),
       ...(typeof description === 'string' && description ? { description } : {}),
+      ...(holidays.length ? { holidays } : {}),
       ...(chart.style in COMPUTED_STYLES ? { computedStyle: chart.style } : {}),
       studies: studyResults,
       ...(Object.keys(drawingStudies).length ? { drawingStudies } : {}),

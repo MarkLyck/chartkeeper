@@ -15,7 +15,7 @@ const INFO_LINE = {
   showAngle: true,
 };
 
-const at = (time: number, price: number) => ({ time, offset: 0, price });
+const at = (time: number, price: number) => ({ time, offset: 0, price, interval: null });
 
 describe('info line stats', () => {
   const formatPrice = (n: number) => n.toFixed(2);

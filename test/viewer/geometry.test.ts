@@ -167,10 +167,12 @@ describe('time index', () => {
     const bar = (iso: string) => fiveMin.indexOf(at(iso));
 
     // Where TradingView's own 5-minute AMEX:SILJ chart put these points (2026-10-20).
-    it('counts the bar offset of a daily point in weekdays, as TradingView does', () => {
+    it('counts the bar offset of a daily point in trading days, as TradingView does', () => {
       expect(fiveMin.logical({ time: at('2026-10-13T13:30Z'), offset: -10, interval: 'D' })).toBe(bar('2026-09-29T13:30Z'));
       expect(fiveMin.logical({ time: at('2026-10-09T13:30Z'), offset: 5, interval: 'D' })).toBe(bar('2026-10-16T13:30Z'));
       expect(fiveMin.logical({ time: at('2026-09-16T13:30Z'), offset: -5, interval: '1D' })).toBe(bar('2026-09-09T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-09-14T13:30Z'), offset: -5, interval: 'D' }), 'Labor Day has no bars, so it is not counted').toBe(bar('2026-09-04T13:30Z'));
+      expect(fiveMin.logical({ time: at('2026-09-21T13:30Z'), offset: -16, interval: 'D' })).toBe(bar('2026-08-27T13:30Z'));
       expect(fiveMin.logical({ time: at('2026-10-20T13:30Z'), offset: 5, interval: 'D' })).toBe(bar('2026-10-27T13:30Z'));
     });
 
@@ -183,6 +185,12 @@ describe('time index', () => {
       const t = at('2026-10-13T13:30Z');
       expect(fiveMin.logical({ time: t, offset: 7, interval: '5' })).toBe(bar('2026-10-13T13:30Z') + 7);
       expect(fiveMin.logical({ time: t, offset: 7, interval: null })).toBe(bar('2026-10-13T13:30Z') + 7);
+    });
+
+    it('counts only session bars before the first bar', () => {
+      expect(bar('2026-08-31T19:55Z')).toBe(-1);
+      expect(bar('2026-08-31T13:30Z')).toBe(-78);
+      expect(bar('2026-08-29T12:00Z'), 'a Saturday belongs to Friday').toBe(-79);
     });
 
     it('skips exchange holidays after the last bar', () => {

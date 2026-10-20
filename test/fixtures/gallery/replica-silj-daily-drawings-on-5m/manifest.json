@@ -3,7 +3,7 @@
     "name": "ChartKeeper",
     "version": "gallery"
   },
-  "createdAt": "2026-10-20T21:40:45.000Z",
+  "createdAt": "2026-10-20T21:47:23.000Z",
   "account": {
     "username": "gallery",
     "plan": null
@@ -19,7 +19,7 @@
       "charts": 1,
       "drawings": 19,
       "studies": 0,
-      "lastModified": 1792532445,
+      "lastModified": 1792532843,
       "priceData": true
     }
   ],
@@ -35,7 +35,7 @@
   "status": "complete",
   "files": {
     "layouts/replica-silj-daily-drawings-on-5m/layout.json": {
-      "sha256": "51064f0031dae0b540babfb35639ee2604eb8cb2153089cfec8a43323499b2c2",
+      "sha256": "be67b831d2c8c66b32ab68f5f79a47f4d5f500e9c099ef7347adfc4704610042",
       "bytes": 73332
     },
     "layouts/replica-silj-daily-drawings-on-5m/drawings.json": {
@@ -43,8 +43,8 @@
       "bytes": 45
     },
     "layouts/replica-silj-daily-drawings-on-5m/data/chart-1.json": {
-      "sha256": "6bce61a10f7800f42f0d521bd50410890281bf257db2cdfcd5e3ad60229af99c",
-      "bytes": 470834
+      "sha256": "3681c73f6b365845b60fa763461236eb9e50f9d429af857cdd700f052f8d5781",
+      "bytes": 471046
     }
   }
 }

@@ -3,7 +3,7 @@
   "id": 1,
   "name": "replica-silj-daily-drawings-on-5m",
   "description": "Replica of a user's chart: SILJ Elliott waves, arcs, projections into 2027 and a note drawn on the daily chart, layout saved on 5 minutes, some points saved as a bar plus a daily offset.",
-  "lastModified": 1792532445,
+  "lastModified": 1792532843,
   "content": {
     "name": "replica-silj-daily-drawings-on-5m",
     "layout": "s",
@@ -1797,7 +1797,7 @@
             "rightAxisesState": [
               {
                 "state": {
-                  "id": "sZqvwqaCVnfQ",
+                  "id": "qehk3bolZ0HW",
                   "m_priceRange": null,
                   "m_isAutoScale": true,
                   "m_isPercentage": false,

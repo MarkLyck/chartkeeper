@@ -121,6 +121,8 @@ export interface DrawingPoint {
   /** Bars to the right of `time`, for points placed in the future. */
   offset: number;
   price: number;
+  /** The interval the point was placed on, which `offset` counts bars of; null in layouts that don't say. */
+  interval: string | null;
 }
 
 export interface ParsedDrawing {
@@ -149,7 +151,7 @@ export function parseDrawing(source: TvSource, origin: DrawingOrigin): ParsedDra
   return {
     id: sourceId(source),
     type: anyStr(source.type),
-    points: points.filter(isObj).map((p) => ({ time: num(p.time_t, 0), offset: num(p.offset, 0), price: num(p.price, 0) })),
+    points: points.filter(isObj).map((p) => ({ time: num(p.time_t, 0), offset: num(p.offset, 0), price: num(p.price, 0), interval: typeof p.interval === 'string' && p.interval ? p.interval : null })),
     props,
     symbol: typeof props.symbol === 'string' ? props.symbol : null,
     ownerSource: typeof source.ownerSource === 'string' ? source.ownerSource : null,

@@ -16,12 +16,20 @@ export function parseInterval(code: string): Interval {
 }
 
 export const isIntraday = (i: Interval): boolean => i.unit === 'S' || i.unit === 'm';
+const sameInterval = (a: Interval, b: Interval) => a.unit === b.unit && a.n === b.n;
+const intradaySeconds = (i: Interval) => (i.unit === 'm' ? 60 : 1) * i.n;
 
 const utcDay = (t: number) => Math.floor(t / DAY);
 const isWeekend = (day: number) => {
   const dow = (day + 4) % 7; // 1970-01-01 was a Thursday
   return dow === 0 || dow === 6;
 };
+const ymdDay = (ymd: string) => Date.UTC(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8))) / 1000 / DAY;
+
+export interface TimeIndexOptions {
+  /** Exchange holidays after the last bar (YYYYMMDD). */
+  holidays?: readonly string[];
+}
 
 /**
  * Maps drawing points (a time plus a bar offset) to bar positions on the
@@ -33,29 +41,59 @@ export class TimeIndex {
   private readonly tradesWeekends: boolean;
   /** Intraday: the times of day (UTC seconds) that bars opened at in the last ten days, i.e. the session's bar slots. Empty otherwise. */
   private readonly slots: number[];
+  private readonly holidays: ReadonlySet<number>;
+  /** Days that have bars: the trading days between the first and the last bar. */
+  private readonly barDays: ReadonlySet<number>;
 
   constructor(
     readonly times: readonly number[],
     interval: string,
+    options: TimeIndexOptions = {},
   ) {
     this.interval = parseInterval(interval);
     this.tradesWeekends = times.some((t) => isWeekend(utcDay(t)));
+    this.holidays = new Set((options.holidays ?? []).map(ymdDay));
+    this.barDays = new Set(times.map(utcDay));
     const last = times[times.length - 1] ?? 0;
     const recent = isIntraday(this.interval) ? times.filter((t) => t > last - 10 * DAY) : [];
     // One day of bars shows no session boundary; plain intervals are the better guess then.
     this.slots = new Set(recent.map(utcDay)).size > 1 ? [...new Set(recent.map((t) => t - utcDay(t) * DAY))].sort((a, b) => a - b) : [];
   }
 
+  /** A day with bars, or, outside the bars, a weekday that is not a known holiday. */
+  private isTradingDay(day: number): boolean {
+    const n = this.times.length;
+    if (n && day >= utcDay(this.times[0]!) && day <= utcDay(this.times[n - 1]!)) return this.barDays.has(day);
+    return (this.tradesWeekends || !isWeekend(day)) && !this.holidays.has(day);
+  }
+
+  /** Bars from an intraday time before the first bar up to the first bar, counting the session's bar slots on weekdays. */
+  private sessionBarsBefore(first: number, time: number): number {
+    let count = 0;
+    let onSlot = false;
+    for (let d = utcDay(time); d <= utcDay(first); d++) {
+      if (d !== utcDay(first) && !this.isTradingDay(d)) continue;
+      for (const slot of this.slots) {
+        const t = d * DAY + slot;
+        if (t < time || t >= first) continue;
+        if (t === time) onSlot = true;
+        count++;
+      }
+    }
+    // A time between two slots belongs to the earlier one, as inside the bars.
+    return onSlot ? count : count + 1;
+  }
+
   /**
    * Bars after the last bar up to a later intraday time, counting only the
-   * session's bar slots on trading days, so nights and weekends hold no bars.
+   * session's bar slots on trading days, so nights, weekends and holidays hold no bars.
    * A time between two slots counts up to the next one, as TradingView does
    * for points beyond the last bar.
    */
   private sessionBarsAfter(last: number, time: number): number {
     let count = 0;
     for (let d = utcDay(last); d <= utcDay(time) + 7; d++) {
-      if (d !== utcDay(last) && !this.tradesWeekends && isWeekend(d)) continue;
+      if (d !== utcDay(last) && !this.isTradingDay(d)) continue;
       for (const slot of this.slots) {
         const t = d * DAY + slot;
         if (t <= last) continue;
@@ -75,7 +113,7 @@ export class TimeIndex {
     const tradingDay = (d: number) => this.tradesWeekends || !isWeekend(d);
     if (this.slots.length > 1) {
       for (let d = utcDay(last); out.length < count; d++) {
-        if (d !== utcDay(last) && !tradingDay(d)) continue;
+        if (d !== utcDay(last) && !this.isTradingDay(d)) continue;
         for (const slot of this.slots) if (d * DAY + slot > last && out.length < count) out.push(d * DAY + slot);
       }
       return out;
@@ -134,7 +172,7 @@ export class TimeIndex {
     const first = times[0]!;
     const last = times[n - 1]!;
     if (time > last) return n - 1 + (this.slots.length > 1 ? this.sessionBarsAfter(last, time) : this.barsBetween(last, time));
-    if (time < first) return -Math.max(1, this.barsBetween(time, first));
+    if (time < first) return -(this.slots.length > 1 ? this.sessionBarsBefore(first, time) : Math.max(1, this.barsBetween(time, first)));
     let lo = 0;
     let hi = n - 1;
     while (lo < hi) {
@@ -145,8 +183,52 @@ export class TimeIndex {
     return lo;
   }
 
-  logical(point: { time: number; offset: number }): number {
-    return this.indexOf(point.time) + point.offset;
+  /**
+   * Bar position of a drawing point. Its offset counts bars of the interval
+   * the point was placed on, so a point drawn on the daily chart as "last bar
+   * + 5" is five trading days later on a 5-minute chart too.
+   */
+  logical(point: { time: number; offset: number; interval?: string | null }): number {
+    const own = point.interval ? parseInterval(point.interval) : null;
+    if (!point.offset || !own || sameInterval(own, this.interval)) return this.indexOf(point.time) + point.offset;
+    return this.indexOf(this.stepBars(point.time, point.offset, own));
+  }
+
+  /**
+   * The time `count` bars of `interval` after (or before, when negative)
+   * `time`, stepping over trading days as TradingView does: days with bars,
+   * and outside the bars weekdays that are not known holidays. Intraday bars
+   * step over the session's hours on those days.
+   */
+  private stepBars(time: number, count: number, interval: Interval): number {
+    const { unit, n } = interval;
+    if (unit === 'D') {
+      const dir = Math.sign(count);
+      let d = utcDay(time);
+      for (let left = Math.abs(count) * n; left > 0; ) {
+        d += dir;
+        if (this.isTradingDay(d)) left--;
+      }
+      return time + (d - utcDay(time)) * DAY;
+    }
+    if (unit === 'W') return time + count * n * 7 * DAY;
+    if (unit === 'M') {
+      const at = new Date(time * 1000);
+      return Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + count * n, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes()) / 1000;
+    }
+    const step = intradaySeconds(interval);
+    const starts = this.slots.filter((s) => (s - this.slots[0]!) % step === 0);
+    if (starts.length < 2) return time + count * step;
+    const dir = Math.sign(count);
+    let left = Math.abs(count);
+    for (let d = utcDay(time); ; d += dir) {
+      if (d !== utcDay(time) && !this.isTradingDay(d)) continue;
+      for (const slot of dir > 0 ? starts : [...starts].reverse()) {
+        const t = d * DAY + slot;
+        if ((dir > 0 ? t <= time : t >= time) || --left > 0) continue;
+        return t;
+      }
+    }
   }
 }
 

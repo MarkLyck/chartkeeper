@@ -4,11 +4,11 @@
   "uid": "replica-silj-daily-drawings-on-5m",
   "theme": "dark",
   "arrangement": "s",
-  "capturedAt": "2026-10-20T21:40:45.282Z",
+  "capturedAt": "2026-10-20T21:47:23.692Z",
   "tradingViewBuild": "2026-10-19T17:32:06",
   "image": "tradingview.png",
   "size": {
-    "width": 1600,
+    "width": 2494,
     "height": 680
   },
   "charts": [
@@ -25,16 +25,16 @@
       "box": {
         "x": 0,
         "y": 0,
-        "width": 1600,
+        "width": 2494,
         "height": 680
       },
       "visibleRange": {
-        "from": 1788372000,
+        "from": 1785522600,
         "to": 1793367000
       },
       "priceRange": {
-        "from": 23.547974664567874,
-        "to": 33.80753166929016
+        "from": 22.701358968593063,
+        "to": 34.790801289258674
       },
       "tradingView": {
         "drawings": 19,

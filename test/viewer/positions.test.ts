@@ -91,13 +91,13 @@ describe('forecast labels', () => {
   const fmt = (p: number) => p.toFixed(2);
 
   it('shows the source price and date, and the change, percent, duration, target price and date', () => {
-    const labels = forecastLabels({ time: 1787059800, offset: 0, price: 313.8682 }, { time: 1790947800, offset: 0, price: 337.578 }, false, 'Etc/UTC', fmt);
+    const labels = forecastLabels({ time: 1787059800, offset: 0, price: 313.8682, interval: null }, { time: 1790947800, offset: 0, price: 337.578, interval: null }, false, 'Etc/UTC', fmt);
     expect(labels.source).toEqual(['313.87', '2026-08-18']);
     expect(labels.target).toEqual(['23.71 (7.55%) in 45d', '337.58', '2026-10-02']);
   });
 
   it("adds the time in the chart's timezone on intraday charts", () => {
-    const labels = forecastLabels({ time: 1792171800, offset: 0, price: 351.905 }, { time: 1792233000, offset: 0, price: 384.284 }, true, 'Etc/UTC', fmt);
+    const labels = forecastLabels({ time: 1792171800, offset: 0, price: 351.905, interval: null }, { time: 1792233000, offset: 0, price: 384.284, interval: null }, true, 'Etc/UTC', fmt);
     expect(labels.source[1]).toBe('2026-10-16 17:30');
     expect(labels.target).toEqual(['32.38 (9.20%) in 17h', '384.28', '2026-10-17  10:30']);
     expect(forecastDate(1792171800, true, 'America/New_York', ' ')).toBe('2026-10-16 13:30');

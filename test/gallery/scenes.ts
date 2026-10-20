@@ -690,7 +690,7 @@ const replicaSilj = scene({
   name: 'replica-silj-daily-drawings-on-5m',
   description: "Replica of a user's chart: SILJ Elliott waves, arcs, projections into 2027 and a note drawn on the daily chart, layout saved on 5 minutes, some points saved as a bar plus a daily offset.",
   theme: 'dark',
-  viewport: { width: 2006, height: 761 },
+  viewport: { width: 2900, height: 761 },
   charts: [
     chart({
       symbol: 'AMEX:SILJ',
