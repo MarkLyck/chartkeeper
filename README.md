@@ -128,7 +128,7 @@ and indicators were added, removed or moved between two backups.
 
 1. Click **Restore a chart**.
 2. Pick the backup and the layout.
-3. Check the name the new layout will get: "<name> (restored <date>)".
+3. Check the name the new layout will get: "<name> (restored <date> <time>)".
    If your TradingView plan has no free layout slot, ChartKeeper tells you.
    Then delete a layout you no longer use on TradingView, or upgrade your
    plan, and try again.

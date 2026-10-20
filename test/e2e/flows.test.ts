@@ -224,7 +224,7 @@ describe('every flow against a fake TradingView', () => {
     await window.locator('#restore-start').click();
     await expect(restoreResult()).resolves.toBe('result result-success');
     const created = (await fake.layouts()).filter((l) => l.name.startsWith('Min AAPL (restored '));
-    expect(created.map((l) => l.name)).toEqual([expect.stringMatching(/^Min AAPL \(restored \d{4}-\d\d-\d\d\)$/)]);
+    expect(created.map((l) => l.name)).toEqual([expect.stringMatching(/^Min AAPL \(restored \d{4}-\d\d-\d\d \d\d:\d\d\)$/)]);
     await expect(window.locator('.result-title').textContent()).resolves.toBe(`Your layout “${created[0]!.name}” is back on TradingView`);
     const rows = await verifyTable();
     expect(rows.map((r) => r.map((c) => c.text))).toEqual([

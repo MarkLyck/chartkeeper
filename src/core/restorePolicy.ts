@@ -1,8 +1,15 @@
 /** Restore rules shared by the window and the restore itself. No Node imports: the window bundles this file. */
 import type { LayoutCounts } from './layout';
 
-/** The name a restore as a new layout gets, so it sits next to the original without clashing. */
-export const restoredName = (name: string, at: Date): string => `${name} (restored ${at.toISOString().slice(0, 10)})`;
+const two = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * The name a restore as a new layout gets, so it sits next to the original
+ * without clashing. It carries the local time to the minute, so a second
+ * restore on the same day gets a name of its own.
+ */
+export const restoredName = (name: string, at: Date): string =>
+  `${name} (restored ${at.getFullYear()}-${two(at.getMonth() + 1)}-${two(at.getDate())} ${two(at.getHours())}:${two(at.getMinutes())})`;
 
 export interface Tally {
   count: number;

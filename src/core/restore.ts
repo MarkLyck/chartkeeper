@@ -84,6 +84,8 @@ interface JournalEntry {
   at: string;
   /** Set once the restore was checked. Only unfinished restores are picked up again. */
   finished: boolean;
+  /** The layouts the account had before this restore saved; none of them is the one it created. Older versions did not write it. */
+  existingUids?: string[];
 }
 
 /**
@@ -146,18 +148,23 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
   let uid: string;
   let name: string;
   let resumed = false;
-  const mark = (createdUid: string, finished: boolean) => opts.journal.put({ key, createdUid, name, at: now.toISOString(), finished });
+  let existingUids: string[] | undefined;
+  const mark = (createdUid: string, finished: boolean) => opts.journal.put({ key, createdUid, name, at: now.toISOString(), finished, existingUids });
 
   // The planned name is recorded before saving; if the answer to the save was
-  // lost, the layout with that name is the one this restore created. Picking
-  // it up only reads it.
+  // lost, the new layout with that name is the one this restore created.
+  // Picking it up only reads it.
   const unfinished = previous && !previous.finished ? previous : null;
-  const adopted = unfinished ? list.find((e) => (unfinished.createdUid ? e.uid === unfinished.createdUid : e.name === unfinished.name)) : undefined;
+  const adopted = unfinished
+    ? list.find((e) => (unfinished.createdUid ? e.uid === unfinished.createdUid : e.name === unfinished.name && !unfinished.existingUids?.includes(e.uid)))
+    : undefined;
   if (unfinished && adopted) {
     uid = adopted.uid;
     name = adopted.name;
+    existingUids = unfinished.existingUids;
     resumed = true;
   } else {
+    existingUids = list.map((e) => e.uid);
     const slots = await client.slots(list.length);
     if (!slots.free)
       throw new TvError(
