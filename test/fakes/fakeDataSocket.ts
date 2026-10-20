@@ -27,7 +27,7 @@ export function fakeDataSocket(opts: FakeDataOptions = {}): { factory: SocketFac
           if (msg.m === 'resolve_symbol') {
             const spec = JSON.parse(String(msg.p[2]).slice(1)) as { symbol: string };
             if (opts.unknownSymbols?.includes(spec.symbol)) out('symbol_error', [cs, msg.p[1], 'invalid symbol']);
-            else out('symbol_resolved', [cs, msg.p[1], { name: spec.symbol, description: `Name of ${spec.symbol}` }]);
+            else out('symbol_resolved', [cs, msg.p[1], { name: spec.symbol, description: `Name of ${spec.symbol}`, session_holidays: '20000117,20260525,20261126,20261225' }]);
           }
           if (msg.m === 'create_series') {
             const n = opts.bars ?? 50;

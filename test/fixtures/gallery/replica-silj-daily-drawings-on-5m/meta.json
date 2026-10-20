@@ -1,0 +1,182 @@
+{
+  "scene": "replica-silj-daily-drawings-on-5m",
+  "description": "Replica of a user's chart: SILJ Elliott waves, arcs, projections into 2027 and a note drawn on the daily chart, layout saved on 5 minutes, some points saved as a bar plus a daily offset.",
+  "uid": "replica-silj-daily-drawings-on-5m",
+  "theme": "dark",
+  "arrangement": "s",
+  "capturedAt": "2026-10-20T21:40:45.282Z",
+  "tradingViewBuild": "2026-10-19T17:32:06",
+  "image": "tradingview.png",
+  "size": {
+    "width": 1600,
+    "height": 680
+  },
+  "charts": [
+    {
+      "chartId": "1",
+      "symbol": "AMEX:SILJ",
+      "interval": "5",
+      "style": {
+        "id": 1,
+        "name": "Candles"
+      },
+      "barsSource": "datafeed",
+      "computedSeries": null,
+      "box": {
+        "x": 0,
+        "y": 0,
+        "width": 1600,
+        "height": 680
+      },
+      "visibleRange": {
+        "from": 1788372000,
+        "to": 1793367000
+      },
+      "priceRange": {
+        "from": 23.547974664567874,
+        "to": 33.80753166929016
+      },
+      "tradingView": {
+        "drawings": 19,
+        "shapes": 19,
+        "studies": []
+      }
+    }
+  ],
+  "baseImage": "isolated/_base.png",
+  "drawings": [
+    {
+      "id": "c1d01",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d01.png"
+    },
+    {
+      "id": "c1d02",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d02.png"
+    },
+    {
+      "id": "c1d03",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d03.png"
+    },
+    {
+      "id": "c1d04",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d04.png"
+    },
+    {
+      "id": "c1d05",
+      "chartId": "1",
+      "requestedType": "LineToolTrendLine",
+      "type": "LineToolTrendLine",
+      "image": "isolated/c1d05.png"
+    },
+    {
+      "id": "c1d06",
+      "chartId": "1",
+      "requestedType": "LineToolArc",
+      "type": "LineToolArc",
+      "image": "isolated/c1d06.png"
+    },
+    {
+      "id": "c1d07",
+      "chartId": "1",
+      "requestedType": "LineToolArc",
+      "type": "LineToolArc",
+      "image": "isolated/c1d07.png"
+    },
+    {
+      "id": "c1d08",
+      "chartId": "1",
+      "requestedType": "LineToolArc",
+      "type": "LineToolArc",
+      "image": "isolated/c1d08.png"
+    },
+    {
+      "id": "c1d09",
+      "chartId": "1",
+      "requestedType": "LineToolArc",
+      "type": "LineToolArc",
+      "image": "isolated/c1d09.png"
+    },
+    {
+      "id": "c1d10",
+      "chartId": "1",
+      "requestedType": "LineToolVertLine",
+      "type": "LineToolVertLine",
+      "image": "isolated/c1d10.png"
+    },
+    {
+      "id": "c1d11",
+      "chartId": "1",
+      "requestedType": "LineToolVertLine",
+      "type": "LineToolVertLine",
+      "image": "isolated/c1d11.png"
+    },
+    {
+      "id": "c1d12",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d12.png"
+    },
+    {
+      "id": "c1d13",
+      "chartId": "1",
+      "requestedType": "LineToolElliottTripleCombo",
+      "type": "LineToolElliottTripleCombo",
+      "image": "isolated/c1d13.png"
+    },
+    {
+      "id": "c1d14",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d14.png"
+    },
+    {
+      "id": "c1d15",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d15.png"
+    },
+    {
+      "id": "c1d16",
+      "chartId": "1",
+      "requestedType": "LineToolElliottCorrection",
+      "type": "LineToolElliottCorrection",
+      "image": "isolated/c1d16.png"
+    },
+    {
+      "id": "c1d17",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d17.png"
+    },
+    {
+      "id": "c1d18",
+      "chartId": "1",
+      "requestedType": "LineToolElliottImpulse",
+      "type": "LineToolElliottImpulse",
+      "image": "isolated/c1d18.png"
+    },
+    {
+      "id": "c1d19",
+      "chartId": "1",
+      "requestedType": "LineToolText",
+      "type": "LineToolText",
+      "image": "isolated/c1d19.png"
+    }
+  ]
+}
