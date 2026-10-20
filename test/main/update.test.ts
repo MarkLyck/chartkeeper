@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TvAccount } from '../../src/main/account';
 import { AppStatus } from '../../src/main/appState';
 import { Store } from '../../src/main/store';
-import { nextUpdate, plainNotes, Updater, type UpdateSource } from '../../src/main/update';
+import { failsWithin, nextUpdate, plainNotes, RELEASES_PAGE, stableFirst, Updater, type UpdateSource } from '../../src/main/update';
 import type { UpdateHow, UpdateState } from '../../src/shared/api';
 
 vi.mock('electron', () => ({ app: { getVersion: () => '1.0.0-rc.10', getPath: () => os.tmpdir() } }));
@@ -222,5 +222,38 @@ describe('release notes as plain text', () => {
     const notes = plainNotes('word '.repeat(1000));
     expect(notes.length).toBeLessThanOrEqual(801);
     expect(notes.endsWith('…')).toBe(true);
+  });
+});
+
+describe('which release to offer', () => {
+  const found = (version: string) => ({ version, notes: '' });
+
+  it('offers a newer stable release before any prerelease, so an rc install moves on to 1.0.0', async () => {
+    const asked: boolean[] = [];
+    const r = await stableFirst(async (prerelease) => (asked.push(prerelease), prerelease ? found('1.0.0-rc.11') : found('1.0.0')));
+    expect(r).toEqual(found('1.0.0'));
+    expect(asked).toEqual([false]);
+  });
+
+  it('looks at prereleases when there is no newer stable release, or none at all', async () => {
+    await expect(stableFirst(async (pre) => (pre ? found('1.0.0-rc.11') : null))).resolves.toEqual(found('1.0.0-rc.11'));
+    await expect(stableFirst(async (pre) => { if (!pre) throw new Error('404 releases/latest'); return found('1.0.0-rc.11'); })).resolves.toEqual(found('1.0.0-rc.11'));
+    await expect(stableFirst(async () => null)).resolves.toBeNull();
+  });
+
+  it('links to the list of releases, since every release so far is a prerelease', () => {
+    expect(RELEASES_PAGE).toBe('https://github.com/MarkLyck/chartkeeper/releases');
+  });
+});
+
+describe('an install that does not quit the app', () => {
+  it('fails when the installer reports an error, such as a cancelled password prompt', async () => {
+    let fail: (e: Error) => void = () => undefined;
+    const run = failsWithin((onError) => (fail = onError), () => setTimeout(() => fail(new Error('pkexec: dismissed')), 10), 5000);
+    await expect(run).rejects.toThrow('pkexec: dismissed');
+  });
+
+  it('fails when the app is still running long after the install should have quit it', async () => {
+    await expect(failsWithin(() => undefined, () => undefined, 50)).rejects.toThrow(/did not start/);
   });
 });

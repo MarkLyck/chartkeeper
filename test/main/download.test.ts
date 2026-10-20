@@ -70,6 +70,22 @@ describe('downloading the Mac installer', () => {
     expect(Buffer.compare(await fs.readFile(target), body)).toBe(0);
   });
 
+  it('gives up on a download that stops arriving', async () => {
+    const stalled = http.createServer((_req, res) => {
+      res.writeHead(200, { 'content-length': body.length });
+      res.write(body.subarray(0, 1000));
+    });
+    await new Promise<void>((r) => stalled.listen(0, '127.0.0.1', r));
+    const url = `http://127.0.0.1:${(stalled.address() as AddressInfo).port}/ChartKeeper.dmg`;
+    try {
+      await expect(downloadVerified(fetch, file({ url }), path.join(dir, 'ChartKeeper.dmg'), () => undefined, { stallMs: 300 })).rejects.toThrow(/stopped/);
+      await expect(fs.readdir(dir)).resolves.toEqual([]);
+    } finally {
+      stalled.closeAllConnections();
+      stalled.close();
+    }
+  });
+
   it('fails with the HTTP status when the release has no such file', async () => {
     await expect(downloadVerified(fetch, file({ url: `${base}missing.dmg` }), path.join(dir, 'x.dmg'), () => undefined)).rejects.toThrow(/404/);
     expect(await fs.readdir(dir)).toEqual([]);
@@ -89,6 +105,14 @@ describe('finding the installer in the release', () => {
       sha512: 'dmg',
       size: 2,
     });
+  });
+
+  it('refuses a file that only looks like a dmg, or one on another site', () => {
+    const base = 'https://github.com/MarkLyck/chartkeeper/releases/download/v2.0.0/';
+    expect(() => installerFile([{ url: 'x.command?.dmg', sha512: 'a', size: 1 }], base)).toThrow(/no .dmg/);
+    expect(() => installerFile([{ url: 'https://evil.example/ChartKeeper.dmg', sha512: 'a', size: 1 }], base)).toThrow(/another site/);
+    expect(() => installerFile([{ url: '%2e%2e%2fChartKeeper.dmg', sha512: 'a', size: 1 }], base).name).not.toThrow();
+    expect(installerFile([{ url: '%2e%2e%2fChartKeeper.dmg', sha512: 'a', size: 1 }], base).name).toBe('ChartKeeper.dmg');
   });
 
   it('fails when the release has no dmg', () => {
