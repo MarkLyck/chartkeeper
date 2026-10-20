@@ -7,7 +7,7 @@ export type LayoutForm = Record<(typeof LAYOUT_FORM_FIELDS)[number], string>;
 
 type BodyKind = 'form' | 'json';
 
-interface AllowedWrite {
+export interface AllowedWrite {
   what: string;
   url: string;
   body: BodyKind;
@@ -22,7 +22,7 @@ interface AllowedWrite {
  * saved by name, so TvClient checks that the name is free right before each
  * add.
  */
-const ALLOWED_WRITES: readonly AllowedWrite[] = [
+export const ALLOWED_WRITES: readonly Readonly<AllowedWrite>[] = [
   { what: 'create a layout', url: urls.saveLayout, body: 'form', fields: LAYOUT_FORM_FIELDS },
   { what: 'add an indicator template', url: urls.studyTemplates, body: 'json', fields: ['name', 'content', 'meta_info'] },
   { what: 'add a drawing template', url: urls.saveDrawingTemplate, body: 'form', fields: ['name', 'tool', 'content'] },

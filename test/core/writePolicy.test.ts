@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { saveForm } from '../../src/core/restore';
 import { CHART_STORAGE, ORIGIN, urls } from '../../src/core/tv/endpoints';
 import type { HttpRequest } from '../../src/core/tv/http';
-import { rawWriteRefusal, uploadFieldNames, writeRefusal, type UploadPart } from '../../src/core/tv/writePolicy';
+import { ALLOWED_WRITES, rawWriteRefusal, uploadFieldNames, writeRefusal, type UploadPart } from '../../src/core/tv/writePolicy';
 import { referenceRecord } from '../fakes/fixtures';
 
 const layoutForm = (): Record<string, string> => saveForm(referenceRecord(), { buckets: {}, reportedTotal: null }, 'Copy');
@@ -17,6 +17,23 @@ const creates: [string, HttpRequest][] = [
 const asIfBuilt = (req: { method: string; url: string; json?: unknown; form?: Record<string, string> }) => req as HttpRequest;
 
 describe('the only writes ChartKeeper may send create something new', () => {
+  // ChartKeeper promises its user it never changes or deletes anything on
+  // TradingView. A new write here, or a new field on one, must first be shown
+  // to only ever create something, and then be added to this list on purpose.
+  it('allows exactly these four creates and their fields, and nothing else', () => {
+    expect(ALLOWED_WRITES).toEqual([
+      {
+        what: 'create a layout',
+        url: 'https://www.tradingview.com/api/v1/charts/save/',
+        body: 'form',
+        fields: ['resolution', 'symbol_type', 'exchange', 'listed_exchange', 'symbol', 'short_name', 'legs', 'name', 'description', 'is_realtime', 'content', 'study_meta_info_map'],
+      },
+      { what: 'add an indicator template', url: 'https://www.tradingview.com/api/v1/study-templates', body: 'json', fields: ['name', 'content', 'meta_info'] },
+      { what: 'add a drawing template', url: 'https://www.tradingview.com/save-drawing-template/', body: 'form', fields: ['name', 'tool', 'content'] },
+      { what: 'add a theme', url: 'https://www.tradingview.com/save-theme/', body: 'form', fields: ['name', 'content'] },
+    ]);
+  });
+
   it.each(creates)('allows the request to %s', (_what, req) => expect(writeRefusal(req)).toBeNull());
 
   it('allows every read', () => {
