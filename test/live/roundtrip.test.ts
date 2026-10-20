@@ -117,8 +117,11 @@ describe.skipIf(Boolean(process.env.CI) && !sessionAvailable)('live round trip o
     const studyErrors = Object.values(data?.studies ?? {}).filter((s) => s.status === 'error');
     expect(studyErrors, 'every indicator, including Pine ones, was calculated').toEqual([]);
 
+    const layoutsBefore = new Set((await client.listLayouts()).map((l) => l.uid));
     const restored = await restoreLayout(client, reader, source.uid, { journal: new RestoreJournal(path.join(root, 'journal.json')) });
-    restoredUid = restored.uid;
+    // The clean-up deletes a layout on a real account, so only one this run is sure it created.
+    if (restored.resumed || layoutsBefore.has(restored.uid)) console.warn(`Not deleting ${restored.uid}: it was there before this restore, or an earlier run created it.`);
+    else restoredUid = restored.uid;
     expect(restored.check.missingDrawings).toEqual([]);
     expect(restored.check.verdict).toBe('shown-unchecked');
 
