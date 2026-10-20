@@ -5,13 +5,40 @@ import type { AppStatus } from './appState';
 /** Points a development run at a test feed, such as the end-to-end test's local server. An installed app always asks GitHub. */
 export const UPDATE_FEED_ENV = 'CK_UPDATE_FEED';
 
-export const RELEASES_PAGE = 'https://github.com/MarkLyck/chartkeeper/releases/latest';
+// Not /releases/latest: GitHub sends that to this list while every release is a prerelease.
+export const RELEASES_PAGE = 'https://github.com/MarkLyck/chartkeeper/releases';
+
+type Found = { version: string; notes: string };
+
+/**
+ * The release to offer: a newer stable one first, then a newer prerelease. Asked the other way,
+ * electron-updater keeps an rc install on rc tags and would never offer 1.0.0.
+ */
+export async function stableFirst(check: (prerelease: boolean) => Promise<Found | null>): Promise<Found | null> {
+  const stable = await check(false).catch(() => null);
+  return stable ?? check(true);
+}
+
+/**
+ * Starts an install that should quit the app, and fails when the installer reports an error
+ * or the app is still running after `ms`, so the popup never waits for a restart that won't come.
+ */
+export function failsWithin(onError: (fail: (e: Error) => void) => void, start: () => void, ms: number): Promise<never> {
+  return new Promise((_, reject) => {
+    const timer = setTimeout(() => reject(new Error('The new version did not start installing.')), ms);
+    onError((e) => {
+      clearTimeout(timer);
+      reject(e);
+    });
+    start();
+  });
+}
 
 /** Where new versions come from: electron-updater in the app (src/main/updateSource.ts), a fake in tests. */
 export interface UpdateSource {
   readonly how: UpdateHow;
   /** The newer release, or null when this version is the newest. */
-  check(): Promise<{ version: string; notes: string } | null>;
+  check(): Promise<Found | null>;
   /** Downloads the new version and checks its sha512, reporting 0-100 as it goes. */
   download(onPercent: (percent: number) => void): Promise<void>;
   /** 'restart': quits, installs and starts the new version. 'installer': opens the downloaded installer. */

@@ -3,7 +3,10 @@ import { autoUpdater, type ProgressInfo, type UpdateInfo } from 'electron-update
 import path from 'node:path';
 import { downloadVerified, installerFile } from './download';
 import { log } from './log';
-import { plainNotes, UPDATE_FEED_ENV, type UpdateSource } from './update';
+import { failsWithin, plainNotes, stableFirst, UPDATE_FEED_ENV, type UpdateSource } from './update';
+
+/** A Linux .deb install waits for the user's password before the app quits. */
+const INSTALL_START_MS = 3 * 60_000;
 
 const GITHUB_DOWNLOADS = 'https://github.com/MarkLyck/chartkeeper/releases/download/';
 
@@ -17,18 +20,19 @@ export function updateSource(): UpdateSource | null {
   autoUpdater.logger = { info: (m) => log(`updater: ${m}`), warn: (m) => log(`updater warning: ${m}`), error: (m) => log(`updater error: ${m}`) };
   autoUpdater.autoDownload = false;
   autoUpdater.autoInstallOnAppQuit = false;
-  autoUpdater.allowPrerelease = true;
   if (feed) {
     autoUpdater.forceDevUpdateConfig = true;
     autoUpdater.setFeedURL({ provider: 'generic', url: feed });
   }
 
   let found: UpdateInfo | null = null;
-  const check = async () => {
-    const r = await autoUpdater.checkForUpdates();
-    found = r?.isUpdateAvailable ? r.updateInfo : null;
-    return found && { version: found.version, notes: plainNotes(found.releaseNotes) };
-  };
+  const check = () =>
+    stableFirst(async (prerelease) => {
+      autoUpdater.allowPrerelease = prerelease;
+      const r = await autoUpdater.checkForUpdates();
+      found = r?.isUpdateAvailable ? r.updateInfo : null;
+      return found && { version: found.version, notes: plainNotes(found.releaseNotes) };
+    });
   const release = () => {
     if (!found) throw new Error('No new version was found.');
     return found;
@@ -69,7 +73,14 @@ export function updateSource(): UpdateSource | null {
       }
     },
     async install() {
-      autoUpdater.quitAndInstall(true, true);
+      // The new version starts before this one has quit; holding the lock would make it quit at once.
+      app.releaseSingleInstanceLock();
+      try {
+        await failsWithin((fail) => autoUpdater.once('error', fail), () => autoUpdater.quitAndInstall(true, true), INSTALL_START_MS);
+      } catch (e) {
+        app.requestSingleInstanceLock();
+        throw e;
+      }
     },
   };
 }

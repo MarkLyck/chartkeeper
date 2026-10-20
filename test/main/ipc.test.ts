@@ -280,7 +280,7 @@ describe('updates', () => {
 
   it('opens only ChartKeeper\'s releases page', async () => {
     await call('openReleasePage');
-    expect(electron.openedUrls).toEqual(['https://github.com/MarkLyck/chartkeeper/releases/latest']);
+    expect(electron.openedUrls).toEqual(['https://github.com/MarkLyck/chartkeeper/releases']);
   });
 
   it('does not quit while a backup runs', async () => {
