@@ -6,7 +6,7 @@ import { countLayout, parseLayout } from './layout';
 import { checkRestore, restoredName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
 import { type SnapshotReader, writePrivate } from './snapshot';
-import type { LayoutListEntry, TvClient } from './tv/client';
+import type { AddResult, LayoutListEntry, TvClient } from './tv/client';
 import { drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { urls } from './tv/endpoints';
 import { TvError } from './tv/errors';
@@ -194,33 +194,22 @@ export interface TemplateRestoreResult {
 /** Adds templates and themes from a snapshot that the account doesn't have. Existing ones are never changed. */
 export async function restoreTemplates(client: TvClient, snapshot: SnapshotReader): Promise<TemplateRestoreResult> {
   const result: TemplateRestoreResult = { added: [], skipped: [], missing: [] };
-  const addUnless = async (exists: boolean, kind: TemplateKind, name: string, add: () => Promise<void>) => {
-    if (exists) {
-      result.skipped.push({ kind, name });
-      return;
-    }
-    await add();
-    result.added.push({ kind, name });
-  };
+  const report = (kind: TemplateKind, name: string, r: AddResult) => (r === 'added' ? result.added : result.skipped).push({ kind, name });
 
   const studies = await snapshot.studyTemplates();
   if (!studies) result.missing.push('study-template');
-  const existingStudies = new Set((await client.studyTemplates()).map((t) => String(t.name)));
   for (const t of studies?.templates ?? []) {
     const name = String(t.name);
-    await addUnless(existingStudies.has(name), 'study-template', name, () => client.addStudyTemplate({ name, content: t.content, meta_info: t.meta_info }));
+    report('study-template', name, await client.addStudyTemplate({ name, content: t.content, meta_info: t.meta_info }));
   }
 
   const tools = await snapshot.drawingTemplates();
   if (!tools) result.missing.push('drawing-template');
-  for (const [tool, templates] of Object.entries(tools?.tools ?? {})) {
-    const existing = new Set(await client.drawingTemplateNames(tool));
-    for (const [name, content] of Object.entries(templates)) await addUnless(existing.has(name), 'drawing-template', name, () => client.addDrawingTemplate(tool, name, content));
-  }
+  for (const [tool, templates] of Object.entries(tools?.tools ?? {}))
+    for (const [name, content] of Object.entries(templates)) report('drawing-template', name, await client.addDrawingTemplate(tool, name, content));
 
   const themes = await snapshot.themes();
   if (!themes) result.missing.push('theme');
-  const existingThemes = new Set(Object.keys(await client.themes()));
-  for (const [name, content] of Object.entries(themes?.themes ?? {})) await addUnless(existingThemes.has(name), 'theme', name, () => client.addTheme(name, content));
+  for (const [name, content] of Object.entries(themes?.themes ?? {})) report('theme', name, await client.addTheme(name, content));
   return result;
 }

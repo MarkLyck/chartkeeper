@@ -155,3 +155,38 @@ describe('templates and themes', () => {
     expect(tv.requests.filter((r) => r.url.includes('/theme/'))).toEqual([]);
   });
 });
+
+describe('adding templates and themes, which TradingView saves by name', () => {
+  const writes = () => tv.requests.filter((r) => r.method !== 'GET');
+
+  it('leaves a drawing template alone when the tool has one by that name, whatever its case and spacing', async () => {
+    const before = structuredClone(tv.drawingTemplates);
+    expect(await client().addDrawingTemplate('LineToolTrendLine', ' thick  ORANGE ', { linecolor: '#000' })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.drawingTemplates).toEqual(before);
+    expect(await client().addDrawingTemplate('LineToolRay', 'Thick orange', { linecolor: '#000' })).toBe('added');
+    expect(tv.drawingTemplates.LineToolRay).toEqual({ 'Thick orange': { linecolor: '#000' } });
+  });
+
+  it('leaves an indicator template alone when one has that name', async () => {
+    const before = structuredClone(tv.studyTemplates);
+    expect(await client().addStudyTemplate({ name: 'my rsi setup', content: { panes: [1] }, meta_info: {} })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.studyTemplates).toEqual(before);
+    expect(await client().addStudyTemplate({ name: 'My MACD', content: { panes: [] }, meta_info: {} })).toBe('added');
+    expect(tv.studyTemplates.map((t) => t.name)).toEqual(['My RSI setup', 'My MACD']);
+  });
+
+  it('leaves a theme alone when one has that name, and adds one to an account without themes', async () => {
+    expect(await client().addTheme('MY DARK', { 'paneProperties.background': '#fff' })).toBe('exists');
+    expect(writes()).toEqual([]);
+    expect(tv.themes).toEqual({ 'My dark': { content: { 'paneProperties.background': '#000' } } });
+    failWhen((r) => r.method === 'GET' && r.url.endsWith('/themes/'), answer(200, '{"content":""}'));
+    expect(await client().addTheme('My dark', { a: 1 })).toBe('added');
+  });
+
+  it('reads only the list of indicator template names before adding one, not every template', async () => {
+    await client().addStudyTemplate({ name: 'My MACD', content: {}, meta_info: {} });
+    expect(tv.requests.map((r) => `${r.method} ${new URL(r.url).pathname}`)).toEqual(['GET /api/v1/study-templates', 'POST /api/v1/study-templates']);
+  });
+});
