@@ -41,6 +41,7 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     expanded = on;
     el.classList.toggle('is-full', on);
     // The window itself goes full screen, not the page: on macOS the page's own full screen can end without the page being told.
+    // On Linux the window is left as it is.
     void ctx.api.setFullScreen(on);
     renderBar();
   }
@@ -162,7 +163,8 @@ export function viewScreen(ctx: Ctx, opts: { snapshotDir?: string } = {}): Scree
     const i = layouts.findIndex((l) => l.uid === uid);
     const tool = (id: string, label: string, key: string, icon: SVGSVGElement, onClick: () => void, disabled: boolean) =>
       h('button', { type: 'button', id, class: 'tool', disabled, title: `${label} (${key})`, attrs: { 'aria-label': label }, on: { click: onClick } }, icon);
-    const full = expanded ? t('view.exitFullScreen') : t('view.fullScreen');
+    const linux = ctx.state().platform === 'linux';
+    const full = expanded ? t(linux ? 'view.exitExpandedChart' : 'view.exitFullScreen') : t(linux ? 'view.expandChart' : 'view.fullScreen');
     // Redrawing the bar drops focus; put it back once the stage is in the page again, so arrows and zoom can be pressed repeatedly from the keyboard.
     const focused = bar.contains(document.activeElement) ? document.activeElement?.id : undefined;
     if (focused) queueMicrotask(() => {

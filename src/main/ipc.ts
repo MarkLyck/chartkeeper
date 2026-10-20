@@ -85,7 +85,9 @@ export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
   let fullScreenForChart = false;
   handle('setFullScreen', async (on) => {
     const win = shell.window;
-    if (!win) return;
+    // Some Linux window managers leave the window without its title bar after full screen, so it can't be moved or closed.
+    // The chart still fills the window there.
+    if (!win || process.platform === 'linux') return;
     if (on === true && !win.isFullScreen()) {
       fullScreenForChart = true;
       win.setFullScreen(true);

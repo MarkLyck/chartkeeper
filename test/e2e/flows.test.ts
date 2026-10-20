@@ -186,7 +186,7 @@ describe('every flow against a fake TradingView', () => {
       return r !== undefined && r.x === 0 && r.y === 0 && r.width === innerWidth && r.height === innerHeight;
     });
     const windowFull = () => app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows().some((w) => w.isFullScreen()));
-    // Without a window manager (xvfb), Linux never reports the window full screen.
+    // On Linux only the chart fills the window; the window itself never goes full screen.
     const wm = process.platform !== 'linux';
     await window.locator('#chart-full').click();
     await expect.poll(covers).toBe(true);

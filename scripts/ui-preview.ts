@@ -217,9 +217,11 @@ async function main() {
   await page.waitForSelector('.chart-box canvas', { timeout: 15000 });
   await page.waitForTimeout(500);
   await shot(page, 'view-1000x700');
+  await mock(page, `m.setState({ platform: 'linux' });`);
   await page.keyboard.press('f');
   await page.waitForSelector('.is-full');
   await page.waitForTimeout(300);
+  expect((await page.textContent('#chart-full')) === 'Back to normal size', 'on Linux, where the window never goes full screen, the button still says full screen');
   await shot(page, 'view-full-1000x700');
   await page.keyboard.press('f');
   await page.waitForFunction(() => !document.querySelector('.is-full'));
