@@ -110,6 +110,13 @@ export const icons = {
   check: () => svg(['M24 4a20 20 0 1 0 0 40a20 20 0 1 0 0-40z', 'M14 25l7 7l13-15'], 'icon icon-check'),
   cross: () => svg(['M24 4a20 20 0 1 0 0 40a20 20 0 1 0 0-40z', 'M17 17l14 14M31 17l-14 14'], 'icon icon-cross'),
   warn: () => svg(['M24 5l21 37H3z', 'M24 19v11M24 35v1'], 'icon icon-warn'),
+  zoomIn: () => svg(['M22 6a16 16 0 1 0 0 32a16 16 0 1 0 0-32z', 'M42 42l-8.7-8.7', 'M16 22h12M22 16v12'], 'tool-icon'),
+  zoomOut: () => svg(['M22 6a16 16 0 1 0 0 32a16 16 0 1 0 0-32z', 'M42 42l-8.7-8.7', 'M16 22h12'], 'tool-icon'),
+  reset: () => svg(['M4 8v12h12', 'M9 30a18 18 0 1 0 4.26-18.72L4 20'], 'tool-icon'),
+  expand: () => svg(['M16 6h-6a4 4 0 0 0-4 4v6', 'M42 16v-6a4 4 0 0 0-4-4h-6', 'M32 42h6a4 4 0 0 0 4-4v-6', 'M6 32v6a4 4 0 0 0 4 4h6'], 'tool-icon'),
+  collapse: () => svg(['M16 6v6a4 4 0 0 1-4 4H6', 'M42 16h-6a4 4 0 0 1-4-4V6', 'M32 42v-6a4 4 0 0 1 4-4h6', 'M6 32h6a4 4 0 0 1 4 4v6'], 'tool-icon'),
+  prev: () => svg(['M30 36L18 24l12-12'], 'tool-icon'),
+  next: () => svg(['M18 36l12-12-12-12'], 'tool-icon'),
 };
 
 export type Tone = 'success' | 'warning' | 'error' | 'info';

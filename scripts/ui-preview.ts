@@ -148,8 +148,42 @@ async function main() {
   page = await open();
   await page.click('#go-view');
   await page.waitForSelector('.chart-box canvas', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await page.waitForSelector('#chart-zoom-in:enabled');
+  const viewport = page.viewportSize()!;
+  // The crosshair follows the mouse, so it is moved off the chart before every comparison.
+  const chartPixels = async () => {
+    await page.mouse.move(1, viewport.height - 1);
+    await page.waitForTimeout(400);
+    return page.locator('.chart-box').screenshot({ animations: 'disabled' });
+  };
+  const stageCovers = async () => {
+    const b = await page.locator('.chart-stage').boundingBox();
+    return b !== null && b.x === 0 && b.y === 0 && b.width === viewport.width && b.height === viewport.height;
+  };
+  const opening = await chartPixels();
   await shot(page, 'view-chart');
+  await page.click('#chart-zoom-in');
+  expect(!(await chartPixels()).equals(opening), 'Zoom in did not change the chart');
+  await page.click('#chart-reset');
+  expect((await chartPixels()).equals(opening), 'Reset view did not bring back the view the chart opened with');
+  await page.click('#chart-full');
+  await page.waitForSelector('.is-full');
+  await page.waitForTimeout(300);
+  expect(await stageCovers(), 'full screen does not cover the window');
+  expect(await page.isVisible('.stage-nav'), 'full screen does not show the layout name and arrows');
+  expect((await page.textContent('#chart-full')) === 'Exit full screen', 'the full screen button does not offer to exit');
+  expect((await page.evaluate(() => document.activeElement?.id)) === 'chart-full', 'focus left the full screen button');
+  await chartPixels();
+  await shot(page, 'view-full');
+  await page.keyboard.press('ArrowRight');
+  await page.waitForSelector('.layout-selected#layout-1', { state: 'attached' });
+  await page.waitForTimeout(300);
+  expect(await stageCovers(), 'full screen ends when the right arrow opens the next layout');
+  expect((await page.textContent('.stage-count')) === '2 of 3', 'full screen does not count the layouts');
+  await shot(page, 'view-full-next');
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.querySelector('.is-full') && document.fullscreenElement === null);
+  expect(!(await stageCovers()) && !(await page.isVisible('.stage-nav')), 'Escape does not leave full screen');
   await page.click('#layout-1');
   await page.waitForSelector('.layout-selected#layout-1');
   await page.waitForTimeout(300);
@@ -175,6 +209,12 @@ async function main() {
   await page.waitForSelector('.chart-box canvas', { timeout: 15000 });
   await page.waitForTimeout(500);
   await shot(page, 'view-1000x700');
+  await page.keyboard.press('f');
+  await page.waitForSelector('.is-full');
+  await page.waitForTimeout(300);
+  await shot(page, 'view-full-1000x700');
+  await page.keyboard.press('f');
+  await page.waitForFunction(() => !document.querySelector('.is-full'));
   await page.close();
 
   // Restore: as a new layout
