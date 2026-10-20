@@ -310,8 +310,7 @@ export async function fetchChartData(chart: ParsedChart, studies: ParsedStudy[],
     for (const s of studies) studyResults[s.id] = await runStudy(s.metaInfoId, () => studyRequest(s));
 
     const lastBarTime = Math.max(0, ...bars.keys());
-    const lastBarDay = new Date(lastBarTime * 1000).toISOString().slice(0, 10).replace(/-/g, '');
-    const holidays = typeof holidayList === 'string' ? holidayList.split(',').filter((d) => /^\d{8}$/.test(d) && d > lastBarDay) : [];
+    const holidays = typeof holidayList === 'string' ? holidayList.split(',').filter((d) => /^\d{8}$/.test(d)) : [];
     const drawingStudies: Record<string, StudyValues> = {};
     for (const d of chart.panes.flatMap((p) => p.drawings)) {
       const tool = STUDY_DRAWINGS[d.type];

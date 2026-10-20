@@ -47,6 +47,11 @@ describe('turning TradingView error answers into something the user can act on',
     await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });
   });
 
+  it('does not call another 422 a full plan', async () => {
+    failWhen((r) => r.method === 'POST', answer(422, '{"code":"content_too_large","detail":"Layout size limit exceeded"}'));
+    await expect(client().createLayout(form)).rejects.not.toMatchObject({ kind: 'limit-reached' });
+  });
+
   it('says the plan is full for a 403 limit answer', async () => {
     failWhen((r) => r.method === 'POST', answer(403, '{"detail":"savedChartsLimit","code":"limit"}'));
     await expect(client().createLayout(form)).rejects.toMatchObject({ kind: 'limit-reached' });

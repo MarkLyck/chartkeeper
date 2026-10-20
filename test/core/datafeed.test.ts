@@ -62,7 +62,7 @@ describe('fetching prices and indicator values', () => {
     const data = await fetchChartData(layout.charts[0]!, studies, factory, { authToken: 'tok', bars: 20 });
     expect(data.bars).toHaveLength(20);
     expect(data.description).toBe('Name of NASDAQ:AAPL');
-    expect(data.holidays, 'exchange holidays after the last bar').toEqual(['20261126', '20261225']);
+    expect(data.holidays, 'exchange holidays').toEqual(['20000117', '20260525', '20261126', '20261225']);
     expect(data.bars[0]).toEqual([1780000000, 100, 101, 99, 100.5, 0]);
     for (const s of studies) expect(data.studies[s.id]).toMatchObject({ status: 'ok' });
     const ok = Object.values(data.studies)[0]!;

@@ -193,12 +193,44 @@ describe('time index', () => {
       expect(bar('2026-08-29T12:00Z'), 'a Saturday belongs to Friday').toBe(-79);
     });
 
+    it('steps a point drawn on a finer interval by time, not by chart bars', () => {
+      expect(fiveMin.logical({ time: at('2026-10-19T14:30Z'), offset: 12, interval: '1' })).toBe(bar('2026-10-19T14:42Z'));
+    });
+
+    it('dates a point past the last bar by the bar it lands on', () => {
+      expect(fiveMin.timeAt(fiveMin.logical({ time: at('2026-10-20T13:30Z'), offset: 5, interval: 'D' }))).toBe(at('2026-10-27T13:30Z'));
+    });
+
+    it('places thousands of points from years before the first bar quickly', () => {
+      const started = performance.now();
+      for (let k = 0; k < 4000; k++) fiveMin.logical({ time: at('2015-01-05T13:30Z') + k * 3600 * 17, offset: 0, interval: '5' });
+      expect(performance.now() - started).toBeLessThan(250);
+    });
+
     it('skips exchange holidays after the last bar', () => {
       const plain = new TimeIndex(fiveMin.times, '5');
       const afterThanksgiving = at('2026-11-27T13:30Z');
       expect(fiveMin.indexOf(afterThanksgiving)).toBe(plain.indexOf(afterThanksgiving) - 78);
       expect(fiveMin.futureTimes(30 * 78).includes(at('2026-11-26T13:30Z'))).toBe(false);
     });
+  });
+
+  it('counts daily offsets in trading days on a weekly chart', () => {
+    const at = (iso: string) => Date.parse(iso) / 1000;
+    const weekly = new TimeIndex(Array.from({ length: 20 }, (_, k) => at('2026-06-08T13:30Z') + k * 7 * DAY), 'W');
+    expect(weekly.logical({ time: at('2026-10-13T13:30Z'), offset: -10, interval: 'D' })).toBe(weekly.indexOf(at('2026-09-29T13:30Z')));
+  });
+
+  it("does not count a futures market's Sunday evening open as a trading day", () => {
+    const at = (iso: string) => Date.parse(iso) / 1000;
+    const hours: number[] = [];
+    for (let d = at('2026-09-06T00:00Z'); d <= at('2026-10-16T00:00Z'); d += DAY) {
+      const dow = new Date(d * 1000).getUTCDay();
+      if (dow === 6) continue;
+      for (let h = 0; h < 24; h++) if ((dow === 0 && h >= 22) || (dow >= 1 && dow <= 4 && h !== 21) || (dow === 5 && h < 21)) hours.push(d + h * 3600);
+    }
+    const futures = new TimeIndex(hours, '60');
+    expect(futures.logical({ time: at('2026-10-13T13:00Z'), offset: -10, interval: 'D' })).toBe(futures.indexOf(at('2026-09-29T13:00Z')));
   });
 
   it('labels intervals like the chart header', () => {

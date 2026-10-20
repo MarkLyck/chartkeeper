@@ -24,10 +24,20 @@ const isWeekend = (day: number) => {
   const dow = (day + 4) % 7; // 1970-01-01 was a Thursday
   return dow === 0 || dow === 6;
 };
+/** Weekdays from day `a` to day `b`, both included. */
+const weekdaysIn = (a: number, b: number) => {
+  if (b < a) return 0;
+  const whole = Math.floor((b - a + 1) / 7);
+  let count = whole * 5;
+  for (let d = a + whole * 7; d <= b; d++) if (!isWeekend(d)) count++;
+  return count;
+};
+/** A corrupt offset must not stall drawing, which places every point on every frame. */
+const MAX_OFFSET = 100000;
 const ymdDay = (ymd: string) => Date.UTC(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8))) / 1000 / DAY;
 
 export interface TimeIndexOptions {
-  /** Exchange holidays after the last bar (YYYYMMDD). */
+  /** Exchange holidays (YYYYMMDD). */
   holidays?: readonly string[];
 }
 
@@ -42,8 +52,10 @@ export class TimeIndex {
   /** Intraday: the times of day (UTC seconds) that bars opened at in the last ten days, i.e. the session's bar slots. Empty otherwise. */
   private readonly slots: number[];
   private readonly holidays: ReadonlySet<number>;
-  /** Days that have bars: the trading days between the first and the last bar. */
-  private readonly barDays: ReadonlySet<number>;
+  /** Days that have bars: the trading days between the first and the last bar, on daily and intraday charts. Null on coarser charts. */
+  private readonly barDays: ReadonlySet<number> | null;
+  private readonly placed = new Map<string, number>();
+  private readonly future = new Map<number, number>();
 
   constructor(
     readonly times: readonly number[],
@@ -51,28 +63,42 @@ export class TimeIndex {
     options: TimeIndexOptions = {},
   ) {
     this.interval = parseInterval(interval);
-    this.tradesWeekends = times.some((t) => isWeekend(utcDay(t)));
+    // Saturday bars, not Sunday ones: futures and forex open on Sunday evening (UTC) for Monday's session.
+    this.tradesWeekends = times.some((t) => (utcDay(t) + 4) % 7 === 6);
     this.holidays = new Set((options.holidays ?? []).map(ymdDay));
-    this.barDays = new Set(times.map(utcDay));
+    const { unit, n } = this.interval;
+    this.barDays = isIntraday(this.interval) || (unit === 'D' && n === 1) ? new Set(times.map(utcDay)) : null;
     const last = times[times.length - 1] ?? 0;
     const recent = isIntraday(this.interval) ? times.filter((t) => t > last - 10 * DAY) : [];
     // One day of bars shows no session boundary; plain intervals are the better guess then.
     this.slots = new Set(recent.map(utcDay)).size > 1 ? [...new Set(recent.map((t) => t - utcDay(t) * DAY))].sort((a, b) => a - b) : [];
   }
 
-  /** A day with bars, or, outside the bars, a weekday that is not a known holiday. */
+  /** A weekday (or any day, for symbols that trade weekends) that is not a holiday and, between the first and the last bar, has bars. */
   private isTradingDay(day: number): boolean {
+    if ((!this.tradesWeekends && isWeekend(day)) || this.holidays.has(day)) return false;
     const n = this.times.length;
-    if (n && day >= utcDay(this.times[0]!) && day <= utcDay(this.times[n - 1]!)) return this.barDays.has(day);
-    return (this.tradesWeekends || !isWeekend(day)) && !this.holidays.has(day);
+    if (this.barDays && n && day >= utcDay(this.times[0]!) && day <= utcDay(this.times[n - 1]!)) return this.barDays.has(day);
+    return true;
   }
 
-  /** Bars from an intraday time before the first bar up to the first bar, counting the session's bar slots on weekdays. */
+  /** Trading days strictly between two days, all before the first bar. */
+  private tradingDaysBetween(a: number, b: number): number {
+    if (b - a < 2) return 0;
+    const days = this.tradesWeekends ? b - a - 1 : weekdaysIn(a + 1, b - 1);
+    let holidays = 0;
+    for (const h of this.holidays) if (h > a && h < b && (this.tradesWeekends || !isWeekend(h))) holidays++;
+    return days - holidays;
+  }
+
+  /** Bars from an intraday time before the first bar up to the first bar, counting the session's bar slots on trading days. */
   private sessionBarsBefore(first: number, time: number): number {
+    const from = utcDay(time);
+    const to = utcDay(first);
     let count = 0;
     let onSlot = false;
-    for (let d = utcDay(time); d <= utcDay(first); d++) {
-      if (d !== utcDay(first) && !this.isTradingDay(d)) continue;
+    for (const d of from === to ? [from] : [from, to]) {
+      if (d !== to && !this.isTradingDay(d)) continue;
       for (const slot of this.slots) {
         const t = d * DAY + slot;
         if (t < time || t >= first) continue;
@@ -80,6 +106,7 @@ export class TimeIndex {
         count++;
       }
     }
+    count += this.tradingDaysBetween(from, to) * this.slots.length;
     // A time between two slots belongs to the earlier one, as inside the bars.
     return onSlot ? count : count + 1;
   }
@@ -189,9 +216,28 @@ export class TimeIndex {
    * + 5" is five trading days later on a 5-minute chart too.
    */
   logical(point: { time: number; offset: number; interval?: string | null }): number {
-    const own = point.interval ? parseInterval(point.interval) : null;
-    if (!point.offset || !own || sameInterval(own, this.interval)) return this.indexOf(point.time) + point.offset;
-    return this.indexOf(this.stepBars(point.time, point.offset, own));
+    const key = `${point.time}|${point.offset}|${point.interval ?? ''}`;
+    let at = this.placed.get(key);
+    if (at === undefined) {
+      const own = point.interval ? parseInterval(point.interval) : null;
+      const offset = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, point.offset));
+      at = !offset || !own || sameInterval(own, this.interval) ? this.indexOf(point.time) + offset : this.indexOf(this.stepBars(point.time, offset, own));
+      this.placed.set(key, at);
+    }
+    return at;
+  }
+
+  /** Opening time of the bar at a position, past the last bar too. */
+  timeAt(logical: number): number | undefined {
+    const i = Math.round(logical);
+    const last = this.times.length - 1;
+    if (i <= last) return this.times[i];
+    let t = this.future.get(i);
+    if (t === undefined) {
+      t = this.futureTimes(i - last)[i - last - 1]!;
+      this.future.set(i, t);
+    }
+    return t;
   }
 
   /**
@@ -217,7 +263,9 @@ export class TimeIndex {
       return Date.UTC(at.getUTCFullYear(), at.getUTCMonth() + count * n, at.getUTCDate(), at.getUTCHours(), at.getUTCMinutes()) / 1000;
     }
     const step = intradaySeconds(interval);
-    const starts = this.slots.filter((s) => (s - this.slots[0]!) % step === 0);
+    // Bars of the point's interval start on some of the chart's bars only when that interval is a multiple of the chart's.
+    const chartStep = isIntraday(this.interval) ? intradaySeconds(this.interval) : 0;
+    const starts = chartStep && step % chartStep === 0 ? this.slots.filter((s) => (s - this.slots[0]!) % step === 0) : [];
     if (starts.length < 2) return time + count * step;
     const dir = Math.sign(count);
     let left = Math.abs(count);

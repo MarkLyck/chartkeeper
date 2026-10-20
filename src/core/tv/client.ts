@@ -318,8 +318,8 @@ export class TvClient {
   /** Creates a new layout. Never retried. */
   async createLayout(form: LayoutForm): Promise<{ id: number; uid: string }> {
     const res = await this.http.send({ method: 'POST', url: urls.saveLayout, form });
-    // A free plan with its layout taken got 422 {"code":"saved_chart_limit_reached"}.
-    if ((res.status === 403 || res.status === 422) && /limit|paywall|over_limit|savedCharts/i.test(res.body))
+    const full = (res.status === 403 && /limit|paywall|over_limit|savedCharts/i.test(res.body)) || (res.status === 422 && res.body.includes('saved_chart_limit_reached'));
+    if (full)
       throw new TvError('limit-reached', 'Your TradingView plan has no free layout slot.', res.body.slice(0, 300));
     check(res, 'the restored layout');
     const v = parse(SaveResponseSchema, parseJson(res, 'save result'), 'save result');

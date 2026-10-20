@@ -82,7 +82,7 @@ export const ChartDataSchema = z.object({
   computedStyle: z.number().optional(),
   /** The symbol's name as TradingView resolved it ("Apple Inc"), which its legend shows by default. */
   description: z.string().optional(),
-  /** Exchange holidays after the last bar (YYYYMMDD), which TradingView's time scale skips past the last intraday bar. */
+  /** Exchange holidays (YYYYMMDD), which TradingView's time scale skips where there are no bars to go by. */
   holidays: z.array(z.string()).optional(),
   /** Keyed by the study's source id in the layout. */
   studies: z.record(z.string(), StudyValuesSchema),
