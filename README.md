@@ -97,8 +97,10 @@ week of backups, a line of how many drawings each one holds.
 
 The backups go into the folder shown under **Settings**. Click **Change...**
 to pick another folder, for example on an external disk or in Dropbox. Each
-backup is a separate folder named by date and time, so older backups are never
-overwritten.
+backup is a separate folder inside `snapshots`, named by date and time, so
+older backups are never overwritten. Each backup folder has a `README.txt` that
+lists your layouts by their TradingView names and says which folder holds each
+one.
 
 **Daily backups.** Turn on **Back up automatically every day**. ChartKeeper
 then starts with your computer, stays in the system tray (the icons near the
