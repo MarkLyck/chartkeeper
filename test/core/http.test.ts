@@ -13,7 +13,6 @@ function fakeTransport(responses: (req: HttpRequest) => HttpResponse) {
       return responses(req);
     },
     user: async () => null,
-    buildTime: async () => null,
   };
   const rate = { minIntervalMs: 1500, jitterMs: 1000, now: () => clock, sleep: async (ms: number) => void (clock += ms) };
   return { http: new PoliteHttp(transport, rate), sent };
@@ -62,8 +61,7 @@ describe('network failures', () => {
         throw new Error('net::ERR_INTERNET_DISCONNECTED');
       },
       user: async () => null,
-      buildTime: async () => null,
-    };
+      };
     return { http: new PoliteHttp(transport, { minIntervalMs: 0, jitterMs: 0, now: () => clock, sleep: async (ms) => void (clock += ms) }), sent };
   };
 
@@ -87,8 +85,7 @@ describe('network failures', () => {
         return ok;
       },
       user: async () => null,
-      buildTime: async () => null,
-    };
+      };
     const http = new PoliteHttp(transport, { minIntervalMs: 0, jitterMs: 0, sleep: async () => {} });
     const save = http.send({ method: 'POST', url: 'https://www.tradingview.com/api/v1/charts/save/', form: {} });
     const list = http.send({ method: 'GET', url: 'https://www.tradingview.com/my-charts/' });
@@ -136,9 +133,9 @@ describe('the code that runs inside the TradingView page', () => {
   });
 
   it('sends JSON with its content type, and returns status, type and body', async () => {
-    const res = await pageFetch({ method: 'PUT', url: `${base}/sources`, json: { sources: { a: null } }, headers: { 'X-BUILD-TIME': 'bt' } });
+    const res = await pageFetch({ method: 'POST', url: `${base}/study-templates`, json: { name: 'RSI' } });
     expect(res).toEqual({ status: 200, contentType: 'application/json', body: '{"ok":true}' });
-    expect(seen[0]).toMatchObject({ method: 'PUT', body: '{"sources":{"a":null}}', headers: { 'content-type': 'application/json', 'x-build-time': 'bt' } });
+    expect(seen[0]).toMatchObject({ method: 'POST', body: '{"name":"RSI"}', headers: { 'content-type': 'application/json' } });
   });
 
   it('sends a form as multipart fields, like the web app', async () => {

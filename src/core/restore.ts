@@ -3,26 +3,21 @@ import path from 'node:path';
 import { obj } from './props';
 import { captureLayout } from './backup';
 import { countLayout, parseLayout } from './layout';
-import { checkRestore, restoredName, sameLayoutName, type PageCount, type RestoreCheck } from './restorePolicy';
+import { checkRestore, restoredName, type PageCount, type RestoreCheck } from './restorePolicy';
 import type { DrawingsRecord, LayoutRecord } from './model';
-import { APP_NAME, noExtras, SnapshotWriter, type SnapshotReader, writePrivate } from './snapshot';
+import { type SnapshotReader, writePrivate } from './snapshot';
 import type { LayoutListEntry, TvClient } from './tv/client';
-import { chartIdOf, drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
+import { drawingSourceFromStored, isDrawingType, mainSeriesOf, placeDrawing, placeShared, type TvContent } from './tv/content';
 import { urls } from './tv/endpoints';
 import { TvError } from './tv/errors';
 
-export type RestoreStep = 'check' | 'create' | 'safetyCopy' | 'replace' | 'clearDrawings' | 'verify';
-
-/** "replace" carries the layout name the user confirmed; it must still match the target when the restore runs. */
-export type RestoreMode = { kind: 'new' } | { kind: 'replace'; targetUid: string; confirmedName: string };
+export type RestoreStep = 'check' | 'create' | 'verify';
 
 export interface RestoreResult {
   uid: string;
   name: string;
   url: string;
   check: RestoreCheck;
-  /** Folder with a copy of the replaced layout as it was just before the restore. */
-  safetyBackup: string | null;
   /** True when a previous, interrupted run had already created the layout. */
   resumed: boolean;
 }
@@ -91,7 +86,7 @@ interface JournalEntry {
 }
 
 /**
- * Remembers the layout a "new" restore is creating, so running it again after
+ * Remembers the layout a restore is creating, so running it again after
  * a crash or a lost answer finishes that layout instead of making a copy.
  * A finished restore is never picked up again: restoring twice on purpose
  * makes two copies.
@@ -99,8 +94,9 @@ interface JournalEntry {
 export class RestoreJournal {
   constructor(private readonly file: string) {}
 
-  static key(snapshotDir: string, sourceUid: string, mode: RestoreMode) {
-    return `${path.basename(snapshotDir)}|${sourceUid}|${mode.kind === 'new' ? 'new' : `replace:${mode.targetUid}`}`;
+  static key(snapshotDir: string, sourceUid: string) {
+    // "|new" matches the keys versions with a replace mode wrote, so their unfinished restores are still found.
+    return `${path.basename(snapshotDir)}|${sourceUid}|new`;
   }
 
   async get(key: string): Promise<JournalEntry | null> {
@@ -123,10 +119,7 @@ export class RestoreJournal {
 }
 
 export interface RestoreOptions {
-  /** Backup folder; the safety copy of a replaced layout goes in <root>/safety-copies. */
-  root: string;
   journal: RestoreJournal;
-  buildTime: string | null;
   now?: Date;
   onProgress?: (step: RestoreStep, name?: string) => void;
   /** Opens the layout on TradingView and counts what it shows; null when that fails. */
@@ -134,19 +127,16 @@ export interface RestoreOptions {
 }
 
 /**
- * Recreates one layout from a snapshot on TradingView.
- *
- * "new" never touches existing layouts. "replace" only runs when the name the
- * user confirmed still matches the target, and it first saves a safety copy
- * of the layout it overwrites. Afterwards the restored layout is read back,
+ * Recreates one layout from a snapshot on TradingView as a new layout. It
+ * never changes an existing one. Afterwards the new layout is read back,
  * counted on the chart page, and compared with the backup.
  */
-export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, sourceUid: string, mode: RestoreMode, opts: RestoreOptions): Promise<RestoreResult> {
+export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, sourceUid: string, opts: RestoreOptions): Promise<RestoreResult> {
   const say = opts.onProgress ?? (() => undefined);
   const record = await snapshot.layout(sourceUid);
   const drawings = await snapshot.drawings(sourceUid);
   const expected = countLayout(parseLayout(record, drawings));
-  const key = RestoreJournal.key(snapshot.dir, sourceUid, mode);
+  const key = RestoreJournal.key(snapshot.dir, sourceUid);
   const now = opts.now ?? new Date();
 
   say('check');
@@ -154,77 +144,41 @@ export async function restoreLayout(client: TvClient, snapshot: SnapshotReader, 
   const previous = await opts.journal.get(key);
   let uid: string;
   let name: string;
-  let safetyBackup: string | null = null;
   let resumed = false;
   const mark = (createdUid: string, finished: boolean) => opts.journal.put({ key, createdUid, name, at: now.toISOString(), finished });
 
-  // A "new" restore records its planned name before saving; if the answer to
-  // the save was lost, the layout with that name is the one it created.
-  // "replace" is never picked up: overwriting again is what the user asked for.
-  const unfinished = mode.kind === 'new' && previous && !previous.finished ? previous : null;
+  // The planned name is recorded before saving; if the answer to the save was
+  // lost, the layout with that name is the one this restore created. Picking
+  // it up only reads it.
+  const unfinished = previous && !previous.finished ? previous : null;
   const adopted = unfinished ? list.find((e) => (unfinished.createdUid ? e.uid === unfinished.createdUid : e.name === unfinished.name)) : undefined;
   if (unfinished && adopted) {
     uid = adopted.uid;
     name = adopted.name;
     resumed = true;
-  } else if (mode.kind === 'new') {
+  } else {
     const slots = await client.slots(list.length);
     if (!slots.free)
       throw new TvError(
         'limit-reached',
-        `Your TradingView plan${slots.plan ? ` (${slots.plan})` : ''} allows ${slots.limit} saved layout${slots.limit === 1 ? '' : 's'}, and all are in use. To restore as a new layout, delete a layout on TradingView or upgrade your plan. Or choose "Replace an existing layout".`,
+        `Your TradingView plan${slots.plan ? ` (${slots.plan})` : ''} allows ${slots.limit} saved layout${slots.limit === 1 ? '' : 's'}, and all are in use. To restore, delete a layout you no longer use on TradingView or upgrade your plan.`,
         '',
         { limit: slots.limit ?? 0, plan: slots.plan ?? '' },
       );
     name = restoredName(record.name, now);
     say('create', name);
     await mark('', false);
-    uid = (await client.saveLayout({ fields: saveForm(record, drawings, name) })).uid;
+    uid = (await client.createLayout(saveForm(record, drawings, name))).uid;
     await mark(uid, false);
-  } else {
-    const target = list.find((e) => e.uid === mode.targetUid);
-    if (!target) throw new TvError('not-found', 'The layout you chose to replace no longer exists on TradingView.');
-    if (!sameLayoutName(mode.confirmedName, target.name)) throw new TvError('not-found', 'The layout name you typed does not match the layout you chose. Nothing was changed.');
-    say('safetyCopy', target.name);
-    safetyBackup = await saveSafetyCopy(client, target, opts.root, now);
-    name = target.name;
-    say('replace', target.name);
-    await client.saveLayout({ fields: saveForm(record, drawings, name), replaceUid: target.uid });
-    uid = target.uid;
-    say('clearDrawings');
-    await clearStoredDrawings(client, uid, record, opts.buildTime);
   }
 
   say('verify');
   const entry: LayoutListEntry = (await client.listLayouts()).find((e) => e.uid === uid) ?? { uid, url: uid, id: null, name, lastModified: null, raw: {} };
   const after = await captureLayout(client, entry);
-  if (mode.kind === 'new') await mark(uid, true);
+  await mark(uid, true);
   const shown = opts.countOnPage ? await opts.countOnPage(uid) : null;
   const check = checkRestore(expected, countLayout(after.layout), shown);
-  return { uid, name, url: urls.layoutPage(uid), check, safetyBackup, resumed };
-}
-
-/** After "replace", the saved content holds every backed-up drawing, so the storage copies are removed to avoid duplicates. */
-async function clearStoredDrawings(client: TvClient, uid: string, record: LayoutRecord, buildTime: string | null) {
-  const token = await client.chartToken(uid);
-  for (const chartId of [...record.content.charts.map(chartIdOf), '_shared']) {
-    const bucket = await client.drawingBucket(uid, chartId, token);
-    const ids = Object.keys(bucket.sources);
-    if (ids.length) await client.putDrawings(uid, chartId, token, Object.fromEntries(ids.map((id) => [id, null])), buildTime);
-  }
-}
-
-async function saveSafetyCopy(client: TvClient, target: LayoutListEntry, root: string, now: Date): Promise<string> {
-  const captured = await captureLayout(client, target);
-  const writer = await SnapshotWriter.begin(path.join(root, 'safety-copies'), now);
-  return writer.finish({
-    app: { name: APP_NAME, version: 'safety-copy' },
-    createdAt: now.toISOString(),
-    account: { username: client.username, plan: client.plan },
-    layouts: [await writer.addLayout(captured)],
-    extras: noExtras(),
-    warnings: ['Safety copy taken just before ChartKeeper replaced this layout.'],
-  });
+  return { uid, name, url: urls.layoutPage(uid), check, resumed };
 }
 
 export type TemplateKind = 'study-template' | 'drawing-template' | 'theme';

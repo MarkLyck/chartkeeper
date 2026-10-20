@@ -72,12 +72,12 @@ function shownCounts(l: FakeLayout): PageCount {
 
 const html = (body: string) => `<!doctype html><html><head><meta charset="utf-8"><title>TradingView (fake)</title></head><body>${body}</body></html>`;
 
-function page(tv: FakeTradingView, url: URL, signedIn: boolean, buildTime: string): string | null {
+function page(tv: FakeTradingView, url: URL, signedIn: boolean): string | null {
   if (url.hostname !== 'www.tradingview.com') return null;
   if (url.pathname === '/') {
     const a = tv.account;
     const user = signedIn && a ? { id: a.id, username: a.username, auth_token: a.authToken, pro_plan: a.plan } : {};
-    return html(`<script>window.user = ${JSON.stringify(user)}; window.BUILD_TIME = ${JSON.stringify(buildTime)};</script>`);
+    return html(`<script>window.user = ${JSON.stringify(user)};</script>`);
   }
   if (url.pathname === '/accounts/signin/') {
     const set = `document.cookie = 'sessionid=fake-session; domain=.tradingview.com; path=/; secure; samesite=lax'; document.cookie = 'sessionid_sign=fake-sign; domain=.tradingview.com; path=/; secure; samesite=lax';`;
@@ -100,8 +100,7 @@ function page(tv: FakeTradingView, url: URL, signedIn: boolean, buildTime: strin
 
 async function toHttpRequest(req: Request): Promise<HttpRequest> {
   const type = req.headers.get('content-type') ?? '';
-  const buildTime = req.headers.get('x-build-time');
-  const base: HttpRequest = { method: req.method as HttpRequest['method'], url: req.url, headers: buildTime ? { 'X-BUILD-TIME': buildTime } : {} };
+  const base: HttpRequest = { method: req.method as HttpRequest['method'], url: req.url };
   if (type.startsWith('application/json')) return { ...base, json: await req.json() };
   if (type.startsWith('multipart/form-data')) return { ...base, form: Object.fromEntries([...(await req.formData()).entries()].map(([k, v]) => [k, String(v)])) };
   return base;
@@ -140,9 +139,9 @@ export function createFakeTradingView(): FakeHooks {
     const origin = req.headers.get('origin');
     const cors: Record<string, string> = origin ? { 'access-control-allow-origin': origin, 'access-control-allow-credentials': 'true' } : {};
     if (req.method === 'OPTIONS')
-      return new Response(null, { status: 204, headers: { ...cors, 'access-control-allow-methods': 'GET, POST, PUT', 'access-control-allow-headers': 'content-type, x-build-time' } });
+      return new Response(null, { status: 204, headers: { ...cors, 'access-control-allow-methods': 'GET, POST, PUT', 'access-control-allow-headers': 'content-type' } });
     const signedIn = (await ses.cookies.get({ name: SESSION_COOKIE })).some((c) => c.value !== EXPIRED_SESSION);
-    const p = req.method === 'GET' ? page(tv, url, signedIn, (await tv.buildTime()) ?? '') : null;
+    const p = req.method === 'GET' ? page(tv, url, signedIn) : null;
     if (p !== null) return new Response(p, { headers: { 'content-type': 'text/html; charset=utf-8' } });
     const res = signedIn ? await tv.send(await toHttpRequest(req)) : json(403, { detail: 'Authentication credentials were not provided.', code: 'not_authenticated' });
     return new Response(res.body, { status: res.status, headers: { 'content-type': res.contentType, ...cors } });

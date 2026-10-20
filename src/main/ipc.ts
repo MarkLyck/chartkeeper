@@ -65,12 +65,10 @@ export function registerIpc({ status, tasks, shell, safari }: IpcDeps): void {
   ]);
   handle('loadLayout', (dir, uid) => guarded(async () => openLayout(await SnapshotReader.open(dir), uid)));
   handle('compare', (a, b) => guarded(async () => compareSnapshots(await SnapshotReader.open(a), await SnapshotReader.open(b))));
-  handle('restoreTargets', () =>
+  handle('layoutSlots', () =>
     status.exclusive('restore', async () => {
       const c = await account.client();
-      const list = await c.listLayouts();
-      const slots = await c.slots(list.length);
-      return { layouts: list.map((l) => ({ uid: l.uid, name: l.name })), ...slots };
+      return c.slots((await c.listLayouts()).length);
     }),
   );
   handle('restore', (req) => tasks.restore(req));

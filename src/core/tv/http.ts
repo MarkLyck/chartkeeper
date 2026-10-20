@@ -8,7 +8,6 @@ export interface HttpRequest {
   json?: unknown;
   /** Sent as multipart/form-data, like the web app's FormData requests. */
   form?: Record<string, string>;
-  headers?: Record<string, string>;
 }
 
 export interface HttpResponse {
@@ -33,7 +32,6 @@ export interface PageUser {
 export interface PageTransport {
   send(req: HttpRequest): Promise<HttpResponse>;
   user(): Promise<PageUser | null>;
-  buildTime(): Promise<string | null>;
 }
 
 /**
@@ -41,9 +39,9 @@ export interface PageTransport {
  * outside itself, because it is serialized with `toString()`.
  */
 export async function pageFetch(req: HttpRequest): Promise<HttpResponse> {
-  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual', headers: { ...(req.headers ?? {}) } };
+  const init: RequestInit = { method: req.method, credentials: 'include', redirect: 'manual' };
   if (req.json !== undefined) {
-    (init.headers as Record<string, string>)['Content-Type'] = 'application/json';
+    init.headers = { 'Content-Type': 'application/json' };
     init.body = JSON.stringify(req.json);
   } else if (req.form) {
     const fd = new FormData();

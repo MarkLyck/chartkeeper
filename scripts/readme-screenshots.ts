@@ -18,7 +18,7 @@ const pick: Record<string, string> = {
   'backup-done': 'backup-success',
   view: 'view-chart',
   compare: 'view-compare',
-  'restore-choose': 'restore-step2-new',
+  'restore-choose': 'restore-step2',
   'restore-done': 'restore-success',
 };
 for (const [name, source] of Object.entries(pick)) copyFileSync(path.join(root, '.test-output/ui', `${source}.png`), path.join(out, `${name}.png`));

@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import path from 'node:path';
 import { runBackup } from '../core/backup';
-import { restoreLayout, RestoreJournal, restoreTemplates, type RestoreMode } from '../core/restore';
+import { restoreLayout, RestoreJournal, restoreTemplates } from '../core/restore';
 import { cleanupInterrupted, SnapshotReader } from '../core/snapshot';
 import { nodeSocketFactory, type SocketFactory } from '../core/tv/datafeed';
 import type { BackupOutcome, RestoreOutcome, RestoreRequest, Result, TemplatesOutcome } from '../shared/api';
@@ -84,12 +84,9 @@ export class Tasks {
     return this.status.exclusive('restore', async () => {
       const client = await this.status.account.client();
       const reader = await SnapshotReader.open(req.snapshotDir);
-      const mode: RestoreMode = req.mode === 'replace' ? { kind: 'replace', targetUid: req.targetUid, confirmedName: req.confirmedName } : { kind: 'new' };
-      log(`restore ${req.uid} from ${req.snapshotDir} mode=${req.mode}`);
-      const r = await restoreLayout(client, reader, req.uid, mode, {
-        root: this.store.settings.backupFolder,
+      log(`restore ${req.uid} from ${req.snapshotDir}`);
+      const r = await restoreLayout(client, reader, req.uid, {
         journal: new RestoreJournal(path.join(app.getPath('userData'), 'restore-journal.json')),
-        buildTime: await this.status.account.transport.buildTime(),
         countOnPage: countOnChartPage,
         onProgress: (step, name) => this.shell.progress({ kind: 'restore', step, ...(name === undefined ? {} : { name }) }),
       });

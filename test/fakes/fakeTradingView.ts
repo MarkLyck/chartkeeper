@@ -33,9 +33,6 @@ export class FakeTradingView implements PageTransport {
   user(): Promise<PageUser | null> {
     return Promise.resolve(this.account);
   }
-  buildTime(): Promise<string | null> {
-    return Promise.resolve('2026-10-16T17:55:37');
-  }
 
   add(l: FakeLayout) {
     this.layouts.set(l.uid, l);

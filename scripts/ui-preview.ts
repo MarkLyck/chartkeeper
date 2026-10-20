@@ -236,8 +236,10 @@ async function main() {
   expect((await page.textContent('.templates'))?.includes('Theme “Light blue”') === true, 'restored templates are not listed by kind and name');
   await shot(page, 'restore-templates');
   await page.click('#restore-next');
-  await page.waitForSelector('#mode-new');
-  await shot(page, 'restore-step2-new');
+  await page.waitForSelector('#restore-start');
+  expect((await page.$$('input[name=mode], #mode-replace, select, input[type=text]')).length === 0, 'the check step offers a choice other than a new layout');
+  expect((await page.textContent('main'))?.includes('Nothing on TradingView is changed or deleted.') === true, 'the check step does not say that nothing on TradingView changes');
+  await shot(page, 'restore-step2');
   await mock(page, `m.pauseAfter = 2;`);
   await page.click('#restore-start');
   await page.waitForSelector('.progress-label');
@@ -255,7 +257,7 @@ async function main() {
   await page.click('#restore-another');
   await page.check('#pick-layout-0');
   await page.click('#restore-next');
-  await page.waitForSelector('#mode-new');
+  await page.waitForSelector('#restore-start');
   await page.click('#restore-start');
   // Saved but not confirmed on the chart is amber, never the green "verified" result.
   await page.waitForSelector('.result-warning');
@@ -263,35 +265,24 @@ async function main() {
   expect((await page.$$('.verify .cell-warn')).length === 2, 'an unchecked chart page does not say "could not check" for drawings and indicators');
   await shot(page, 'restore-unchecked');
 
-  // Restore: plan full, then replace with typed confirmation
+  // Restore: plan full, then a restore whose check finds drawings missing
   await mock(page, `m.scenario.slots = 'full'; m.scenario.restore = 'mismatch';`);
   await page.click('#restore-another');
   await page.check('#pick-layout-1');
   await page.click('#restore-next');
-  await page.waitForSelector('#mode-new');
+  await page.waitForSelector('#restore-start');
   expect(await page.isDisabled('#restore-start'), 'Restore is enabled although no layout slot is free');
+  expect(!/replace/i.test((await page.textContent('main')) ?? ''), 'the full-plan notice still mentions replacing a layout');
   await shot(page, 'restore-step2-full');
-  await page.check('#mode-replace');
-  await page.selectOption('#target-pick', 'tvMSFT');
-  await page.fill('#confirm-name', 'Microsoft');
-  expect(await page.isDisabled('#restore-start'), 'Restore is enabled before the name matches');
-  await shot(page, 'restore-step2-replace-typing');
-  await page.fill('#confirm-name', 'microsoft - daily');
-  expect(!(await page.isDisabled('#restore-start')), 'Restore stays disabled after the name matches');
-  await shot(page, 'restore-step2-replace');
-  const restores = async () => (await calls(page)).filter((c) => c.method === 'restore').length;
-  const before = await restores();
+  await page.click('#restore-back');
+  await mock(page, `m.scenario.slots = 'free';`);
+  await page.click('#restore-next');
+  await page.waitForSelector('#restore-start:not([disabled])');
   await page.click('#restore-start');
-  await page.waitForSelector('dialog[open]');
-  await shot(page, 'restore-confirm');
-  await page.click('#dialog-no');
-  expect((await restores()) === before, 'cancelling the confirm dialog still restored');
-  await page.click('#restore-start');
-  await page.click('#dialog-yes');
   await page.waitForSelector('.result-warning');
   expect((await page.$$('.verify .cell-warn')).length === 2, 'a mismatch does not mark the saved and shown drawings');
-  const replaceReq = (await calls(page)).filter((c) => c.method === 'restore').at(-1)?.args[0] as { mode: string; confirmedName?: string } | undefined;
-  expect(replaceReq?.mode === 'replace' && replaceReq.confirmedName === 'microsoft - daily', 'replace request did not carry the typed name');
+  const sent = (await calls(page)).filter((c) => c.method === 'restore').at(-1)?.args[0];
+  expect(JSON.stringify(Object.keys(sent as object).sort()) === '["snapshotDir","uid"]', 'a restore request carries more than the backup and layout');
   await shot(page, 'restore-mismatch');
   await page.close();
 
@@ -302,7 +293,7 @@ async function main() {
   await page.waitForSelector('#pick-layout-0');
   await page.check('#pick-layout-0');
   await page.click('#restore-next');
-  await page.waitForSelector('#mode-new');
+  await page.waitForSelector('#restore-start');
   await page.click('#restore-start');
   await page.waitForSelector('.result-error');
   await shot(page, 'restore-error-limit');

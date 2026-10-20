@@ -51,7 +51,6 @@ function transportFor(page: Page): PageTransport {
   return {
     send: (req) => page.evaluate(`(${pageFetch.toString()})(${JSON.stringify(req)})`),
     user: () => page.evaluate(`(${pageUser.toString()})()`),
-    buildTime: () => page.evaluate('typeof BUILD_TIME === "string" ? BUILD_TIME : null'),
   };
 }
 
@@ -118,7 +117,7 @@ describe.skipIf(Boolean(process.env.CI) && !sessionAvailable)('live round trip o
     const studyErrors = Object.values(data?.studies ?? {}).filter((s) => s.status === 'error');
     expect(studyErrors, 'every indicator, including Pine ones, was calculated').toEqual([]);
 
-    const restored = await restoreLayout(client, reader, source.uid, { kind: 'new' }, { root, journal: new RestoreJournal(path.join(root, 'journal.json')), buildTime: await transportFor(page).buildTime() });
+    const restored = await restoreLayout(client, reader, source.uid, { journal: new RestoreJournal(path.join(root, 'journal.json')) });
     restoredUid = restored.uid;
     expect(restored.check.missingDrawings).toEqual([]);
     expect(restored.check.verdict).toBe('shown-unchecked');

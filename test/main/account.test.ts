@@ -20,9 +20,6 @@ vi.mock('../../src/main/tvSession', () => ({
     async send() {
       return { status: 200, contentType: 'application/json', body: '[]' };
     }
-    async buildTime() {
-      return null;
-    }
   },
   hasSessionCookie: async () => browser.cookie,
   signOut: async () => {

@@ -1,15 +1,6 @@
 /** Restore rules shared by the window and the restore itself. No Node imports: the window bundles this file. */
 import type { LayoutCounts } from './layout';
 
-const normalName = (s: string) => s.normalize('NFKC').replace(/[\u2010-\u2015\u2212]/g, '-').replace(/\s+/g, ' ').trim().toLocaleLowerCase();
-
-/**
- * Whether a typed name confirms a layout. It proves intent, not typing skill:
- * dash styles (TradingView names often hold "–"), repeated spaces and letter
- * case are ignored.
- */
-export const sameLayoutName = (typed: string, name: string): boolean => normalName(typed) === normalName(name);
-
 /** The name a restore as a new layout gets, so it sits next to the original without clashing. */
 export const restoredName = (name: string, at: Date): string => `${name} (restored ${at.toISOString().slice(0, 10)})`;
 

@@ -159,10 +159,6 @@ export class ElectronPageTransport implements PageTransport {
     return this.run(`(${pageUser.toString()})()`);
   }
 
-  buildTime(): Promise<string | null> {
-    return this.run('typeof BUILD_TIME === "string" ? BUILD_TIME : null');
-  }
-
   /** Reload, e.g. after signing in, so `window.user` is fresh. */
   reset(): void {
     this.close();

@@ -49,12 +49,6 @@ const SizesResponseSchema = z.object({
 
 const SaveResponseSchema = z.object({ id: z.number(), image_url: z.string(), last_modified: z.number().optional() });
 
-export interface SaveLayoutInput {
-  fields: Record<string, string>;
-  /** Overwrite this layout. Omit to create a new one. */
-  replaceUid?: string;
-}
-
 function parseJson(res: HttpResponse, what: string): unknown {
   try {
     return JSON.parse(res.body);
@@ -295,27 +289,13 @@ export class TvClient {
     return layoutSlots(parseJson(res, 'layout count'), listLength, this.user.plan);
   }
 
-  /** Create (or, with replaceUid, overwrite) a layout. Never retried. */
-  async saveLayout(input: SaveLayoutInput): Promise<{ id: number; uid: string }> {
-    const form = { ...input.fields };
-    if (input.replaceUid) form.image_url = input.replaceUid;
+  /** Creates a new layout. Never retried. */
+  async createLayout(form: Record<string, string>): Promise<{ id: number; uid: string }> {
     const res = await this.http.send({ method: 'POST', url: urls.saveLayout, form });
     if (res.status === 403 && /limit|paywall|over_limit|savedCharts/i.test(res.body))
       throw new TvError('limit-reached', 'Your TradingView plan has no free layout slot.', res.body.slice(0, 300));
     check(res, 'the restored layout');
     const v = parse(SaveResponseSchema, parseJson(res, 'save result'), 'save result');
     return { id: v.id, uid: v.image_url };
-  }
-
-  /** Write drawings to the drawing storage. `null` removes a drawing. */
-  async putDrawings(uid: string, chartId: string, token: string, sources: Record<string, Record<string, unknown> | null>, buildTime: string | null): Promise<void> {
-    const res = await this.http.send({
-      method: 'PUT',
-      url: urls.putLayoutSources(uid, chartId, token),
-      json: { sources, drawing_groups: {}, clientId: `/${chartId}/chartkeeper` },
-      headers: buildTime ? { 'X-BUILD-TIME': buildTime } : {},
-    });
-    check(res, `drawings of chart ${chartId}`);
-    parse(z.object({ success: z.literal(true) }).passthrough(), parseJson(res, 'drawing save result'), 'drawing save result');
   }
 }

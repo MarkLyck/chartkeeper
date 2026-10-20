@@ -40,7 +40,6 @@ beforeEach(async () => {
   progress = [];
   const account = {
     username: null,
-    transport: { buildTime: async () => 'build-1' },
     client: async () => {
       if (!signedIn) throw new TvError('not-signed-in', 'TradingView does not recognise the saved sign-in any more.');
       return new TvClient(new PoliteHttp(tv, fast), tv.account!);
@@ -187,7 +186,7 @@ describe('backup and restore through the app', () => {
   it('restores a layout as a new one, shows each step, and records it as finished', async () => {
     const dir = await snapshotDir();
     progress = [];
-    const r = await tasks.restore({ snapshotDir: dir, uid: 'AbCd1234', mode: 'new' });
+    const r = await tasks.restore({ snapshotDir: dir, uid: 'AbCd1234' });
     expect(r).toMatchObject({ ok: true, value: { resumed: false, check: { verdict: 'shown-unchecked' } } });
     expect(tv.layouts.size).toBe(2);
     expect(progress.map((e) => (e.kind === 'restore' ? e.step : null))).toEqual(['check', 'create', 'verify']);
@@ -195,22 +194,12 @@ describe('backup and restore through the app', () => {
     expect(journal).toEqual([expect.objectContaining({ createdUid: r.ok && r.value.uid, finished: true })]);
   });
 
-  it('replaces a layout, sending the page build time with the drawing changes', async () => {
-    const dir = await snapshotDir();
-    tv.add(referenceInAccount('Target01', 'Old layout'));
-    const r = await tasks.restore({ snapshotDir: dir, uid: 'AbCd1234', mode: 'replace', targetUid: 'Target01', confirmedName: 'Old layout' });
-    expect(r).toMatchObject({ ok: true, value: { uid: 'Target01', safetyBackup: expect.stringContaining('safety-copies') } });
-    const puts = tv.requests.filter((q) => q.method === 'PUT');
-    expect(puts.length).toBeGreaterThan(0);
-    expect(puts.every((q) => q.headers?.['X-BUILD-TIME'] === 'build-1')).toBe(true);
-  });
-
   it('refuses a restore while a backup runs, before contacting TradingView', async () => {
     const dir = await snapshotDir();
     tv.requests.length = 0;
     let finish!: () => void;
     const backup = status.exclusive('backup', () => new Promise<void>((r) => (finish = r)));
-    expect(await tasks.restore({ snapshotDir: dir, uid: 'AbCd1234', mode: 'new' })).toMatchObject({ ok: false, error: { kind: 'busy' } });
+    expect(await tasks.restore({ snapshotDir: dir, uid: 'AbCd1234' })).toMatchObject({ ok: false, error: { kind: 'busy' } });
     expect(await tasks.restoreTemplates(dir)).toMatchObject({ ok: false, error: { kind: 'busy' } });
     finish();
     await backup;

@@ -6,7 +6,7 @@ import type { RestoreStep } from '../core/restore';
 import { checkRestore, restoredName } from '../core/restorePolicy';
 import { urls } from '../core/tv/endpoints';
 import type {
-  AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, ProgressEvent, RestoreOutcome, RestoreTargets, Result, SnapshotSummary,
+  AppError, AppState, BackupOutcome, ChartKeeperApi, CompareOutcome, ProgressEvent, RestoreOutcome, LayoutSlots, Result, SnapshotSummary,
 } from '../shared/api';
 
 /** The real reference snapshot, read and parsed in Node by the preview script. */
@@ -195,16 +195,7 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     }
   };
 
-  const targets = (): RestoreTargets => {
-    const layouts = [
-      { uid: 'tvAAPL', name: 'Reference AAPL' },
-      { uid: 'tvMSFT', name: 'Microsoft – daily' },
-      { uid: 'tvSPX', name: 'S&P 500 – weekly' },
-      { uid: 'tvJPM', name: 'JPMorgan' },
-      ...(control.scenario.slots === 'full' ? [{ uid: 'tvNVDA', name: 'Nvidia – 4 hours' }] : []),
-    ];
-    return { layouts, used: layouts.length, limit: 5, plan: 'Essential', free: control.scenario.slots === 'free' };
-  };
+  const slots = (): LayoutSlots => ({ used: control.scenario.slots === 'full' ? 5 : 4, limit: 5, plan: 'Essential', free: control.scenario.slots === 'free' });
 
   const api: ChartKeeperApi = {
     async getState() {
@@ -268,16 +259,16 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
       };
       return { ok: true, value };
     },
-    async restoreTargets() {
+    async layoutSlots() {
       await wait(control.stepMs);
       if (!state.signedIn) return fail('not-signed-in', 'Not signed in.');
-      return { ok: true, value: targets() };
+      return { ok: true, value: slots() };
     },
     restore: (req) =>
       busy('restore', async (): Promise<Result<RestoreOutcome>> => {
         record('restore', req);
         emitted = 0;
-        const steps: RestoreStep[] = req.mode === 'new' ? ['check', 'create', 'verify'] : ['check', 'safetyCopy', 'replace', 'clearDrawings', 'verify'];
+        const steps: RestoreStep[] = ['check', 'create', 'verify'];
         const source = findLayout(req.snapshotDir, req.uid);
         if (!source) return fail('not-found', `No layout ${req.uid}`);
         for (const step of steps) {
@@ -288,16 +279,14 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
         const expected = counts(source);
         const missing = control.scenario.restore === 'mismatch' ? expected.drawingIds.slice(-2) : [];
         const actual = { ...expected, drawings: expected.drawings - missing.length, drawingIds: expected.drawingIds.filter((id) => !missing.includes(id)) };
-        const target = req.mode === 'replace' ? targets().layouts.find((l) => l.uid === req.targetUid) : undefined;
-        const uid = target?.uid ?? 'nW3kQ9aZ';
+        const uid = 'nW3kQ9aZ';
         return {
           ok: true,
           value: {
             uid,
-            name: target?.name ?? restoredName(source.name, new Date()),
+            name: restoredName(source.name, new Date()),
             url: urls.layoutPage(uid),
             check: checkRestore(expected, actual, control.scenario.restore === 'unchecked' ? null : { drawings: actual.drawings, studies: actual.studies }),
-            safetyBackup: req.mode === 'replace' ? `${FOLDER}/safety-copies/${stamp(new Date())}_${target?.name ?? req.targetUid}` : null,
             resumed: false,
           },
         };
