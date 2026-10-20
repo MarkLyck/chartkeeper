@@ -77,7 +77,7 @@ describe.skipIf(process.platform === 'win32')('a browser that cannot be driven',
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'ck-slowexit-'));
     const fake = path.join(dir, 'browser.js');
     // Answers one DevTools call, closes the pipe like a closing browser, and exits two seconds later.
-    await fs.writeFile(fake, `#!${process.execPath}\nconst fs = require('node:fs');\nconst out = fs.createWriteStream(null, { fd: 4 });\nfs.createReadStream(null, { fd: 3 }).once('data', (d) => {\n  const id = JSON.parse(String(d).split('\\0')[0]).id;\n  out.end(JSON.stringify({ id, result: { cookies: [] } }) + '\\0', () => setTimeout(() => process.exit(0), 2000));\n});\n`, { mode: 0o755 });
+    await fs.writeFile(fake, `#!${process.execPath}\nconst fs = require('node:fs');\nconst out = fs.createWriteStream(null, { fd: 4 });\nnew (require('node:net').Socket)({ fd: 3, readable: true }).once('data', (d) => {\n  const id = JSON.parse(String(d).split('\\0')[0]).id;\n  out.end(JSON.stringify({ id, result: { cookies: [] } }) + '\\0', () => setTimeout(() => process.exit(0), 2000));\n});\n`, { mode: 0o755 });
     const run = signInWithBrowser({ browserPath: fake, profileDir: path.join(dir, 'profile'), startUrl: 'about:blank', isSignedIn: () => false, keep: () => true, pollMs: 100 });
     await expect(run).rejects.toBeInstanceOf(SignInCancelled);
   }, 20000);

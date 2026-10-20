@@ -71,8 +71,8 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
     return await new Promise<CdpCookie[]>((resolve, reject) => {
       const timer = setTimeout(() => reject(Object.assign(new Error('Signing in took too long. Please try again.'), { browserLog })), opts.timeoutMs ?? 15 * 60_000);
       child.once('exit', () => reject(new SignInCancelled()));
-      // A browser that is closing ends the pipe just before it exits: only one that stays up is unusable.
-      cdp.onClosed(() => setTimeout(() => child.exitCode === null && reject(new BrowserUnusable()), 1000));
+      // A browser that answered and then ends the pipe is closing, and its exit says so; one that never answered can't be used.
+      cdp.onClosed(() => !cdp.answered && reject(new BrowserUnusable()));
       child.once('error', (e) => reject(e));
       const poll = async () => {
         try {
@@ -89,8 +89,8 @@ export async function signInWithBrowser(opts: BrowserSignInOptions): Promise<Cdp
       void poll();
     });
   } finally {
-    if (cdp.isClosed) child.kill();
-    else await cdp.call('Browser.close').catch(() => undefined);
+    if (!cdp.isClosed) await cdp.call('Browser.close').catch(() => undefined);
+    else if (!cdp.answered) child.kill();
     await waitForExit(child, 5000);
     await fs.rm(opts.profileDir, { recursive: true, force: true }).catch(() => undefined);
   }
@@ -133,6 +133,7 @@ class PipeCdp {
         const msg = JSON.parse(raw) as { id?: number; result?: unknown; error?: { message: string } };
         const p = msg.id !== undefined ? this.pending.get(msg.id) : undefined;
         if (!p) continue;
+        this.answered = true;
         this.pending.delete(msg.id!);
         msg.error ? p.reject(new Error(msg.error.message)) : p.resolve(msg.result);
       }
@@ -144,6 +145,8 @@ class PipeCdp {
   }
 
   isClosed = false;
+  /** True once the browser has answered a call: it can be driven. */
+  answered = false;
 
   onClosed(cb: () => void): void {
     this.closed = () => {

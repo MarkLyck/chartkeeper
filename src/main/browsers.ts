@@ -14,6 +14,17 @@ export type Sandbox = { kind: 'snap'; name: string } | { kind: 'flatpak'; id: st
 
 const SNAP_BINS = ['/snap/bin', '/var/lib/snapd/snap/bin'];
 
+/** Whether a Linux browser path is a Snap or Flatpak launcher, from the folder it is in. */
+export function sandboxOf(browserPath: string): Sandbox | undefined {
+  const p = path.posix.normalize(browserPath).replace(/\/+$/, '');
+  const dir = path.posix.dirname(p);
+  const base = path.posix.basename(p);
+  if (dir.endsWith('/flatpak/exports/bin')) return { kind: 'flatpak', id: base };
+  // A snap's commands are "<snap>" or "<snap>.<app>".
+  if (SNAP_BINS.includes(dir)) return { kind: 'snap', name: base.split('.')[0]! };
+  return undefined;
+}
+
 /**
  * The private profile for signing in. A Snap browser can't write to hidden folders in the
  * home folder, where ChartKeeper keeps its own data, and a Flatpak one only sees its own folder.
@@ -41,6 +52,8 @@ interface BrowserSpec {
   win?: string[];
   /** Executable names on the PATH. */
   linux?: string[];
+  /** Full paths of the program itself, where a distribution keeps it outside the PATH. */
+  linuxPaths?: string[];
   /** Flatpak app ids, whose launchers Flatpak puts in its exports/bin folders. */
   flatpak?: string[];
   ids: { mac?: string[]; win?: string[]; linux?: string[] };
@@ -51,20 +64,20 @@ const BROWSERS: BrowserSpec[] = [
   { name: 'Microsoft Edge', mac: 'Microsoft Edge.app/Contents/MacOS/Microsoft Edge', win: ['Microsoft\\Edge\\Application\\msedge.exe'], linux: ['microsoft-edge-stable', 'microsoft-edge'], flatpak: ['com.microsoft.Edge'], ids: { mac: ['com.microsoft.edgemac'], win: ['MSEdgeHTM'], linux: ['microsoft-edge.desktop', 'com.microsoft.Edge.desktop'] } },
   { name: 'Brave', mac: 'Brave Browser.app/Contents/MacOS/Brave Browser', win: ['BraveSoftware\\Brave-Browser\\Application\\brave.exe'], linux: ['brave-browser', 'brave'], flatpak: ['com.brave.Browser'], ids: { mac: ['com.brave.browser'], win: ['BraveHTML'], linux: ['brave-browser.desktop', 'brave_brave.desktop', 'com.brave.Browser.desktop'] } },
   { name: 'Vivaldi', mac: 'Vivaldi.app/Contents/MacOS/Vivaldi', win: ['Vivaldi\\Application\\vivaldi.exe'], linux: ['vivaldi-stable', 'vivaldi'], flatpak: ['com.vivaldi.Vivaldi'], ids: { mac: ['com.vivaldi.vivaldi'], win: ['VivaldiHTM'], linux: ['vivaldi-stable.desktop', 'com.vivaldi.Vivaldi.desktop'] } },
-  { name: 'Opera', mac: 'Opera.app/Contents/MacOS/Opera', win: ['Programs\\Opera\\opera.exe'], linux: ['opera'], ids: { mac: ['com.operasoftware.opera'], win: ['OperaStable'], linux: ['opera.desktop'] } },
+  { name: 'Opera', mac: 'Opera.app/Contents/MacOS/Opera', win: ['Programs\\Opera\\opera.exe'], linux: ['opera'], flatpak: ['com.opera.Opera'], ids: { mac: ['com.operasoftware.opera'], win: ['OperaStable'], linux: ['opera.desktop'] } },
   { name: 'Opera GX', mac: 'Opera GX.app/Contents/MacOS/Opera', win: ['Programs\\Opera GX\\opera.exe'], ids: { mac: ['com.operasoftware.operagx'], win: ['Opera GXStable'] } },
   { name: 'Comet', mac: 'Comet.app/Contents/MacOS/Comet', win: ['Perplexity\\Comet\\Application\\comet.exe'], ids: { mac: ['ai.perplexity.comet'] } },
   { name: 'Google Chrome Beta', mac: 'Google Chrome Beta.app/Contents/MacOS/Google Chrome Beta', win: ['Google\\Chrome Beta\\Application\\chrome.exe'], linux: ['google-chrome-beta'], ids: { mac: ['com.google.chrome.beta'], win: ['ChromeBHTML'], linux: ['google-chrome-beta.desktop'] } },
   { name: 'Google Chrome Canary', mac: 'Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary', win: ['Google\\Chrome SxS\\Application\\chrome.exe'], ids: { mac: ['com.google.chrome.canary'], win: ['ChromeSSHTM'] } },
   { name: 'Yandex', mac: 'Yandex.app/Contents/MacOS/Yandex', win: ['Yandex\\YandexBrowser\\Application\\browser.exe'], linux: ['yandex-browser'], ids: { mac: ['ru.yandex.desktop.yandex-browser'], win: ['YandexHTML'], linux: ['yandex-browser.desktop'] } },
-  { name: 'Chromium', mac: 'Chromium.app/Contents/MacOS/Chromium', win: ['Chromium\\Application\\chrome.exe'], linux: ['chromium', 'chromium-browser', 'chromium-freeworld', 'ungoogled-chromium'], flatpak: ['org.chromium.Chromium', 'io.github.ungoogled_software.ungoogled_chromium'], ids: { mac: ['org.chromium.chromium'], linux: ['chromium.desktop', 'chromium-browser.desktop', 'chromium_chromium.desktop', 'org.chromium.Chromium.desktop', 'chromium-freeworld.desktop', 'io.github.ungoogled_software.ungoogled_chromium.desktop'] } },
+  { name: 'Chromium', mac: 'Chromium.app/Contents/MacOS/Chromium', win: ['Chromium\\Application\\chrome.exe'], linux: ['chromium', 'chromium-browser', 'chromium-freeworld', 'ungoogled-chromium'], linuxPaths: ['/usr/lib/chromium/chromium', '/usr/lib/chromium-browser/chromium-browser', '/usr/lib64/chromium-browser/chromium-browser'], flatpak: ['org.chromium.Chromium', 'io.github.ungoogled_software.ungoogled_chromium'], ids: { mac: ['org.chromium.chromium'], linux: ['chromium.desktop', 'chromium-browser.desktop', 'chromium_chromium.desktop', 'org.chromium.Chromium.desktop', 'chromium-freeworld.desktop', 'io.github.ungoogled_software.ungoogled_chromium.desktop'] } },
 ];
 
 const osKey = (platform: NodeJS.Platform) => (platform === 'win32' ? 'win' : platform === 'darwin' ? 'mac' : 'linux');
 
 /** Where each browser would be installed, in table order. */
 export function browserCandidates(platform: NodeJS.Platform, env: NodeJS.ProcessEnv, home: string): Browser[] {
-  const at = (name: string, p: string, sandbox?: Sandbox): Browser => ({ kind: 'chromium', name, path: p, ...(sandbox ? { sandbox } : {}) });
+  const at = (name: string, p: string): Browser => ({ kind: 'chromium', name, path: p });
   if (platform === 'win32') {
     const roots = [env.PROGRAMFILES, env['PROGRAMFILES(X86)'], env.LOCALAPPDATA].filter((r): r is string => !!r);
     return BROWSERS.flatMap((b) => (b.win ?? []).flatMap((rel) => roots.map((r) => at(b.name, path.win32.join(r, rel)))));
@@ -74,14 +87,17 @@ export function browserCandidates(platform: NodeJS.Platform, env: NodeJS.Process
     return BROWSERS.flatMap((b) => (b.mac ? apps.map((a) => at(b.name, path.posix.join(a, b.mac!))) : []));
   }
   // A desktop launcher may start the app with a short PATH, so the usual places are added: Snap's (/var/lib/snapd/snap/bin
-  // on Fedora and Arch), Nix's, and the library folders some distributions keep the real Chromium in.
-  const usual = ['/usr/bin', '/usr/local/bin', '/snap/bin', '/var/lib/snapd/snap/bin', '/opt/google/chrome', path.posix.join(home, '.nix-profile/bin'), '/run/current-system/sw/bin', '/usr/lib/chromium', '/usr/lib/chromium-browser', '/usr/lib64/chromium-browser'];
-  const dirs = [...new Set((env.PATH ?? '').split(':').filter(Boolean).concat(usual))];
+  // on Fedora and Arch) and Nix's.
+  const nix = [path.posix.join(home, '.nix-profile/bin'), path.posix.join(home, '.local/state/nix/profiles/profile/bin'), '/run/current-system/sw/bin', ...(env.USER ? [`/etc/profiles/per-user/${env.USER}/bin`] : [])];
+  const usual = ['/usr/bin', '/usr/local/bin', ...SNAP_BINS, '/opt/google/chrome', ...nix];
+  const dirs = [...new Set((env.PATH ?? '').split(':').filter(Boolean).map((d) => d.replace(/(.)\/+$/, '$1')).concat(usual))];
   const flatpakDirs = ['/var/lib/flatpak/exports/bin', path.posix.join(home, '.local/share/flatpak/exports/bin')];
-  return BROWSERS.flatMap((b) => [
-    ...(b.linux ?? []).flatMap((bin) => dirs.map((d) => at(b.name, path.posix.join(d, bin), SNAP_BINS.includes(d) ? { kind: 'snap', name: bin } : undefined))),
-    ...(b.flatpak ?? []).flatMap((id) => flatpakDirs.map((d) => at(b.name, path.posix.join(d, id), { kind: 'flatpak', id }))),
-  ]);
+  return BROWSERS.flatMap((b) =>
+    [...(b.linux ?? []).flatMap((bin) => dirs.map((d) => path.posix.join(d, bin))), ...(b.linuxPaths ?? []), ...(b.flatpak ?? []).flatMap((id) => flatpakDirs.map((d) => path.posix.join(d, id)))].map((p) => {
+      const sandbox = sandboxOf(p);
+      return { ...at(b.name, p), ...(sandbox ? { sandbox } : {}) };
+    }),
+  );
 }
 
 /** The browser name behind an OS's default-browser id (bundle id, Windows ProgId, or .desktop file), if it is one we support. */
@@ -143,9 +159,13 @@ export function findBrowsers(
   const chosen = env.CHARTKEEPER_BROWSER;
   if (chosen === 'none') return [];
   if (chosen === 'safari') return [SAFARI];
-  if (chosen && exists(chosen)) return [{ kind: 'chromium', name: path.basename(chosen).replace(/\.(exe|app)$/i, ''), path: chosen }];
+  if (chosen && exists(chosen)) {
+    const sandbox = platform === 'linux' ? sandboxOf(chosen) : undefined;
+    return [{ kind: 'chromium', name: path.basename(chosen).replace(/\.(exe|app)$/i, ''), path: chosen, ...(sandbox ? { sandbox } : {}) }];
+  }
+  // Every install is kept, so one that won't start can be followed by another of the same browser.
   const seen = new Set<string>();
-  const installed = browserCandidates(platform, env, home).filter((b) => exists(b.path) && !seen.has(b.name) && seen.add(b.name));
+  const installed = browserCandidates(platform, env, home).filter((b) => exists(b.path) && !seen.has(b.path) && seen.add(b.path));
   const preferred = browserForDefaultId(platform, defaultId);
   const others = platform === 'darwin' ? [SAFARI] : installed.filter((b) => b.name !== preferred);
   return [...installed.filter((b) => b.name === preferred), ...others];
