@@ -3,7 +3,7 @@ import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { ElectronApplication, Page } from 'playwright-core';
 import type { Manifest } from '../../src/core/model';
-import { isTradingViewHost } from '../../src/core/tv/endpoints';
+import { isTradingViewHost, urls } from '../../src/core/tv/endpoints';
 import type { FakeControl, FakeSeed, Scenario } from '../fakes/fakeTradingViewApp';
 import type { FakeLayout } from '../fakes/fakeTradingView';
 import { referenceInAccount } from '../fakes/fixtures';
@@ -61,6 +61,8 @@ describe('every flow against a fake TradingView', () => {
   let app: ElectronApplication;
   let window: Page;
   let backups: string;
+  /** The layouts on TradingView before ChartKeeper did anything, as the user left them. */
+  let existing: FakeLayout[];
   const errors: string[] = [];
   const seed: FakeSeed = { layouts: [minAapl(), scratchPad()], plan: 'pro_premium', signedIn: false, scheduleEveryMs: 15 * 60_000 };
 
@@ -114,6 +116,7 @@ describe('every flow against a fake TradingView', () => {
     window.on('pageerror', (e) => errors.push(String(e)));
     window.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
     await window.locator('#go-backup').waitFor();
+    existing = await fake.layouts();
   });
   afterAll(async () => app?.close());
 
@@ -196,6 +199,8 @@ describe('every flow against a fake TradingView', () => {
       for (const p of copy.state.points) p.price = 123.456;
       l.storage['1']!.e2eAdded1 = copy;
     });
+    // The user drew on TradingView: that is now how the layout should stay.
+    existing = await fake.layouts();
     await backUp();
     await expect(window.locator('.result-success .result-lead').textContent()).resolves.toBe('2 layouts and 12 drawings are saved on this computer.');
     const [older] = await snapshotsOnDisk(backups);
@@ -276,6 +281,35 @@ describe('every flow against a fake TradingView', () => {
     expect(tv).toEqual({ drawing: { LineToolTrendLine: { 'Thick orange': { linecolor: '#ff9800', linewidth: 4 } } }, themes: ['My dark'], studies: ['My RSI setup'] });
   });
 
+  it('cancels an overwrite, a delete and a drawing change sent from inside a tradingview.com page of its session', async () => {
+    const before = await fake.layout('AbCd1234');
+    const from = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls.length);
+    const results = await app.evaluate(async ({ BrowserWindow }) => {
+      const w = new BrowserWindow({ show: false, webPreferences: { partition: 'persist:tradingview', sandbox: true, contextIsolation: true } });
+      try {
+        await w.loadURL('https://www.tradingview.com/');
+        return await w.webContents.executeJavaScript(`(async () => {
+          const send = (url, init) => fetch(url, { credentials: 'include', ...init }).then((r) => r.status, (e) => e.name);
+          const overwrite = new FormData();
+          for (const [k, v] of Object.entries({ name: 'Overwritten', description: '', is_realtime: '1', content: '{"charts":[]}', image_url: 'AbCd1234' })) overwrite.append(k, v);
+          const json = { 'Content-Type': 'application/json' };
+          return {
+            overwrite: await send('/api/v1/charts/save/', { method: 'POST', body: overwrite }),
+            deleteLayout: await send('/api/v1/charts/delete/', { method: 'POST', headers: json, body: '{"uid":["AbCd1234"]}' }),
+            clearDrawings: await send('https://charts-storage.tradingview.com/charts-storage/layout/AbCd1234/sources?chart_id=1&layout_id=AbCd1234&jwt=jwt.AbCd1234.signature', { method: 'PUT', headers: json, body: '{"sources":{}}' }),
+            read: await send('/my-charts/', {}),
+          };
+        })()`, true);
+      } finally {
+        w.destroy();
+      }
+    });
+    expect(results).toEqual({ overwrite: 'TypeError', deleteLayout: 'TypeError', clearDrawings: 'TypeError', read: 200 });
+    const reached = await app.evaluate((_e, from) => (globalThis as unknown as G).__chartkeeperFake.urls.slice(from), from);
+    expect(reached.filter((u) => !/^(GET|OPTIONS) /.test(u)), 'writes that reached TradingView').toEqual([]);
+    expect(await fake.layout('AbCd1234')).toEqual(before);
+  });
+
   it('stops the backup and marks it INCOMPLETE in red when TradingView changes its format', async () => {
     await fake.setScenario('format-changed');
     try {
@@ -353,6 +387,13 @@ describe('every flow against a fake TradingView', () => {
     expect(urls.length).toBeGreaterThan(100);
     expect(urls.filter((u) => !isTradingViewHost(new URL(u.split(' ')[1]!).hostname))).toEqual([]);
     expect(errors).toEqual([]);
+  });
+
+  it('never changed or deleted a layout that was already on TradingView, and only ever sent the four creates', async () => {
+    for (const l of existing) expect(await fake.layout(l.uid), `layout "${l.name}"`).toEqual(l);
+    const creates = [urls.saveLayout, urls.studyTemplates, urls.saveDrawingTemplate, urls.saveTheme].map((u) => `POST ${u}`);
+    const urlsSeen = await app.evaluate(() => (globalThis as unknown as G).__chartkeeperFake.urls);
+    expect(urlsSeen.filter((u) => !/^(GET|OPTIONS) /.test(u) && !creates.includes(u))).toEqual([]);
   });
 });
 
