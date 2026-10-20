@@ -38,8 +38,15 @@ export function snapshotLines(s: SnapshotSummary): HTMLElement[] {
   return lines;
 }
 
+/** TradingView calls a layout "Unnamed" until it is given a name, so several can share it. */
+const isUnnamed = (name: string) => /^\s*(unnamed|\(no name\))?\s*$/i.test(name);
+
+/** What a layout is called here: its name, or its symbols when it has no name of its own. */
+export const layoutTitle = (l: Pick<ManifestLayout, 'name' | 'symbols'>) => (isUnnamed(l.name) && l.symbols.length ? l.symbols.map(shortSymbol).join(', ') : l.name);
+
 export function layoutFacts(l: ManifestLayout): string {
-  return [l.symbols.map(shortSymbol).join(', '), tn('count.drawings', l.drawings), tn('count.indicators', l.studies)].filter(Boolean).join(' · ');
+  const symbols = layoutTitle(l) === l.name ? l.symbols.map(shortSymbol).join(', ') : t('view.unnamed');
+  return [symbols, tn('count.drawings', l.drawings), tn('count.indicators', l.studies)].filter(Boolean).join(' · ');
 }
 
 /** "NASDAQ:AAPL" -> "AAPL"; the exchange prefix means little to a non-technical user. */

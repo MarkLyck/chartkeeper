@@ -138,10 +138,11 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
     }
     const layouts = newest().manifest!.layouts;
     emitted = 0;
-    await progress({ kind: 'backup', progress: { done: 0, total: 1, step: 'list' } });
-    const total = layouts.length * 2 + 4;
+    await progress({ kind: 'backup', progress: { done: 0, total: 0, step: 'list' } });
+    const tools = 89;
+    const total = layouts.length * 8 + 4 + tools;
     let done = 0;
-    for (const l of layouts) await progress({ kind: 'backup', progress: { done: ++done, total, step: 'layout', name: l.name } });
+    for (const [i, l] of layouts.entries()) await progress({ kind: 'backup', progress: { done: (done += 5), total, step: 'layout', name: l.name, part: { done: i, total: layouts.length } } });
     if (control.scenario.backup === 'format-changed') {
       const at = new Date();
       const s = snapshot(at, layouts.slice(0, 1), 'incomplete', 'Some drawings in "Microsoft – daily" have an unknown format.');
@@ -155,8 +156,11 @@ export function createMockApi(fixture: PreviewFixture, init: { signedIn?: boolea
         },
       };
     }
-    for (const step of ['userDrawings', 'studyTemplates', 'drawingTemplates', 'scripts'] as const) await progress({ kind: 'backup', progress: { done: ++done, total, step } });
-    for (const l of layouts) await progress({ kind: 'backup', progress: { done: ++done, total, step: 'prices', name: l.name } });
+    for (const step of ['userDrawings', 'studyTemplates'] as const) await progress({ kind: 'backup', progress: { done: ++done, total, step } });
+    for (let i = 0; i <= tools; i += 23) await progress({ kind: 'backup', progress: { done: done + i, total, step: 'drawingTemplates', part: { done: i, total: tools } } });
+    done += tools;
+    for (const step of ['themes', 'scripts'] as const) await progress({ kind: 'backup', progress: { done: ++done, total, step } });
+    for (const l of layouts) await progress({ kind: 'backup', progress: { done: (done += 3), total, step: 'prices', name: l.name, part: { done: 0, total: 1 } } });
     await progress({ kind: 'backup', progress: { done: total, total, step: 'finish' } });
     const at = new Date();
     const s = snapshot(at, layouts, 'complete');

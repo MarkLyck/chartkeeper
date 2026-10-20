@@ -1,6 +1,6 @@
-import type { BackupProgress } from '../../core/backup';
+import { secondsLeft, type BackupProgress } from '../../core/backupProgress';
 import type { AppError, BackupOutcome } from '../../shared/api';
-import { backupStepText, t, tn } from '../i18n';
+import { backupPartText, backupStepText, formatTimeLeft, t, tn } from '../i18n';
 import { button, details, errorBox, icons, progressBar, screenHeader } from './components';
 import { h, replace } from './dom';
 import type { Ctx, Screen } from './screen';
@@ -16,6 +16,7 @@ type Phase =
 export function backupScreen(ctx: Ctx): Screen {
   const el = h('main', { class: 'screen narrow' });
   let phase: Phase = { k: 'running', progress: null };
+  let startedAt = Date.now();
 
   const set = (next: Phase) => {
     const firstResult = phase.k === 'running' && next.k !== 'running';
@@ -26,8 +27,12 @@ export function backupScreen(ctx: Ctx): Screen {
 
   function running(p: BackupProgress | null): HTMLElement {
     const label = p ? backupStepText(p.step, p.name) : t('backup.starting');
+    const part = p && backupPartText(p);
+    const left = p && secondsLeft(p, Date.now() - startedAt);
     return h('section', { class: 'card' },
       progressBar(p && p.total > 0 ? p.done / p.total : null, label),
+      part ? h('p', { class: 'progress-part', id: 'backup-part' }, part) : null,
+      left === null ? null : h('p', { class: 'progress-left', id: 'backup-left' }, formatTimeLeft(left)),
       h('p', { class: 'note' }, t('backup.runningNote')));
   }
 
@@ -63,6 +68,7 @@ export function backupScreen(ctx: Ctx): Screen {
   }
 
   async function start() {
+    startedAt = Date.now();
     set({ k: 'running', progress: null });
     const r = await ctx.api.backupNow();
     if (!r.ok) set({ k: 'failed', error: r.error, outcome: null });

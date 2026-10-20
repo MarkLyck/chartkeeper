@@ -18,6 +18,9 @@ export interface LayoutListEntry {
 
 const obj = z.record(z.string(), z.unknown());
 
+/** Told how many of a list's items are fetched: first (0, n) once the list is known, then after each item. */
+export type OnEach = (done: number, total: number) => void;
+
 const LayoutJsonSchema = z.object({
   content: z.string().nullable().optional(),
   content_study_meta: z.string().nullable().optional(),
@@ -210,13 +213,15 @@ export class TvClient {
     return { total: r.payload?.countSourcesTotal ?? null, chartIds: Object.keys(r.payload?.charts ?? {}) };
   }
 
-  async studyTemplates(): Promise<Record<string, unknown>[]> {
+  async studyTemplates(onEach?: OnEach): Promise<Record<string, unknown>[]> {
     const list = parse(z.object({ custom: z.array(obj).default([]) }).passthrough(), await this.getJson(urls.studyTemplates, 'indicator templates'), 'indicator templates');
     const out: Record<string, unknown>[] = [];
+    onEach?.(0, list.custom.length);
     for (const t of list.custom) {
       const id = t.id;
       if (typeof id !== 'number' && typeof id !== 'string') throw formatChanged('indicator template without id', JSON.stringify(t).slice(0, 200));
       out.push({ ...t, ...parse(obj, await this.getJson(urls.studyTemplate(id), `indicator template "${String(t.name)}"`), 'indicator template') });
+      onEach?.(out.length, list.custom.length);
     }
     return out;
   }
@@ -240,40 +245,46 @@ export class TvClient {
     check(res, `theme "${name}"`);
   }
 
-  async drawingTemplates(): Promise<Record<string, Record<string, unknown>>> {
+  /** TradingView only lists drawing templates one tool at a time, so this asks about every tool: about 90 requests. `onEach` counts tools. */
+  async drawingTemplates(onEach?: OnEach): Promise<Record<string, Record<string, unknown>>> {
     const out: Record<string, Record<string, unknown>> = {};
-    for (const tool of TEMPLATE_TOOLS) {
+    onEach?.(0, TEMPLATE_TOOLS.length);
+    for (const [i, tool] of TEMPLATE_TOOLS.entries()) {
       const names = await this.drawingTemplateNames(tool);
-      if (names.length === 0) continue;
-      out[tool] = {};
+      if (names.length) out[tool] = {};
       for (const name of names) {
         const t = parse(z.object({ content: z.string() }), await this.getJson(urls.drawingTemplate(tool, name), `template "${name}"`), `template "${name}"`);
         out[tool]![name] = JSON.parse(t.content);
       }
+      onEach?.(i + 1, TEMPLATE_TOOLS.length);
     }
     return out;
   }
 
-  async themes(): Promise<Record<string, unknown>> {
+  async themes(onEach?: OnEach): Promise<Record<string, unknown>> {
     const v = await this.getJson(urls.themes, 'color themes');
     // An account without themes answers {"content": ""}.
     const empty = z.object({ content: z.literal('') }).safeParse(v).success;
     const names = empty ? [] : parse(z.array(z.string()), v, 'color themes');
     const out: Record<string, unknown> = {};
-    for (const name of names) {
+    onEach?.(0, names.length);
+    for (const [i, name] of names.entries()) {
       const t = parse(z.object({ content: z.string() }), await this.getJson(urls.theme(name), `theme "${name}"`), `theme "${name}"`);
       out[name] = JSON.parse(t.content);
+      onEach?.(i + 1, names.length);
     }
     return out;
   }
 
-  async pineScripts(): Promise<{ id: string; name: string; version: string; source: string; meta: Record<string, unknown> }[]> {
+  async pineScripts(onEach?: OnEach): Promise<{ id: string; name: string; version: string; source: string; meta: Record<string, unknown> }[]> {
     const list = parse(z.array(z.object({ scriptIdPart: z.string(), scriptName: z.string(), version: z.string() }).passthrough()), await this.getJson(urls.pineList, 'Pine scripts'), 'Pine scripts');
     const out = [];
+    onEach?.(0, list.length);
     for (const s of list) {
       const full = parse(z.object({ source: z.string() }).passthrough(), await this.getJson(urls.pineScript(s.scriptIdPart, s.version), `script "${s.scriptName}"`), `script "${s.scriptName}"`);
       const { source, ...meta } = full;
       out.push({ id: s.scriptIdPart, name: s.scriptName, version: s.version, source, meta: { ...s, ...meta } });
+      onEach?.(out.length, list.length);
     }
     return out;
   }

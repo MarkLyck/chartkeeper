@@ -1,8 +1,10 @@
 import { parseLayout } from './layout';
 import type { DrawingBucket, DrawingsRecord, DrawingTemplatesFile, ManifestLayout, ScriptsIndex, StudyTemplatesFile, ThemesFile } from './model';
 import { APP_NAME, layoutFiles, noExtras, SNAPSHOT_FILES, SnapshotWriter, type ManifestBody, fileNameKey } from './snapshot';
-import type { LayoutListEntry, TvClient } from './tv/client';
+import type { LayoutListEntry, OnEach, TvClient } from './tv/client';
 import { chartIdOf } from './tv/content';
+import { TEMPLATE_TOOLS } from './tv/endpoints';
+import type { BackupProgress, BackupStep } from './backupProgress';
 import { fetchChartData, type SocketFactory } from './tv/datafeed';
 import { TvError, type TvErrorKind } from './tv/errors';
 
@@ -20,15 +22,8 @@ export interface BackupOptions {
   pauseMs?: number;
 }
 
-export type BackupStep = 'list' | 'layout' | 'userDrawings' | 'studyTemplates' | 'drawingTemplates' | 'scripts' | 'prices' | 'finish';
-
-export interface BackupProgress {
-  done: number;
-  total: number;
-  step: BackupStep;
-  /** Layout name, for the 'layout' and 'prices' steps. */
-  name?: string;
-}
+/** Requests a part of the backup is expected to take before its real size is known. A chart's prices take about as long as three requests. */
+const COST = { layout: 5, list: 1, chartPrices: 3 } as const;
 
 interface BackupSummary {
   dir: string;
@@ -90,49 +85,78 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
     extras,
     warnings,
   });
-  const progress = (done: number, total: number, step: BackupStep, name?: string) => opts.onProgress?.({ done, total, step, ...(name === undefined ? {} : { name }) });
+  const meter = { done: 0, total: 0 };
+  /**
+   * Starts a step expected to take `expected` requests. Its `each` follows a
+   * list as it is fetched (`fixed` requests for the list, `unit` per item)
+   * and corrects the total once the real length is known.
+   */
+  const begin = (step: BackupStep, expected: number, at: Pick<BackupProgress, 'name' | 'part'> = {}) => {
+    const start = meter.done;
+    const { name } = at;
+    let cost = expected;
+    let part = at.part;
+    const say = () => opts.onProgress?.({ step, ...(name === undefined ? {} : { name }), ...(part ? { part } : {}), done: meter.done, total: meter.total });
+    say();
+    return {
+      each: (fixed: number, unit = 1): OnEach => (done, total) => {
+        meter.total += fixed + total * unit - cost;
+        cost = fixed + total * unit;
+        meter.done = start + fixed + done * unit;
+        part = { done, total };
+        say();
+      },
+      end: () => void (meter.done = start + cost),
+    };
+  };
+  /** A step that fetches a list (`fixed` requests) and then each item on it. `expected` is what the total already counts for it. */
+  const step = async <T>(name: BackupStep, run: (each: OnEach) => Promise<T>, fixed: number = COST.list, expected = fixed): Promise<T> => {
+    const s = begin(name, expected);
+    const value = await run(s.each(fixed));
+    s.end();
+    return value;
+  };
 
   try {
-    progress(0, 1, 'list');
+    begin('list', 0);
     const entries = await client.listLayouts();
     await writer.writeJson(SNAPSHOT_FILES.account, { username: client.username, plan: client.plan, layoutList: entries.map((e) => e.raw) });
-    const steps = entries.length * (opts.includePrices ? 2 : 1) + 4;
-    let step = 0;
+    const userDrawings = entries.length ? 1 : 0;
+    const lists = 3 * COST.list; // study templates, themes and scripts
+    meter.total = entries.length * (COST.layout + (opts.includePrices ? COST.chartPrices : 0)) + userDrawings + lists + TEMPLATE_TOOLS.length;
 
     let firstToken: { uid: string; token: string } | null = null;
     const parsedForPrices: { entry: LayoutListEntry; dir: string; layout: ReturnType<typeof parseLayout> }[] = [];
 
-    for (const entry of entries) {
-      progress(++step, steps, 'layout', entry.name);
+    for (const [i, entry] of entries.entries()) {
+      const s = begin('layout', COST.layout, { name: entry.name, part: { done: i, total: entries.length } });
       const captured = await captureLayout(client, entry);
       firstToken ??= { uid: captured.record.uid, token: captured.token };
       const manifestLayout = await writer.addLayout(captured);
       layouts.push(manifestLayout);
       parsedForPrices.push({ entry, dir: manifestLayout.dir, layout: captured.layout });
+      s.end();
     }
 
     if (firstToken) {
-      progress(++step, steps, 'userDrawings');
-      const user = await client.userDrawings(firstToken.uid, firstToken.token);
+      const user = await step('userDrawings', () => client.userDrawings(firstToken.uid, firstToken.token));
       extras.userDrawings = Object.keys(user.sources).length;
       await writer.writeJson(SNAPSHOT_FILES.userDrawings, user);
     }
 
-    progress(++step, steps, 'studyTemplates');
-    const studyTemplates = await client.studyTemplates();
+    const studyTemplates = await step('studyTemplates', (each) => client.studyTemplates(each));
     extras.studyTemplates = studyTemplates.length;
     await writer.writeJson(SNAPSHOT_FILES.studyTemplates, { templates: studyTemplates } satisfies StudyTemplatesFile);
 
-    progress(++step, steps, 'drawingTemplates');
-    const tools = await client.drawingTemplates();
+    const tools = await step('drawingTemplates', (each) => client.drawingTemplates(each), 0, TEMPLATE_TOOLS.length);
     extras.drawingTemplates = Object.values(tools).reduce((n, t) => n + Object.keys(t).length, 0);
     await writer.writeJson(SNAPSHOT_FILES.drawingTemplates, { tools } satisfies DrawingTemplatesFile);
-    const themes = await client.themes();
+
+    const themes = await step('themes', (each) => client.themes(each));
     extras.themes = Object.keys(themes).length;
     await writer.writeJson(SNAPSHOT_FILES.themes, { themes } satisfies ThemesFile);
 
-    progress(++step, steps, 'scripts');
-    const scripts = await client.pineScripts();
+    const scripts = await step('scripts', (each) => client.pineScripts(each));
     const index: ScriptsIndex['scripts'] = [];
     const used = new Set<string>();
     for (const s of scripts) {
@@ -147,9 +171,11 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
 
     if (opts.includePrices) {
       for (const { entry, dir, layout } of parsedForPrices) {
-        progress(++step, steps, 'prices', entry.name);
+        const s = begin('prices', COST.chartPrices, { name: entry.name });
+        const each = s.each(0, COST.chartPrices);
+        each(0, layout.charts.length);
         let allCharts = true;
-        for (const chart of layout.charts) {
+        for (const [i, chart] of layout.charts.entries()) {
           const studies = chart.panes.flatMap((p) => p.studies).filter((s) => s.metaInfoId);
           try {
             const data = await fetchChartData(chart, studies, opts.socketFactory, { authToken: opts.authToken, bars: opts.bars, studyPauseMs: opts.pauseMs === undefined ? 500 : opts.pauseMs / 3 });
@@ -161,13 +187,16 @@ export async function runBackup(client: TvClient, opts: BackupOptions): Promise<
             warnings.push(`"${entry.name}": prices for ${chart.symbol} (${chart.interval}) could not be saved: ${(e as Error).message}`);
           }
           await new Promise((r) => setTimeout(r, opts.pauseMs ?? 1500));
+          each(i + 1, layout.charts.length);
         }
+        s.end();
         const m = layouts.find((l) => l.uid === layout.uid);
         if (m) m.priceData = allCharts;
       }
     }
 
-    progress(steps, steps, 'finish');
+    meter.done = meter.total;
+    begin('finish', 0);
     const dir = await writer.finish(body());
     return { dir, ok: true, layouts: layouts.length, drawings: layouts.reduce((n, l) => n + l.drawings, 0), warnings };
   } catch (e) {

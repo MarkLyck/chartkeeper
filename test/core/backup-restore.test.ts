@@ -2,7 +2,8 @@ import { promises as fs, readFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { runBackup, type BackupProgress } from '../../src/core/backup';
+import { runBackup } from '../../src/core/backup';
+import type { BackupProgress } from '../../src/core/backupProgress';
 import { countLayout, parseLayout } from '../../src/core/layout';
 import { LayoutRecordSchema } from '../../src/core/model';
 import { contentWithDrawings, restoreLayout, RestoreJournal, restoreTemplates, saveForm, symbolFields, type RestoreStep } from '../../src/core/restore';
@@ -10,6 +11,7 @@ import { checkRestore } from '../../src/core/restorePolicy';
 import { listSnapshots, SNAPSHOT_FILES, SnapshotReader } from '../../src/core/snapshot';
 import { parseLayoutJson, parseListEntry, TvClient } from '../../src/core/tv/client';
 import { drawingSourceFromStored, isDrawingType, type TvContent } from '../../src/core/tv/content';
+import { TEMPLATE_TOOLS } from '../../src/core/tv/endpoints';
 import { PoliteHttp } from '../../src/core/tv/http';
 import { fakeDataSocket } from '../fakes/fakeDataSocket';
 import { FakeTradingView, type FakeLayout } from '../fakes/fakeTradingView';
@@ -161,26 +163,46 @@ describe('backup', () => {
     expect(studies.map((s) => s.status).sort()).toEqual(['error', 'ok']);
   });
 
-  it('reports progress step by step up to exactly the total', async () => {
+  it('reports progress step by step, never backwards, ending at exactly the total', async () => {
     tv.add(referenceInAccount('Second01', 'Second'));
     const seen: BackupProgress[] = [];
     await backup({ onProgress: (p) => seen.push(p) });
-    expect(seen.map((p) => [p.step, p.name ?? null])).toEqual([
-      ['list', null],
-      ['layout', 'Min AAPL'],
-      ['layout', 'Second'],
-      ['userDrawings', null],
-      ['studyTemplates', null],
-      ['drawingTemplates', null],
-      ['scripts', null],
-      ['prices', 'Min AAPL'],
-      ['prices', 'Second'],
-      ['finish', null],
-    ]);
-    const total = seen[1]!.total;
-    expect(seen.slice(1).every((p) => p.total === total)).toBe(true);
-    expect(seen.map((p) => p.done)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, total]);
-    expect(total).toBe(8);
+    const steps = seen.map((p) => `${p.step}${p.name ? ` ${p.name}` : ''}`).filter((s, i, all) => s !== all[i - 1]);
+    expect(steps).toEqual(['list', 'layout Min AAPL', 'layout Second', 'userDrawings', 'studyTemplates', 'drawingTemplates', 'themes', 'scripts', 'prices Min AAPL', 'prices Second', 'finish']);
+    expect(seen[0]).toEqual({ step: 'list', done: 0, total: 0 });
+    const counted = seen.slice(1);
+    expect(counted.every((p, i) => p.done <= p.total && (i === 0 || p.done >= counted[i - 1]!.done))).toBe(true);
+    expect(seen.at(-1)!.done).toBe(seen.at(-1)!.total);
+  });
+
+  it('estimates the whole backup from the layout list: the total holds and matches the requests made', async () => {
+    tv.add(referenceInAccount('Second01', 'Second'));
+    tv.studyTemplates = [];
+    tv.themes = {};
+    tv.scripts = [];
+    tv.drawingTemplates = {};
+    const seen: BackupProgress[] = [];
+    await backup({ includePrices: false, onProgress: (p) => seen.push(p) });
+    expect(new Set(seen.slice(1).map((p) => p.total))).toEqual(new Set([tv.requests.length - 1]));
+  });
+
+  it('moves the bar while it asks about every drawing tool, which is most of the requests', async () => {
+    const seen: BackupProgress[] = [];
+    await backup({ onProgress: (p) => seen.push(p) });
+    const tools = seen.filter((p) => p.step === 'drawingTemplates');
+    expect(tools.map((p) => p.part?.done ?? null)).toEqual([null, ...Array.from({ length: TEMPLATE_TOOLS.length + 1 }, (_, i) => i)]);
+    expect(tools.every((p) => p.part === undefined || p.part.total === TEMPLATE_TOOLS.length)).toBe(true);
+    const share = (tools.at(-1)!.done - tools[0]!.done) / seen.at(-1)!.total;
+    expect(share).toBeGreaterThan(0.6);
+  });
+
+  it('counts the templates, themes and scripts it finds into the total', async () => {
+    tv.themes = { A: { content: {} }, B: { content: {} }, C: { content: {} } };
+    const seen: BackupProgress[] = [];
+    await backup({ onProgress: (p) => seen.push(p) });
+    const themes = seen.filter((p) => p.step === 'themes');
+    expect(themes.map((p) => p.part && `${p.part.done}/${p.part.total}`)).toEqual([undefined, '0/3', '1/3', '2/3', '3/3']);
+    expect(themes.at(-1)!.done - themes[0]!.done).toBe(4);
   });
 
   it('without prices, opens no price connection and says the snapshot has none', async () => {
